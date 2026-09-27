@@ -145,7 +145,7 @@ export default {
       this.consumers = [
         { value: 'store', text: 'Store' },
         { value: 'eventbus', text: 'Eventbus' },
-        { value: 'corteza', text: 'Corteza' },
+        { value: 'corteza', text: 'CulpOS' },
         { value: 'redis', text: 'Redis' },
       ]
 

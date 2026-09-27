@@ -1,0 +1,63 @@
+name: CulpOS CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'claude/**', '20[0-9][0-9].[0-9].x' ]
+
+env:
+  GO_VERSION: 1.24.1
+  NODE_VERSION: 22
+
+jobs:
+  server:
+    name: Server build & tests (PostgreSQL)
+    runs-on: ubuntu-22.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: culpos
+          POSTGRES_PASSWORD: culpos
+          POSTGRES_DB: culpos_test
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U culpos" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CULPOS_TEST_DATABASE_URL: postgres://culpos:culpos@localhost:5432/culpos_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "${{ env.GO_VERSION }}" }
+      - name: Embed language files
+        working-directory: server/pkg/locale
+        run: make src/en
+      - name: Vet
+        working-directory: server
+        run: go vet -mod=vendor ./saas/... ./app/... ./auth/...
+      - name: CulpOS commercial layer tests
+        working-directory: server
+        run: go test -mod=vendor -count=1 ./saas/...
+      - name: Auth tests
+        working-directory: server
+        run: go test -mod=vendor -count=1 ./auth/...
+      - name: Build
+        working-directory: server
+        run: go build -mod=vendor -o build/culpos-server ./cmd/corteza
+
+  webapps:
+    name: Web applications build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "${{ env.NODE_VERSION }}" }
+      - name: Build libraries
+        run: |
+          cd lib/js && yarn --frozen-lockfile && yarn link && yarn build
+          cd ../vue && yarn --frozen-lockfile && yarn link @cortezaproject/corteza-js && yarn build && yarn link
+      - name: Build apps
+        run: |
+          for a in one compose admin workflow reporter privacy; do
+            (cd client/web/$a && yarn --frozen-lockfile && yarn cdeps && yarn build) || exit 1
+          done

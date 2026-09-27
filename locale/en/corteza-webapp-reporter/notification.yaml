@@ -11,7 +11,7 @@ list:
 module:
   fetch-failed: Failed to fetch modules
 namespace:
-  fetch-failed: Failed to fetch namespaces
+  fetch-failed: Failed to fetch workspaces
 report:
   createFailed: Failed to create report
   loadFailed: Loading the report failed

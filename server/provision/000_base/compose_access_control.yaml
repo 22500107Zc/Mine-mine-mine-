@@ -1,39 +1,10 @@
 allow:
+  # CulpOS: company users receive workspace access exclusively through their
+  # company roles, scoped to their own workspace (see saas/integration).
+  # The authenticated role must never be granted wildcard workspace access.
   authenticated:
     corteza::compose/:
       - namespaces.search
-
-    corteza::compose:namespace/*:
-      - read
-      - export
-      - modules.export
-      - charts.export
-      - pages.export
-      - pages.search
-      - modules.search
-      - charts.search
-
-    corteza::compose:module/*/*:
-      - read
-      - export
-      - records.search
-
-    corteza::compose:module-field/*/*/*:
-      - record.value.read
-
-    corteza::compose:page/*/*:
-      - read
-      - export
-
-    corteza::compose:page-layout/*/*/*:
-      - read
-
-    corteza::compose:chart/*/*:
-      - read
-      - export
-
-    corteza::compose:record/*/*/*:
-      - read
 
   admin:
     corteza::compose/:

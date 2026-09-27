@@ -1239,3 +1239,32 @@ func (svc *auth) SendInviteEmail(ctx context.Context, email string) (err error) 
 
 	return svc.recordAction(ctx, aam, AuthActionSendInviteEMail, err)
 }
+
+// GenerateInviteToken creates an invitation token for an existing user without
+// sending the stock invitation email.
+//
+// CulpOS sends its own branded company invitation (with company and inviter
+// details) and uses this token to build the acceptance link.
+func (svc *auth) GenerateInviteToken(ctx context.Context, email string) (token string, err error) {
+	var (
+		u *types.User
+
+		aam = &authActionProps{
+			email: email,
+		}
+	)
+
+	err = func() error {
+		if u, err = store.LookupUserByEmail(ctx, svc.store, email); err != nil {
+			return err
+		}
+
+		aam.setUser(u)
+		ctx = internalAuth.SetIdentityToContext(ctx, u)
+
+		token, err = svc.createUserToken(ctx, u, credentialsTypeInviteEmailToken)
+		return err
+	}()
+
+	return token, svc.recordAction(ctx, aam, AuthActionSendInviteEMail, err)
+}

@@ -351,6 +351,28 @@ func (svc *service) UpdateSettings(s *settings.Settings) {
 	svc.handlers.Settings = s
 }
 
+// SessionUserID returns the ID of the user signed in through the auth
+// session cookie (0 when anonymous or when MFA is still pending)
+func (svc *service) SessionUserID(r *http.Request) uint64 {
+	ses := svc.handlers.SessionManager.Get(r)
+	if ses == nil {
+		return 0
+	}
+
+	au := request.GetAuthUser(ses)
+	if au == nil || au.User == nil || au.PendingMFA() {
+		return 0
+	}
+
+	return au.User.ID
+}
+
+// SetAccessGuard installs a server-side check evaluated before the
+// application issues access tokens to a signed-in user
+func (svc *service) SetAccessGuard(fn func(ctx context.Context, userID uint64) string) {
+	svc.handlers.AccessGuard = fn
+}
+
 func (svc *service) Watch(ctx context.Context) {
 	go svc.gc(ctx)
 }

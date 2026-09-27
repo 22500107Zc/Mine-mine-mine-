@@ -140,7 +140,7 @@ func (h httpRequestHandler) makeRequest(ctx context.Context, args *httpRequestSe
 	}
 
 	if args.HeaderUserAgent == "" {
-		args.HeaderUserAgent = "Corteza-Automation-Client/" + version.Version
+		args.HeaderUserAgent = "CulpOS-Automation-Client/" + version.Version
 	}
 
 	args.Headers.Set("User-Agent", args.HeaderUserAgent)

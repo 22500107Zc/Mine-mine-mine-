@@ -6,7 +6,7 @@ editor:
       page: Page attachments
       record: Record attachments
       icon: Icon attachments
-      namespace: Namespace attachments
+      namespace: Workspace attachments
       type:
         description: 'MIME types, separated with ",". Example: "text/plain,text/csv"'
         whitelist: File type whitelist
@@ -15,8 +15,8 @@ editor:
     title: User interface
     sidebar:
       title: Sidebar
-      hide-namespace-list: Hide list of namespaces
-      hide-namespace-list-link: Hide link to list of all namespaces
+      hide-namespace-list: Hide list of workspaces
+      hide-namespace-list-link: Hide link to list of all workspaces
     record-toolbar:
       title: Record Toolbar
       hide-submit: Hide submit button

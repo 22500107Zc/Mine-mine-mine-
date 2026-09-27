@@ -488,9 +488,9 @@ resources:
         grant:
           title: Grant permissions on compose component
         namespace.create:
-          title: Create namespaces
+          title: Create workspaces
         namespaces.search:
-          title: List and search namespaces
+          title: List and search workspaces
         settings.manage:
           title: Manage all settings
         settings.read:
@@ -529,34 +529,34 @@ resources:
         record.value.update:
           title: Update any module field
     namespace:
-      label: Namespaces
+      label: Workspaces
       operations:
         chart.create:
-          title: Create charts under any namespace
+          title: Create charts under any workspace
         charts.search:
-          title: List and search charts under any namespace
+          title: List and search charts under any workspace
         charts.export:
-          title: Export charts under any namespace
+          title: Export charts under any workspace
         delete:
-          title: Delete any namespace
+          title: Delete any workspace
         manage:
-          title: Manage any namespace
+          title: Manage any workspace
         module.create:
-          title: Create modules under any namespace
+          title: Create modules under any workspace
         modules.search:
-          title: List and search modules under any namespace
+          title: List and search modules under any workspace
         modules.export:
-          title: Export modules under any namespace
+          title: Export modules under any workspace
         page.create:
-          title: Create pages under any namespace
+          title: Create pages under any workspace
         pages.search:
-          title: List and search pages under any namespace
+          title: List and search pages under any workspace
         read:
-          title: Access any namespace
+          title: Access any workspace
         update:
-          title: Update any namespace
+          title: Update any workspace
         export:
-          title: Export any namespace
+          title: Export any workspace
     page:
       label: Pages
       operations:

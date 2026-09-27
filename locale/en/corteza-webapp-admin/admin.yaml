@@ -81,7 +81,7 @@ general:
     "yes": "Yes"
     selectOption: "Please select an option"
   logout: Logout
-  noAccess: You do not have permissions to access Admin panel
+  noAccess: You do not have permissions to access Configuration
   pagination:
     next: Next
     prev: Previous
@@ -90,18 +90,18 @@ general:
     single_other: '{{count}} {{data}}'
 navigation:
   appMenu: Menu
-  adminPanel: Admin panel
+  adminPanel: Configuration
   automation: Automation
   chart: Charts
   configuration: Configuration
   help:
-    documentation: Documentation
-    feedback: Send feedback
-    forum: Help
+    documentation: Open Source Notices
+    feedback: Contact Support
+    forum: Support
     version: 'Version:'
   module: Modules
   more: More
-  namespace: Namespaces
+  namespace: Workspaces
   noPageTitle: No page title
   page: Pages
   publicPages: Public pages

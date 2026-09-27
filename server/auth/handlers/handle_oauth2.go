@@ -46,6 +46,10 @@ func (h *AuthHandlers) oauth2Authorize(req *request.AuthReq) (err error) {
 
 	request.SetOauth2AuthParams(req.Session, nil)
 
+	if h.guardAccess(req) {
+		return nil
+	}
+
 	var (
 		client *types.AuthClient
 	)
@@ -235,6 +239,10 @@ func (h *AuthHandlers) oauth2authorizeDefaultClient(req *request.AuthReq) (err e
 		return
 	}
 
+	if h.guardAccess(req) {
+		return nil
+	}
+
 	var (
 		params = url.Values{}
 	)
@@ -269,6 +277,10 @@ func (h *AuthHandlers) oauth2authorizeDefaultClient(req *request.AuthReq) (err e
 func (h *AuthHandlers) oauth2authorizeDefaultClientProc(req *request.AuthReq) (err error) {
 	if err = h.verifyDefaultClient(); err != nil {
 		return
+	}
+
+	if h.guardAccess(req) {
+		return nil
 	}
 
 	var (
@@ -705,4 +717,19 @@ func writeResponse(w http.ResponseWriter, data map[string]interface{}, header ht
 
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(data)
+}
+
+// guardAccess redirects signed-in users whose company may not enter the
+// application (unpaid, canceled, disabled) before any token is issued
+func (h *AuthHandlers) guardAccess(req *request.AuthReq) bool {
+	if h.AccessGuard == nil || req.AuthUser == nil || req.AuthUser.User == nil || req.AuthUser.PendingMFA() {
+		return false
+	}
+
+	if to := h.AccessGuard(req.Context(), req.AuthUser.User.ID); to != "" {
+		req.RedirectTo = to
+		return true
+	}
+
+	return false
 }

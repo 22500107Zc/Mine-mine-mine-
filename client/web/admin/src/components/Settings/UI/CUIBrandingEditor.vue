@@ -245,9 +245,9 @@ export default {
         'topbar-bg',
       ],
       lightModeVariables: {
-        black: '#0B344E',
+        black: '#0E1A2B',
         white: '#FFFFFF',
-        primary: '#FF9661',
+        primary: '#1F4E8C',
         secondary: '#758D9B',
         success: '#43AA8B',
         warning: '#E27646',
@@ -260,8 +260,8 @@ export default {
       },
       darkModeVariables: {
         black: '#FBF7F4',
-        white: '#0B344E',
-        primary: '#FF9661',
+        white: '#0E1A2B',
+        primary: '#1F4E8C',
         secondary: '#758D9B',
         success: '#43AA8B',
         warning: '#E27646',
@@ -269,7 +269,7 @@ export default {
         light: '#23495F',
         'extra-light': '#3E5A6F',
         'body-bg': '#092B40',
-        'sidebar-bg': '#0B344E',
+        'sidebar-bg': '#0E1A2B',
         'topbar-bg': '#092B40',
       },
 
@@ -292,8 +292,7 @@ export default {
     },
     installSassDocs () {
       // eslint-disable-next-line no-undef
-      const [year, month] = VERSION.split('.')
-      return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/integrator-guide/corteza-studio/index.html`
+      return '/support'
     },
   },
 

@@ -1,9 +1,9 @@
 settings:
   auth.external.enabled: true
-  auth.mail.from-address: info@example.tld
-  auth.mail.from-name: Corteza
+  auth.mail.from-name: CulpOS
   auth.internal.enabled: true
-  auth.internal.signup.enabled: true
+  # CulpOS: companies are created through paid signup (/signup) only
+  auth.internal.signup.enabled: false
   auth.internal.profile-avatar.enabled: true
 
   # We add this through provision procedures

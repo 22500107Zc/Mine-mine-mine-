@@ -2,10 +2,10 @@
     <div class="text-center w-100 my-2 my-sm-4">
         <a href="{{ links.Profile }}">
             <img
-							data-test-id="img-corteza-logo"
+							data-test-id="img-logo"
 							class="logo"
-							alt="Company logo"
-							src="{{ links.Assets }}/logo.svg"
+							alt="CulpOS"
+							src="/culpos/static/culpos-logo.svg"
 						>
         </a>
     </div>

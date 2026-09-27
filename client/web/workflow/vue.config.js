@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'Workflows',
+  appFlavour: 'Workflow Configuration',
   appName: 'workflow',
-  appLabel: 'Corteza Workflows',
+  appLabel: 'CulpOS | Workflow Configuration',
   theme: 'corteza-base',
   packageAlias: 'corteza-workflow',
 })

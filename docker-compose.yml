@@ -1,0 +1,41 @@
+# CulpOS — local/production-like stack (PostgreSQL + CulpOS)
+#
+#   cp .env.example .env   # fill in secrets
+#   docker compose up -d --build
+#
+# Put a TLS-terminating reverse proxy (e.g. Caddy, nginx, a load balancer)
+# in front of port 8080 in production and set APP_URL to the https URL.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-culpos}
+      POSTGRES_USER: ${POSTGRES_USER:-culpos}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-culpos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  culpos:
+    build: .
+    image: culpos:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-culpos}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-culpos}?sslmode=disable
+    ports:
+      - "8080:8080"
+    volumes:
+      - culpos-data:/data
+
+volumes:
+  db-data:
+  culpos-data:

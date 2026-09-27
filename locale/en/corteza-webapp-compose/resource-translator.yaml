@@ -8,8 +8,8 @@ resources:
     title: Chart "{{ handle }}"
     tooltip: Chart translations
   namespace:
-    title: Namespace "{{ handle }}"
-    tooltip: Namespace translations
+    title: Workspace "{{ handle }}"
+    tooltip: Workspace translations
   module:
     title: Module "{{ handle }}"
     tooltip: Module translations

@@ -1,23 +1,41 @@
 applications:
-  - name: Namespaces
+  - name: Workspace
     (envoy): { skipIf: "!missing" }
     enabled: true
     unify:
       listed: true
-      icon: applications/low-code-platform.png
-      logo: applications/low-code-platform.png
+      icon: applications/workspace.png
+      logo: applications/workspace.png
       url: compose/
 
-  - name: Admin Area
+  - name: Company Admin
     (envoy): { skipIf: "!missing" }
     enabled: true
     unify:
       listed: true
-      icon: applications/admin-area.png
-      logo: applications/admin-area.png
+      icon: applications/company-admin.png
+      logo: applications/company-admin.png
+      url: /company
+
+  - name: Billing
+    (envoy): { skipIf: "!missing" }
+    enabled: true
+    unify:
+      listed: true
+      icon: applications/billing.png
+      logo: applications/billing.png
+      url: /billing
+
+  - name: Configuration Studio
+    (envoy): { skipIf: "!missing" }
+    enabled: true
+    unify:
+      listed: true
+      icon: applications/configuration-studio.png
+      logo: applications/configuration-studio.png
       url: admin/
 
-  - name: Workflows
+  - name: Workflow Configuration
     (envoy): { skipIf: "!missing" }
     enabled: true
     unify:
@@ -26,16 +44,7 @@ applications:
       logo: applications/workflows.png
       url: workflow/
 
-  - name: Jitsi Video Conferencing
-    (envoy): { skipIf: "!missing" }
-    enabled: true
-    unify:
-      listed: true
-      icon: applications/video-conference.png
-      logo: applications/video-conference.png
-      url: bridge/jitsi/
-
-  - name: Reporter
+  - name: Reports
     (envoy): { skipIf: "!missing" }
     enabled: true
     unify:
@@ -44,7 +53,7 @@ applications:
       logo: applications/reporter.png
       url: reporter/
 
-  - name: Privacy
+  - name: Data Privacy
     (envoy): { skipIf: "!missing" }
     enabled: true
     unify:

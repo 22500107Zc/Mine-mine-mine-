@@ -1,0 +1,19 @@
+{{define "signup-complete"}}{{template "head" .}}
+<div class="card auth-card">
+  <div class="logo"><img src="/culpos/static/culpos-logo.svg" alt="{{brand.ProductName}}"></div>
+  {{if .Ready}}
+    <h1>Your workspace is ready</h1>
+    <p class="lead">Payment confirmed. <strong>{{.Company.Name}}</strong> is now active on {{brand.ProductName}}.</p>
+    <a class="btn block lg" href="/">Sign In to {{brand.ProductName}}</a>
+    <p class="muted small" style="text-align:center;margin-top:12px">Sign in with the email and password you chose during signup.</p>
+  {{else if .Failed}}
+    <h1>We’re finishing your setup</h1>
+    <p class="lead">Your payment was received, but setting up your workspace needs attention. Our team has been notified{{if brand.SupportEmail}} — you can also reach us at <a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>{{end}}.</p>
+  {{else}}
+    <h1>Confirming your payment…</h1>
+    <p class="lead" role="status">We’re waiting for secure confirmation from our payment processor. This page refreshes automatically.</p>
+    <meta http-equiv="refresh" content="4">
+    <p class="muted small" style="text-align:center">Access is only granted after payment is verified on our servers.</p>
+  {{end}}
+</div>
+{{template "foot" .}}{{end}}

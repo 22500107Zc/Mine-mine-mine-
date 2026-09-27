@@ -174,7 +174,7 @@ export default {
         const { handle, meta = {} } = this.layout || {}
 
         this.pageTitle = (meta.title || this.page.title) || handle || this.$t('navigation:noPageTitle')
-        document.title = this.pageTitle
+        document.title = `CulpOS | ${this.pageTitle}`
       }
 
       return this.prepareBlocks()

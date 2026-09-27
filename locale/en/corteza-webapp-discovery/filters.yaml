@@ -2,13 +2,13 @@ title: Filter
 
 types:
   title: Types
-  namespace: Namespace
+  namespace: Workspace
   module: Module
   user: User
   record: Record
 
 aggregation-groups:
   modules: Modules
-  namespaces: Namespaces
+  namespaces: Workspaces
 
 reset: Reset

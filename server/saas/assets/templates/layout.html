@@ -1,0 +1,101 @@
+{{define "head"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="application-name" content="{{brand.ProductName}}">
+<meta name="description" content="{{brand.Tagline}}">
+{{if .NoIndex}}<meta name="robots" content="noindex, nofollow">{{end}}
+<meta property="og:site_name" content="{{brand.ProductName}}">
+<meta property="og:title" content="{{brand.PageTitle .Title}}">
+<meta property="og:description" content="{{brand.Tagline}}">
+<meta property="og:type" content="website">
+{{if brand.PublicAppURL}}<meta property="og:url" content="{{brand.URL .Path}}">
+<meta property="og:image" content="{{brand.URL "/culpos/static/culpos-og.png"}}">
+<link rel="canonical" href="{{brand.URL .Path}}">{{end}}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{brand.PageTitle .Title}}">
+<meta name="twitter:description" content="{{brand.Tagline}}">
+<meta name="theme-color" content="#0E1A2B">
+<link rel="icon" href="/culpos/static/favicon.ico" sizes="any">
+<link rel="icon" href="/culpos/static/culpos-mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/culpos/static/apple-touch-icon.png">
+<link rel="manifest" href="/culpos/static/manifest.webmanifest">
+<link rel="stylesheet" href="/culpos/static/culpos.css">
+<script src="/culpos/static/culpos.js" defer></script>
+<title>{{brand.PageTitle .Title}}</title>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+{{if eq .Nav "founder"}}{{template "nav-founder" .}}{{else if eq .Nav "customer"}}{{template "nav-customer" .}}{{else}}{{template "nav-public" .}}{{end}}
+<main id="main" class="{{.MainClass}}">
+{{range .Flash}}<div class="alert {{.Kind}}" role="{{if eq .Kind "error"}}alert{{else}}status{{end}}">{{.Text}}</div>{{end}}
+{{end}}
+
+{{define "foot"}}
+</main>
+<footer class="site-footer">
+  <div class="inner">
+    <div>© {{.Year}} {{brand.CompanyName}} · {{brand.ProductName}}</div>
+    <nav aria-label="Legal">
+      <a href="/legal/terms">Terms</a>
+      <a href="/legal/privacy">Privacy</a>
+      {{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">Support</a>{{else}}<a href="/support">Support</a>{{end}}
+      <a href="/legal/open-source">Open Source Notices</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
+{{end}}
+
+{{define "nav-public"}}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/" aria-label="{{brand.ProductName}} home"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <nav aria-label="Primary">
+      <a href="/auth/login">Sign In</a>
+      <a href="/signup">Create Company</a>
+    </nav>
+  </div>
+</header>
+{{end}}
+
+{{define "nav-customer"}}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/" aria-label="{{brand.ProductName}} workspace"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <nav aria-label="Primary">
+      {{if .Workspace}}<a href="{{.Workspace}}">Dashboard</a>{{end}}
+      {{if .CanManage}}<a href="/company" {{if eq .Section "company"}}aria-current="page"{{end}}>Company Admin</a>{{end}}
+      {{if .CanBilling}}<a href="/billing" {{if eq .Section "billing"}}aria-current="page"{{end}}>Billing</a>{{end}}
+      <a href="/auth">Account</a>
+      <a href="/auth/logout">Sign Out</a>
+    </nav>
+  </div>
+</header>
+{{end}}
+
+{{define "nav-founder"}}
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/founder/dashboard" aria-label="{{brand.ProductName}} Founder console"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <span class="badge-founder">Founder</span>
+    {{if .Founder}}
+    <nav aria-label="Founder">
+      <a href="/founder/dashboard" {{if eq .Section "dashboard"}}aria-current="page"{{end}}>Dashboard</a>
+      <a href="/founder/companies" {{if eq .Section "companies"}}aria-current="page"{{end}}>Companies</a>
+      <a href="/founder/users" {{if eq .Section "users"}}aria-current="page"{{end}}>Users</a>
+      <a href="/founder/billing" {{if eq .Section "billing"}}aria-current="page"{{end}}>Billing</a>
+      <a href="/founder/audit" {{if eq .Section "audit"}}aria-current="page"{{end}}>Audit Log</a>
+      <a href="/founder/system" {{if eq .Section "system"}}aria-current="page"{{end}}>System</a>
+      <a href="/founder/account" {{if eq .Section "account"}}aria-current="page"{{end}}>Account</a>
+      <form class="inline" method="post" action="/founder/logout">
+        <input type="hidden" name="csrf" value="{{.CSRF}}">
+        <button type="submit">Sign Out</button>
+      </form>
+    </nav>
+    {{end}}
+  </div>
+</header>
+{{end}}

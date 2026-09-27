@@ -9,7 +9,8 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="icon" id="favicon" href="{{ links.Assets }}/icon.svg">
+	<link rel="icon" id="favicon" href="/culpos/static/favicon.ico" sizes="any">
+	<link rel="icon" href="/culpos/static/culpos-mark.svg" type="image/svg+xml">
 
 	<!-- Fonts -->
 	<link href="{{ links.AuthAssets }}/fonts.css" rel="stylesheet">
@@ -18,7 +19,10 @@
 	<link href="/custom.css" rel="stylesheet">
 	<link href="{{ links.AuthAssets }}/style.css?{{ buildtime }}" rel="stylesheet">
 
-	<title>Corteza</title>
+	<title>CulpOS{{ with .pageTitle }} | {{ . }}{{ end }}</title>
+	<meta name="application-name" content="CulpOS">
+	<meta name="description" content="CulpOS — Business Operations System by Culp Industries.">
+	<meta name="robots" content="noindex">
 	<style>
 		body {
 			font-size: 1rem !important;

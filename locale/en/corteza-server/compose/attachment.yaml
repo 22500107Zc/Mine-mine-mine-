@@ -4,21 +4,21 @@ errors:
   failedToStoreFile: could not extract store file
   invalidID: invalid ID
   invalidModuleID: invalid module ID
-  invalidNamespaceID: invalid namespace ID
+  invalidNamespaceID: invalid workspace ID
   invalidPageID: invalid page ID
   invalidRecordID: invalid record ID
   moduleNotFound: module not found
-  namespaceNotFound: namespace not found
+  namespaceNotFound: workspace not found
   notAllowedToCreate: not allowed to create attachments
   notAllowedToCreateEmptyAttachment: not allowed to create empty attachments
   notAllowedToCreateRecords: not allowed to create records
   notAllowedToListAttachments: not allowed to list attachments
   notAllowedToRead: not allowed to read this module
-  notAllowedToReadNamespace: not allowed to read this namespace
+  notAllowedToReadNamespace: not allowed to read this workspace
   notAllowedToReadPage: not allowed to read this page
   notAllowedToReadRecord: not allowed to read this record
   notAllowedToSearch: not allowed to search or list modules
-  notAllowedToUpdateNamespace: not allowed to update this namespace
+  notAllowedToUpdateNamespace: not allowed to update this workspace
   notAllowedToUpdatePage: not allowed to update this page
   notAllowedToUpdateRecord: not allowed to update this record
   notFound: attachment not found

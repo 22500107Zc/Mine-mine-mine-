@@ -1,0 +1,82 @@
+{{define "company"}}{{template "head" .}}
+<h1>Company Admin</h1>
+<p class="lead">{{.Company.Name}}</p>
+
+{{if .Decision.Warning}}<div class="alert warning" role="status">{{.Decision.Warning}} {{if .CanBilling}}<a href="/billing">Go to Billing</a>{{end}}</div>{{end}}
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="profile-h">
+    <h2 id="profile-h">Company Profile</h2>
+    <dl class="kv">
+      <dt>Company</dt><dd>{{.Company.Name}}</dd>
+      <dt>Company Owner</dt><dd>{{.Company.OwnerName}} ({{.Company.OwnerEmail}})</dd>
+      <dt>Workspace</dt><dd>{{if .Workspace}}<a href="{{.Workspace}}">Open workspace</a>{{else}}—{{end}}</dd>
+      <dt>Members</dt><dd>{{len .Members}}</dd>
+      <dt>Your Role</dt><dd>{{.Me.Role.Label}}</dd>
+    </dl>
+  </section>
+
+  {{if .CanManage}}
+  <section class="card" aria-labelledby="invite-h">
+    <h2 id="invite-h">Invite a Team Member</h2>
+    <p class="muted small">Team members are included in your company subscription.</p>
+    <form method="post" action="/company/invite">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <div class="field"><label for="inv-email">Email</label><input id="inv-email" type="email" name="email" required maxlength="254"></div>
+      <div class="field"><label for="inv-name">Name</label><input id="inv-name" type="text" name="name" maxlength="120"></div>
+      <div class="field"><label for="inv-role">Role</label>
+        <select id="inv-role" name="role">{{range .AssignableRoles}}<option value="{{.}}" {{if eq . "employee"}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+      </div>
+      <button class="btn" type="submit">Send Invitation</button>
+    </form>
+  </section>
+  {{end}}
+</div>
+
+<section class="card" aria-labelledby="members-h">
+  <div class="card-header"><h2 id="members-h" style="margin:0">Users &amp; Roles</h2></div>
+  {{if .Members}}
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Joined</th>{{if .CanManage}}<th scope="col">Actions</th>{{end}}</tr></thead>
+    <tbody>
+    {{range .Members}}
+      <tr>
+        <td>{{orDash .Name}}</td>
+        <td>{{.Email}}</td>
+        <td>{{.Role.Label}}</td>
+        <td>{{if .Suspended}}<span class="pill warn">Pending / Suspended</span>{{else}}<span class="pill ok">Active</span>{{end}}</td>
+        <td>{{date .CreatedAt}}</td>
+        {{if $.CanManage}}
+        <td class="actions">
+          {{if and ($.Me.Role.Outranks .Role) (ne .UserID $.Me.UserID)}}
+          <form class="inline" method="post" action="/company/members/{{.UserID}}/role">
+            <input type="hidden" name="csrf" value="{{$.CSRF}}">
+            <label class="sr-only" for="role-{{.UserID}}" style="position:absolute;left:-9999px">Role for {{.Email}}</label>
+            <select id="role-{{.UserID}}" name="role" style="width:auto;padding:5px 8px">{{$cur := .Role}}{{range $.AssignableRoles}}<option value="{{.}}" {{if eq . $cur}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+            <button class="btn small secondary" type="submit">Update</button>
+          </form>
+          <form class="inline" method="post" action="/company/members/{{.UserID}}/remove" data-confirm="Remove this user from the company? Their account will be deactivated. Records they created are kept.">
+            <input type="hidden" name="csrf" value="{{$.CSRF}}">
+            <button class="btn small danger" type="submit">Remove</button>
+          </form>
+          {{end}}
+        </td>
+        {{end}}
+      </tr>
+    {{end}}
+    </tbody>
+  </table></div>
+  {{else}}
+  <div class="empty">No users yet. Invite your team to get started.</div>
+  {{end}}
+</section>
+
+<section class="card" aria-labelledby="settings-h">
+  <h2 id="settings-h">Settings</h2>
+  <div class="grid-3">
+    <div><h3>Security</h3><p class="muted small">Password, two-factor authentication and active sessions.</p><a href="/auth/security">Security settings</a></div>
+    <div><h3>Notifications</h3><p class="muted small">Profile, language and notification preferences.</p><a href="/auth">Account settings</a></div>
+    {{if .CanBilling}}<div><h3>Billing</h3><p class="muted small">Subscription, payment method and invoices.</p><a href="/billing">Billing</a></div>{{end}}
+  </div>
+</section>
+{{template "foot" .}}{{end}}

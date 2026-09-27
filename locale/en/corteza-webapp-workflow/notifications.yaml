@@ -22,6 +22,6 @@ unmuted: Notifications unmuted
 markAllAsReadError: Error marking all notifications as read
 markAllAsUnreadError: Error marking all notifications as unread
 notificationDeletedError: Error deleting notification
-namespaceNotFound: Namespace not found
+namespaceNotFound: Workspace not found
 pageNotFound: Page not found
 recordNotFound: Record not found

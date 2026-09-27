@@ -456,8 +456,7 @@ export default {
 
     visibilityDocumentationURL () {
       // eslint-disable-next-line no-undef
-      const [year, month] = VERSION.split('.')
-      return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/integrator-guide/compose-configuration/page-layouts.html#visibility-condition`
+      return '/support'
     },
 
     currentRoles: {

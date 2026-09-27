@@ -39,8 +39,8 @@ filter:
   title: Filter Workflows
   apply: Apply Filter
   namespace:
-    label: Namespace
-    placeholder: Select namespace(s)
+    label: Workspace
+    placeholder: Select workspace(s)
   module:
     label: Module
     placeholder: Select module(s)

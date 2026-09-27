@@ -1,37 +1,25 @@
 # Security
 
-At Corteza, the security of our products and services is important to us.
-All of our source code repositories are managed through GitHub organisations.
-Here is the list of [Corteza Repositories](https://github.com/orgs/cortezaproject/repositories)
+Culp Industries takes the security of CulpOS seriously.
 
-If you believe you have found a security vulnerability in any Corteza repository, please report it to us as described below.
+## Reporting security issues
 
-## Reporting Security Issues
+**Please do not report security vulnerabilities through public issues.**
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+Report them privately to the security contact configured for your deployment
+(the `SUPPORT_EMAIL` address shown on the CulpOS Support page).
 
-Instead, please send email to [info@cortezaproject.org](mailto:info@cortezaproject.org).
+Please include as much of the following as you can:
 
-You should receive a response within 24 business hours. If for some reason you do not,
-please follow up via email to ensure we received your original message. 
+* type of issue,
+* affected component and path,
+* configuration required to reproduce the issue,
+* step-by-step instructions to reproduce,
+* proof-of-concept (if available),
+* impact of the issue.
 
-Please include the requested information listed below (as much as you can provide)
-to help us better understand the nature and scope of the possible issue:
+## Handling of secrets
 
-* Type of issue,
-* full paths of source file(s) related to the manifestation of the issue,
-* the location of the affected source code (tag/branch/commit or direct URL),
-* any special configuration required to reproduce the issue,
-* step-by-step instructions to reproduce the issue,
-* proof-of-concept or exploit code (if possible),
-* impact of the issue, including how an attacker might exploit the issue.
-
-This information will help us triage your report more quickly.
-
-## Preferred Languages
-
-We prefer all communications to be in English.
-
-## Policy
-
-[Corteza Privacy Policy](https://cortezaproject.org/privacy-policy/)
+Never commit credentials. Stripe keys, webhook secrets, SMTP passwords,
+database credentials and the Founder bootstrap password are provided through
+deployment environment variables / secret storage only. See `.env.example`.

@@ -1,11 +1,11 @@
 manage-view:
-  label: Manage namespaces
+  label: Manage workspaces
 application:
   label: Enable on application list
 clickOpen: Click to open
 import:
   buttonLabel: Import
-  title: Import namespace
+  title: Import workspace
   uploadFileLabel: Upload the file you want to import (.zip format)
   uploadFilePlaceholder: Click or drop file here to upload (.zip format)
   back: Back
@@ -13,59 +13,59 @@ import:
   slug:
     label: Short name *
 description:
-  label: Namespace description
-  placeholder: Enter namespace description
-disabled: Namespace is disabled
-edit: Edit namespace
-clone: Clone namespace
+  label: Workspace description
+  placeholder: Enter workspace description
+disabled: Workspace is disabled
+edit: Edit workspace
+clone: Clone workspace
 cloneSuffix: copy
 cloneWarning:
   wfInclusion: Workflows and other automation are not cloned. Use the workflow editor interface to clone the ones you need.
-create: Create namespace
+create: Create workspace
 export: Export
 enabled:
-  label: Enable namespace
+  label: Enable workspace
 icon:
   label: Icon
-  placeholder: Choose an image for namespace icon or drop it here...
+  placeholder: Choose an image for workspace icon or drop it here...
 label:
   permissions: Permissions
 logo:
   label: Logo
-  placeholder: Choose an image for namespace logo or drop it here...
+  placeholder: Choose an image for workspace logo or drop it here...
   show: Show logo
   preview: Preview
   reset: Reset
 name:
-  label: Full namespace name *
-  placeholder: Enter namespace name
-noResults: No namespaces found
-searchPlaceholder: Search namespaces
-setPermissions: Set namespace permissions
+  label: Full workspace name *
+  placeholder: Enter workspace name
+noResults: No workspaces found
+searchPlaceholder: Search workspaces
+setPermissions: Set workspace permissions
 slug:
   description: The short name will be used in the URL
   label: Short name
-  placeholder: Enter a short name for the namespace
+  placeholder: Enter a short name for the workspace
   invalid-handle-characters: Should be at least 2 characters long. Can contain only letters, numbers, underscores and dots. Must end with letter or number
 subtitle:
   label: Subtitle
-  placeholder: Enter namespace subtitle
-title: Namespaces
+  placeholder: Enter workspace subtitle
+title: Workspaces
 tooltip:
-  translations: Namespace translations
-visit: View namespace
-configure: Configure namespace
+  translations: Workspace translations
+visit: View workspace
+configure: Configure workspace
 
 manage:
-  title: Manage namespaces
-  list-view: Back to namespace list
+  title: Manage workspaces
+  list-view: Back to workspace list
   delete: Delete
 
   disabled: Disabled
 
   toolbar:
     buttons:
-      create: New Namespace
+      create: New Workspace
       permissions: Permissions
 
   table:
@@ -76,5 +76,5 @@ manage:
       changedAt: Last change
 
 sidebar:
-  configure: Namespace pages
-  hide: Hide sidebar on namespace public pages
+  configure: Workspace pages
+  hide: Hide sidebar on workspace public pages

@@ -88,21 +88,21 @@ module:
       error: Could not dismiss alteration
 namespace:
   application:
-    createFailed: Could not create namespace application
-    fetchFailed: Could not fetch namespace application
-    saveFailed: Could not save namespace application
+    createFailed: Could not create workspace application
+    fetchFailed: Could not fetch workspace application
+    saveFailed: Could not save workspace application
   assetUploadFailed: Could not upload attached assets
-  createFailed: Could not create namespace
-  deleted: Namespace deleted
-  deleteFailed: Could not delete this namespace
-  disabled: Namespace disabled - redirecting
-  saveFailed: Could not save this namespace
-  saved: Namespace saved
-  cloned: Namespace cloned
-  cloneFailed: Could not clone this namespace
-  imported: Namespace imported
-  importFailed: Namespace failed to import
-  loadFailed: Could not load namespace
+  createFailed: Could not create workspace
+  deleted: Workspace deleted
+  deleteFailed: Could not delete this workspace
+  disabled: Workspace disabled - redirecting
+  saveFailed: Could not save this workspace
+  saved: Workspace saved
+  cloned: Workspace cloned
+  cloneFailed: Could not clone this workspace
+  imported: Workspace imported
+  importFailed: Workspace failed to import
+  loadFailed: Could not load workspace
 page:
   block:
     calendar:

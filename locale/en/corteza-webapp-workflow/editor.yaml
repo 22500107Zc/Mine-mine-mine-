@@ -21,8 +21,8 @@ issues: Issues
 reset: Reset
 'run-as': "Run as:"
 'run-workflow': Run Workflow
-'required-namespace': Namespace required
-'required-namespace-and-module': Namespace and Module required
+'required-namespace': Workspace required
+'required-namespace-and-module': Workspace and Module required
 save: Save
 saving: Saving
 spinning: Spinning

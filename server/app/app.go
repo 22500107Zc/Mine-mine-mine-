@@ -7,6 +7,7 @@ import (
 	"github.com/cortezaproject/corteza/server/auth/settings"
 	"github.com/cortezaproject/corteza/server/pkg/logger"
 	"github.com/cortezaproject/corteza/server/pkg/options"
+	"github.com/cortezaproject/corteza/server/saas"
 	"github.com/cortezaproject/corteza/server/store"
 	"github.com/cortezaproject/corteza/server/system/types"
 	"github.com/go-chi/chi/v5"
@@ -38,6 +39,8 @@ type (
 		WellKnownOpenIDConfiguration() http.HandlerFunc
 		UpdateSettings(*settings.Settings)
 		Watch(ctx context.Context)
+		SessionUserID(r *http.Request) uint64
+		SetAccessGuard(fn func(ctx context.Context, userID uint64) string)
 	}
 
 	apigwServicer interface {
@@ -72,6 +75,9 @@ type (
 
 		AuthService  authServicer
 		ApigwService apigwServicer
+
+		// CulpOS commercial layer (companies, subscriptions, Founder console)
+		SaaS *saas.Service
 
 		systemEntitiesInitialized bool
 	}

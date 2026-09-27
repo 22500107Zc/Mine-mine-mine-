@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'Admin Area',
+  appFlavour: 'Configuration Studio',
   appName: 'admin',
-  appLabel: 'Corteza Admin',
+  appLabel: 'CulpOS | Configuration Studio',
   theme: 'corteza-base',
   packageAlias: 'corteza-webapp-admin',
 })

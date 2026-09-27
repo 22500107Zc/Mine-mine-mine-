@@ -6,7 +6,7 @@ data-types:
     description: Your contact information, names, surname, nickname, profile picture
   application-data:
     title: Application Data
-    description: Your personal data stored in Corteza
+    description: Your personal data stored in CulpOS
 
 application:
   title: Application Data

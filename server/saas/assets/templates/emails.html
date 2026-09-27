@@ -1,0 +1,68 @@
+{{define "email-head"}}<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{.Brand.ProductName}}</title></head>
+<body style="margin:0;padding:0;background:#F4F6F9;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif;color:#0E1A2B;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid #DCE2EA;border-radius:10px;">
+<tr><td style="padding:20px 28px;border-bottom:3px solid #D4952B;background:#0E1A2B;border-radius:10px 10px 0 0;">
+<img src="{{.LogoURL}}" alt="{{.Brand.ProductName}}" height="32" style="display:block;height:32px;border:0;">
+</td></tr>
+<tr><td style="padding:28px;font-size:15px;line-height:1.55;">
+{{end}}
+
+{{define "email-button"}}<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0;"><tr><td style="background:#1F4E8C;border-radius:8px;"><a href="{{.URL}}" style="display:inline-block;padding:12px 20px;color:#FFFFFF;font-weight:700;text-decoration:none;">{{.Label}}</a></td></tr></table>{{end}}
+
+{{define "email-foot"}}
+</td></tr>
+<tr><td style="padding:16px 28px;border-top:1px solid #DCE2EA;font-size:12px;color:#5B6778;">
+© {{.Year}} {{.Brand.CompanyName}} · {{.Brand.ProductName}} — {{.Brand.ProductDescription}}<br>
+{{if .Brand.SupportEmail}}Questions? Contact <a href="mailto:{{.Brand.SupportEmail}}" style="color:#1F4E8C;">{{.Brand.SupportEmail}}</a><br>{{end}}
+This is a transactional message about your {{.Brand.ProductName}} account.
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>
+{{end}}
+
+{{define "email-welcome"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Welcome to {{.Brand.ProductName}}</h1>
+<p>Hello {{.Name}},</p>
+<p>Your subscription is confirmed and the {{.Brand.ProductName}} workspace for <strong>{{.Company}}</strong> is ready.</p>
+<p>Sign in with the email address and password you chose during signup. From Company Admin you can invite your team — everyone is included in your company subscription.</p>
+{{template "email-button" (dict "URL" .URL "Label" (printf "Open %s" .Brand.ProductName))}}
+{{template "email-foot" .}}{{end}}
+
+{{define "email-invite"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">You’re invited to {{.Company}}</h1>
+<p>Hello{{if .Name}} {{.Name}}{{end}},</p>
+<p>{{if .Inviter}}{{.Inviter}} has invited you{{else}}You have been invited{{end}} to join <strong>{{.Company}}</strong> on {{.Brand.ProductName}} as <strong>{{.Role}}</strong>.</p>
+<p>Accept the invitation to set your password and sign in.</p>
+{{template "email-button" (dict "URL" .URL "Label" "Accept Invitation")}}
+<p style="font-size:13px;color:#5B6778;">If the button does not work, copy this link into your browser:<br><span style="word-break:break-all;">{{.URL}}</span></p>
+{{template "email-foot" .}}{{end}}
+
+{{define "email-payment-success"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Payment received</h1>
+<p>We received your payment of <strong>{{.Amount}}</strong> for the {{.Brand.ProductName}} subscription of <strong>{{.Company}}</strong>. Thank you.</p>
+{{template "email-button" (dict "URL" .URL "Label" "View Billing")}}
+{{template "email-foot" .}}{{end}}
+
+{{define "email-payment-failed"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your payment could not be processed</h1>
+<p>We were unable to collect <strong>{{.Amount}}</strong> for the {{.Brand.ProductName}} subscription of <strong>{{.Company}}</strong>.</p>
+<p>Please update your payment method to keep your workspace active. Your data is safe and has not been changed.</p>
+{{template "email-button" (dict "URL" .URL "Label" "Update Payment Method")}}
+{{template "email-foot" .}}{{end}}
+
+{{define "email-subscription-canceled"}}{{template "email-head" .}}
+{{if .Ended}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your subscription has ended</h1>
+<p>The {{.Brand.ProductName}} subscription for <strong>{{.Company}}</strong> has ended. Operational access is paused; your company data has been retained.</p>
+<p>You can restore access at any time by subscribing again from Billing.</p>
+{{else}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your subscription is set to cancel</h1>
+<p>The {{.Brand.ProductName}} subscription for <strong>{{.Company}}</strong> will end{{if .EndDate}} on <strong>{{.EndDate}}</strong>{{end}}. You keep full access until then.</p>
+<p>Changed your mind? You can keep your subscription from Billing.</p>
+{{end}}
+{{template "email-button" (dict "URL" .URL "Label" "Open Billing")}}
+{{template "email-foot" .}}{{end}}

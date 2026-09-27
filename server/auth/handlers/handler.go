@@ -134,6 +134,11 @@ type (
 		Settings           *settings.Settings
 		SamlSPService      *saml.SamlSPService
 		Attachment         service.AttachmentService
+
+		// AccessGuard (optional) returns a path the user must be sent to
+		// instead of entering the application (e.g. subscription billing).
+		// Evaluated server-side before any access token is issued.
+		AccessGuard func(ctx context.Context, userID uint64) string
 	}
 
 	handlerFn func(req *request.AuthReq) error
@@ -168,6 +173,29 @@ const (
 )
 
 var (
+	// browser titles ("CulpOS | <title>") for server-rendered account pages
+	pageTitles = map[string]string{
+		TmplLogin:                    "Sign In",
+		TmplLogout:                   "Signed Out",
+		TmplSignup:                   "Sign Up",
+		TmplRequestPasswordReset:     "Forgot Password",
+		TmplPasswordResetRequested:   "Forgot Password",
+		TmplResetPassword:            "Reset Password",
+		TmplChangePassword:           "Change Password",
+		TmplCreatePassword:           "Create Password",
+		TmplInvite:                   "Accept Invitation",
+		TmplProfile:                  "Account",
+		TmplSecurity:                 "Security",
+		TmplSessions:                 "Sessions",
+		TmplAuthorizedClients:        "Authorized Applications",
+		TmplPendingEmailConfirmation: "Confirm Email",
+		TmplMfa:                      "Verification",
+		TmplMfaTotp:                  "Two-Factor Authentication",
+		TmplMfaTotpDisable:           "Two-Factor Authentication",
+		TmplOAuth2AuthorizeClient:    "Authorize",
+		TmplInternalError:            "Error",
+	}
+
 	// wrapper around time.Now() that will aid service testing
 	now = func() *time.Time {
 		c := time.Now()
@@ -349,6 +377,9 @@ func (h *AuthHandlers) handle(fn handlerFn) http.HandlerFunc {
 func (h *AuthHandlers) enrichTmplData(req *request.AuthReq) interface{} {
 	d := req.Data
 	d["theme"] = "light"
+	if t, ok := pageTitles[req.Template]; ok {
+		d["pageTitle"] = t
+	}
 	if req.AuthUser != nil {
 		maskEmail := service.CurrentSettings.Privacy.Mask.Email
 		maskName := service.CurrentSettings.Privacy.Mask.Name

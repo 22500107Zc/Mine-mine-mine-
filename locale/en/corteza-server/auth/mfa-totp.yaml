@@ -1,11 +1,11 @@
 template:
   title: Configure two-factor authentication with TOTP
   enforced: |
-    TOTP multi factor authentication is enforced by Corteza administrator.
+    TOTP multi factor authentication is enforced by CulpOS administrator.
     Please configure it right away.
 
   instructions: |
-    Corteza uses time based one time passwords (TOTP) as one of the underlying technologies for two-factor authentication. Use one of the applications listed below and type in the secret or scan the QR code.
+    CulpOS uses time based one time passwords (TOTP) as one of the underlying technologies for two-factor authentication. Use one of the applications listed below and type in the secret or scan the QR code.
     <br />
     <br />
     This will enable additional security for your account.

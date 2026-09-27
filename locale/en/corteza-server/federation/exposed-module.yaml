@@ -1,6 +1,6 @@
 errors:
   composeModuleNotFound: compose module not found
-  composeNamespaceNotFound: compose namespace not found
+  composeNamespaceNotFound: compose workspace not found
   invalidID: invalid ID
   nodeNotFound: node does not exist
   notAllowedToCreate: not allowed to create modules

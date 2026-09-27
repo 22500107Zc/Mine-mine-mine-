@@ -9,7 +9,7 @@ label: Label
 module: Module
 name-required: Name *
 name: Name
-namespace: Namespace
+namespace: Workspace
 new:
   label: New label
   name: New name

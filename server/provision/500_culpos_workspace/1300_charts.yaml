@@ -1,0 +1,88 @@
+# CulpOS workspace reports
+namespace: culpos-workspace-template
+charts:
+  CasesByStatus:
+    name: Cases by Status
+    config:
+      reports:
+      - dimensions:
+        - field: Status
+          modifier: (no grouping / buckets)
+        filter: ''
+        metrics:
+        - backgroundColor: '#1F4E8C'
+          field: count
+          fixTooltips: true
+          type: pie
+          label: Count
+        module: Case
+        renderer: {}
+      colorScheme: tableau.Tableau10
+  TasksByStatus:
+    name: Tasks by Status
+    config:
+      reports:
+      - dimensions:
+        - field: Status
+          modifier: (no grouping / buckets)
+        filter: ''
+        metrics:
+        - backgroundColor: '#1F4E8C'
+          field: count
+          fixTooltips: true
+          type: bar
+          label: Count
+        module: Task
+        renderer: {}
+      colorScheme: tableau.Tableau10
+  CasesByPriority:
+    name: Cases by Priority
+    config:
+      reports:
+      - dimensions:
+        - field: Priority
+          modifier: (no grouping / buckets)
+        filter: ''
+        metrics:
+        - backgroundColor: '#1F4E8C'
+          field: count
+          fixTooltips: true
+          type: bar
+          label: Count
+        module: Case
+        renderer: {}
+      colorScheme: tableau.Tableau10
+  CustomersByStatus:
+    name: Customers by Status
+    config:
+      reports:
+      - dimensions:
+        - field: Status
+          modifier: (no grouping / buckets)
+        filter: ''
+        metrics:
+        - backgroundColor: '#1F4E8C'
+          field: count
+          fixTooltips: true
+          type: doughnut
+          label: Count
+        module: Customer
+        renderer: {}
+      colorScheme: tableau.Tableau10
+  ApprovalsByStatus:
+    name: Approvals by Status
+    config:
+      reports:
+      - dimensions:
+        - field: Status
+          modifier: (no grouping / buckets)
+        filter: ''
+        metrics:
+        - backgroundColor: '#1F4E8C'
+          field: count
+          fixTooltips: true
+          type: pie
+          label: Count
+        module: Approval
+        renderer: {}
+      colorScheme: tableau.Tableau10

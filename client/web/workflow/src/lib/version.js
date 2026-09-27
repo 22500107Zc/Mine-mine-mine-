@@ -15,12 +15,12 @@ export function parseVersion (version) {
 }
 
 /**
- * Generates a documentation URL for the given path using the current version
+ * Returns the help URL for the given documentation topic
  * @param {string} path - Documentation path (e.g., "integrator-guide/automation/workflows/index.html")
  * @returns {string} Full documentation URL
  */
+// eslint-disable-next-line no-unused-vars
 export function getDocumentationURL (path) {
-  // eslint-disable-next-line no-undef
-  const { year, month } = parseVersion(VERSION)
-  return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/${path}`
+  // CulpOS: product help is provided through the support page
+  return '/support'
 }

@@ -94,7 +94,7 @@ editor:
         label: Default table or container name
         placeholder: compose_record
         description: |
-          Identifier can contain placeholders like {{module}} (replaced with module handle) and/or {{namespace}} (replace with namespace handle).
+          Identifier can contain placeholders like {{module}} (replaced with module handle) and/or {{namespace}} (replace with workspace handle).
           When set it is used as a default for modules without configure ident.
 
       type:

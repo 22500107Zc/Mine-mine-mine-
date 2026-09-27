@@ -249,7 +249,7 @@ system:
   id: Record ID
   ID: Record ID
   moduleID: Module ID
-  namespaceID: Namespace ID
+  namespaceID: Workspace ID
   revision: Record revision
   meta: Meta data
   recordID: Record ID

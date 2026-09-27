@@ -1,0 +1,231 @@
+{{define "founder-companies"}}{{template "head" .}}
+<h1>Companies</h1>
+<form class="toolbar" method="get" action="/founder/companies" role="search">
+  <label for="q" style="position:absolute;left:-9999px">Search companies</label>
+  <input id="q" type="search" name="q" value="{{.Query}}" placeholder="Search name, email, Stripe ID">
+  <label for="status" style="position:absolute;left:-9999px">Status</label>
+  <select id="status" name="status">
+    <option value="">All statuses</option>
+    {{range .Statuses}}<option value="{{.}}" {{if eq . $.Status}}selected{{end}}>{{.}}</option>{{end}}
+  </select>
+  <button class="btn secondary" type="submit">Filter</button>
+</form>
+<section class="card">{{template "founder-companies-table" .Companies}}</section>
+<div class="toolbar">
+  {{if gt .Page 1}}<a class="btn secondary" href="/founder/companies?q={{.Query}}&status={{.Status}}&page={{sub .Page 1}}">Previous</a>{{end}}
+  {{if .HasMore}}<a class="btn secondary" href="/founder/companies?q={{.Query}}&status={{.Status}}&page={{add .Page 1}}">Next</a>{{end}}
+</div>
+{{template "foot" .}}{{end}}
+
+{{define "founder-company"}}{{template "head" .}}
+<p><a href="/founder/companies">← Companies</a></p>
+<h1>{{.Company.Name}}</h1>
+<p class="lead"><span class="pill {{companyPill .Company.Status}}">{{.Company.Status}}</span> <span class="pill {{subPill .Company.SubscriptionStatus}}">{{.Company.SubscriptionStatus.Label}}</span> · Access: {{.AccessLabel}}</p>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="c-h">
+    <h2 id="c-h">Company</h2>
+    <dl class="kv">
+      <dt>Company ID</dt><dd class="mono">{{.Company.ID}}</dd>
+      <dt>Slug</dt><dd class="mono">{{.Company.Slug}}</dd>
+      <dt>Owner</dt><dd>{{orDash .Company.OwnerName}}</dd>
+      <dt>Owner Email</dt><dd>{{.Company.OwnerEmail}}</dd>
+      <dt>Created</dt><dd>{{datetime .Company.CreatedAt}}</dd>
+      <dt>Last Activity</dt><dd>{{datetime .Company.LastActivityAt}}</dd>
+      <dt>Provisioning</dt><dd>{{.Company.ProvisioningStatus}}{{if .Company.ProvisionedAt}} · {{datetime .Company.ProvisionedAt}}{{end}}{{if .Company.ProvisioningError}}<div class="alert error small" style="margin-top:6px">{{.Company.ProvisioningError}}</div>{{end}}</dd>
+      <dt>Workspace</dt><dd>{{if .Company.NamespaceID}}<span class="mono">{{.Company.NamespaceID}}</span>{{else}}—{{end}}</dd>
+      <dt>Users</dt><dd>{{.Company.UserCount}}</dd>
+    </dl>
+  </section>
+  <section class="card" aria-labelledby="b-h" id="billing">
+    <h2 id="b-h">Subscription &amp; Billing</h2>
+    <dl class="kv">
+      <dt>Plan</dt><dd>{{brand.ProductName}} · {{brand.PricePerInterval}}</dd>
+      <dt>Status</dt><dd><span class="pill {{subPill .Company.SubscriptionStatus}}">{{.Company.SubscriptionStatus.Label}}</span></dd>
+      <dt>Period</dt><dd>{{date .Company.BillingPeriodStart}} → {{date .Company.BillingPeriodEnd}}</dd>
+      <dt>Cancel at Period End</dt><dd>{{if .Company.CancelAtPeriodEnd}}Yes{{else}}No{{end}}</dd>
+      <dt>Canceled At</dt><dd>{{datetime .Company.CanceledAt}}</dd>
+      <dt>Stripe Customer ID</dt><dd class="mono">{{orDash .Company.StripeCustomerID}}</dd>
+      <dt>Stripe Subscription ID</dt><dd class="mono">{{orDash .Company.StripeSubscriptionID}}</dd>
+      <dt>Stripe Price ID</dt><dd class="mono">{{orDash .Company.StripePriceID}}</dd>
+      <dt>Payment Method</dt><dd>{{orDash .Company.PaymentMethodSummary}}</dd>
+    </dl>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="a-h">
+  <h2 id="a-h">Manage Company</h2>
+  <div class="toolbar">
+    {{if eq .Company.Status "disabled"}}
+    <form class="inline" method="post" action="/founder/companies/{{.Company.ID}}/enable">
+      <input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn" type="submit">Enable Company</button>
+    </form>
+    {{else}}
+    <form class="inline" method="post" action="/founder/companies/{{.Company.ID}}/disable" data-confirm="Disable access for every user of this company? Billing is not changed and no data is deleted.">
+      <input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn danger" type="submit">Disable Company</button>
+    </form>
+    {{end}}
+    {{if and (ne .Company.ProvisioningStatus "provisioned") (eq .Company.SubscriptionStatus "active")}}
+    <form class="inline" method="post" action="/founder/companies/{{.Company.ID}}/provision">
+      <input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn secondary" type="submit">Retry Provisioning</button>
+    </form>
+    {{end}}
+    {{if .Company.StripeSubscriptionID}}
+    <form class="inline" method="post" action="/founder/companies/{{.Company.ID}}/sync">
+      <input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn secondary" type="submit">Refresh from Stripe</button>
+    </form>
+    {{end}}
+    <a class="btn secondary" href="/founder/audit?company={{.Company.ID}}">View Audit Log</a>
+  </div>
+  <p class="muted small">Disabling a company blocks access for all its users immediately with a neutral message. It does not cancel the Stripe subscription or delete data.</p>
+</section>
+
+<section class="card" id="users" aria-labelledby="u-h">
+  <h2 id="u-h">Users</h2>
+  {{template "founder-users-table" .}}
+</section>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="p-h">
+    <h2 id="p-h">Payment History</h2>
+    {{if .Payments}}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Invoice</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+    {{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td class="mono">{{.ID}}</td><td>{{money .AmountCents}}</td><td><span class="pill {{if eq .Status "paid"}}ok{{else}}bad{{end}}">{{.Status}}</span></td></tr>{{end}}
+    </tbody></table></div>{{else}}<div class="empty">No payments recorded.</div>{{end}}
+  </section>
+  <section class="card" aria-labelledby="e-h">
+    <h2 id="e-h">Subscription Events</h2>
+    {{template "events-table" .Events}}
+  </section>
+</div>
+
+<section class="card" aria-labelledby="au-h">
+  <h2 id="au-h">Audit Log</h2>
+  {{template "audit-table" .Audit}}
+</section>
+{{template "foot" .}}{{end}}
+
+{{define "events-table"}}
+{{if .}}<div class="table-wrap"><table><thead><tr><th>Received</th><th>Type</th><th>Status</th><th>Event</th></tr></thead><tbody>
+{{range .}}<tr><td>{{datetime .ReceivedAt}}</td><td class="mono">{{.Type}}</td><td><span class="pill {{if eq .Status "processed"}}ok{{else if eq .Status "failed"}}bad{{else}}warn{{end}}">{{.Status}}</span>{{if .Error}}<div class="small muted">{{.Error}}</div>{{end}}</td><td class="mono">{{.ID}}</td></tr>{{end}}
+</tbody></table></div>{{else}}<div class="empty">No webhook events recorded.</div>{{end}}
+{{end}}
+
+{{define "founder-users-table"}}
+{{if .Users}}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody>
+{{range .Users}}<tr>
+  <td>{{orDash .Name}}</td><td>{{.Email}}</td>
+  <td>{{if .CompanyID}}<a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a>{{else}}—{{end}}</td>
+  <td>{{.Role.Label}}</td>
+  <td>{{if .Suspended}}<span class="pill warn">Disabled / Pending</span>{{else}}<span class="pill ok">Active</span>{{end}}</td>
+  <td>{{date .CreatedAt}}</td>
+  <td class="actions">
+    {{if .Suspended}}
+    <form class="inline" method="post" action="/founder/users/{{.UserID}}/enable"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small secondary" type="submit">Enable</button></form>
+    {{else}}
+    <form class="inline" method="post" action="/founder/users/{{.UserID}}/disable" data-confirm="Disable this user and sign them out everywhere?"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small danger" type="submit">Disable</button></form>
+    {{end}}
+    <form class="inline" method="post" action="/founder/users/{{.UserID}}/reset" data-confirm="Sign this user out everywhere and email them a password reset link?"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small secondary" type="submit">Reset Access</button></form>
+  </td>
+</tr>{{end}}
+</tbody></table></div>{{else}}<div class="empty">No users.</div>{{end}}
+{{end}}
+
+{{define "founder-users"}}{{template "head" .}}
+<h1>Users</h1>
+<p class="lead">All company users on the platform.</p>
+<section class="card">{{template "founder-users-table" .}}</section>
+<div class="toolbar">
+  {{if gt .Page 1}}<a class="btn secondary" href="/founder/users?page={{sub .Page 1}}">Previous</a>{{end}}
+  {{if .HasMore}}<a class="btn secondary" href="/founder/users?page={{add .Page 1}}">Next</a>{{end}}
+</div>
+{{template "foot" .}}{{end}}
+
+{{define "founder-billing"}}{{template "head" .}}
+<h1>Billing</h1>
+<div class="metrics">
+  <div class="metric highlight"><div class="label">MRR</div><div class="value">{{money .M.MRRCents}}</div></div>
+  <div class="metric"><div class="label">Active</div><div class="value">{{.M.ActiveSubscriptions}}</div></div>
+  <div class="metric"><div class="label">Past Due</div><div class="value">{{.M.PastDueSubscriptions}}</div></div>
+  <div class="metric"><div class="label">Unpaid</div><div class="value">{{.M.UnpaidSubscriptions}}</div></div>
+  <div class="metric"><div class="label">Canceled</div><div class="value">{{.M.CanceledSubscriptions}}</div></div>
+</div>
+<div class="grid-2">
+  <section class="card"><h2>Recent Payments</h2>
+    {{if .Payments}}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Company</th><th>Amount</th></tr></thead><tbody>{{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td><a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a></td><td>{{money .AmountCents}}</td></tr>{{end}}</tbody></table></div>{{else}}<div class="empty">No payments recorded yet.</div>{{end}}
+  </section>
+  <section class="card"><h2>Failed Payments</h2>
+    {{if .Failed}}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Company</th><th>Amount</th></tr></thead><tbody>{{range .Failed}}<tr><td>{{date .CreatedAt}}</td><td><a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a></td><td>{{money .AmountCents}}</td></tr>{{end}}</tbody></table></div>{{else}}<div class="empty">No failed payments.</div>{{end}}
+  </section>
+</div>
+<section class="card"><h2>Past-Due &amp; Unpaid Accounts</h2>{{template "founder-companies-table" .AtRisk}}</section>
+<section class="card"><h2>Webhook Events</h2>{{template "events-table" .Events}}</section>
+{{template "foot" .}}{{end}}
+
+{{define "founder-audit"}}{{template "head" .}}
+<h1>Audit Log</h1>
+<form class="toolbar" method="get" action="/founder/audit">
+  <label for="action" style="position:absolute;left:-9999px">Action prefix</label>
+  <input id="action" type="search" name="action" value="{{.Action}}" placeholder="Filter by action, e.g. founder. or company.">
+  {{if .CompanyID}}<input type="hidden" name="company" value="{{.CompanyID}}">{{end}}
+  <button class="btn secondary" type="submit">Filter</button>
+  {{if .CompanyID}}<a href="/founder/audit">Clear company filter</a>{{end}}
+</form>
+<section class="card">{{template "audit-table" .Audit}}</section>
+<div class="toolbar">
+  {{if gt .Page 1}}<a class="btn secondary" href="/founder/audit?action={{.Action}}&company={{.CompanyID}}&page={{sub .Page 1}}">Previous</a>{{end}}
+  {{if .HasMore}}<a class="btn secondary" href="/founder/audit?action={{.Action}}&company={{.CompanyID}}&page={{add .Page 1}}">Next</a>{{end}}
+</div>
+{{template "foot" .}}{{end}}
+
+{{define "founder-system"}}{{template "head" .}}
+<h1>System</h1>
+<div class="grid-2">
+  <section class="card"><h2>Health</h2>
+    <dl class="kv">
+      <dt>Application</dt><dd><span class="pill ok">Operational</span> {{.Version}}</dd>
+      <dt>Database</dt><dd>{{if .DBOK}}<span class="pill ok">Connected</span>{{else}}<span class="pill bad">Unavailable</span>{{end}}</dd>
+      <dt>Stripe</dt><dd>{{if .StripeConfigured}}<span class="pill ok">Configured</span>{{else}}<span class="pill bad">Missing keys</span>{{end}}</dd>
+      <dt>Last Webhook</dt><dd>{{datetime .LastWebhook}}</dd>
+      <dt>Failed Webhooks</dt><dd>{{.WebhookFailures}}</dd>
+      <dt>Email</dt><dd>{{if .MailConfigured}}<span class="pill ok">Configured</span>{{else}}<span class="pill warn">Not configured</span>{{end}}</dd>
+    </dl>
+  </section>
+  <section class="card"><h2>Platform Configuration</h2>
+    <dl class="kv">
+      <dt>Product</dt><dd>{{brand.ProductName}} · {{brand.ProductDescription}}</dd>
+      <dt>Company</dt><dd>{{brand.CompanyName}}</dd>
+      <dt>Plan</dt><dd>{{brand.PricePerInterval}}</dd>
+      <dt>Public URL</dt><dd class="mono">{{orDash brand.PublicAppURL}}</dd>
+      <dt>Support Email</dt><dd>{{orDash brand.SupportEmail}}</dd>
+    </dl>
+    <p class="muted small">Platform configuration is managed through deployment environment variables. Advanced workspace, data, form and workflow configuration is available in the <a href="/admin/">Configuration Studio</a> to platform administrator accounts.</p>
+  </section>
+</div>
+<section class="card"><h2>Recent Application Errors</h2>
+  {{template "audit-table" .Errors}}
+</section>
+<section class="card"><h2>Webhook Events</h2>{{template "events-table" .Events}}</section>
+{{template "foot" .}}{{end}}
+
+{{define "founder-account"}}{{template "head" .}}
+<h1>Founder Account</h1>
+<div class="grid-2">
+  <section class="card"><h2>Account</h2>
+    <dl class="kv">
+      <dt>Username</dt><dd>{{.Founder.Username}}</dd>
+      <dt>Role</dt><dd>Founder (platform)</dd>
+      <dt>Last Sign In</dt><dd>{{datetime .Founder.LastLoginAt}}</dd>
+      <dt>Session Expires</dt><dd>{{datetime .Session.ExpiresAt}} (or after inactivity)</dd>
+    </dl>
+  </section>
+  <section class="card"><h2>Change Password</h2>
+    {{if .Error}}<div class="alert error" role="alert">{{.Error}}</div>{{end}}
+    <form method="post" action="/founder/account/password">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <div class="field"><label for="cur">Current Password</label><input id="cur" type="password" name="current" required autocomplete="current-password"></div>
+      <div class="field"><label for="new">New Password</label><input id="new" type="password" name="next" required minlength="12" autocomplete="new-password"><div class="hint">At least 12 characters. All Founder sessions are signed out after the change.</div></div>
+      <button class="btn" type="submit">Change Password</button>
+    </form>
+  </section>
+</div>
+{{template "foot" .}}{{end}}

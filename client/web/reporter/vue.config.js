@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'Reporter',
+  appFlavour: 'Reports',
   appName: 'reporter',
-  appLabel: 'Corteza Reporter Editor',
+  appLabel: 'CulpOS | Reports',
   theme: 'corteza-base',
   packageAlias: 'corteza-webapp-reporter',
 })

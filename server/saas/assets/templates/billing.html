@@ -1,0 +1,73 @@
+{{define "billing"}}{{template "head" .}}
+<h1>Billing</h1>
+<p class="lead">{{.Company.Name}}</p>
+
+{{if .Decision.Warning}}<div class="alert warning" role="status">{{.Decision.Warning}}</div>{{end}}
+{{if eq .Decision.Reason "payment-required" "not-provisioned"}}<div class="alert warning" role="status">Your subscription is not active yet. Complete payment to activate your {{brand.ProductName}} workspace.</div>{{end}}
+{{if eq .Decision.Reason "unpaid"}}<div class="alert error" role="alert">Your subscription is unpaid. Access to your workspace is paused until payment is completed. Your data is safe.</div>{{end}}
+{{if eq .Decision.Reason "canceled"}}<div class="alert error" role="alert">Your subscription has ended. Your data is retained. Subscribe again to restore access.</div>{{end}}
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="plan-h">
+    <h2 id="plan-h">Plan</h2>
+    <div class="plan" style="margin-top:0">
+      <div class="name">{{brand.ProductName}}</div>
+      <div class="price">{{brand.PriceDisplay}}<span>/{{brand.BillingInterval}}</span></div>
+      <div class="muted small">One subscription for your whole company.</div>
+    </div>
+    <dl class="kv">
+      <dt>Subscription Status</dt><dd><span class="pill {{subPill .Company.SubscriptionStatus}}">{{.Company.SubscriptionStatus.Label}}</span>{{if .Company.CancelAtPeriodEnd}} <span class="pill warn">Cancels at period end</span>{{end}}</dd>
+      <dt>{{if .Company.CancelAtPeriodEnd}}Access Until{{else}}Next Billing Date{{end}}</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>
+      <dt>Current Period Started</dt><dd>{{date .Company.BillingPeriodStart}}</dd>
+      <dt>Payment Method</dt><dd>{{orDash .Company.PaymentMethodSummary}}</dd>
+    </dl>
+  </section>
+
+  <section class="card" aria-labelledby="manage-h">
+    <h2 id="manage-h">Manage</h2>
+    {{if .CanManageSub}}
+      {{if .NeedsCheckout}}
+        <p>Complete checkout to activate your subscription.</p>
+        <form method="post" action="/billing/checkout">
+          <input type="hidden" name="csrf" value="{{.CSRF}}">
+          <button class="btn block" type="submit">Continue to Secure Checkout</button>
+        </form>
+      {{else}}
+        <p class="muted small">Payment methods, invoices and subscription changes are handled securely through the Stripe customer portal.</p>
+        <form method="post" action="/billing/portal" style="margin-bottom:10px">
+          <input type="hidden" name="csrf" value="{{.CSRF}}">
+          <button class="btn block" type="submit">Manage Payment Method</button>
+        </form>
+        <form method="post" action="/billing/portal" style="margin-bottom:10px">
+          <input type="hidden" name="csrf" value="{{.CSRF}}">
+          <button class="btn secondary block" type="submit">Manage Subscription &amp; Invoices</button>
+        </form>
+        {{if .Company.CancelAtPeriodEnd}}
+          <form method="post" action="/billing/resume">
+            <input type="hidden" name="csrf" value="{{.CSRF}}">
+            <button class="btn secondary block" type="submit">Keep My Subscription</button>
+          </form>
+        {{else if eq .Company.SubscriptionStatus "active" "past_due"}}
+          <form method="post" action="/billing/cancel" data-confirm="Cancel your CulpOS subscription at the end of the current billing period?">
+            <input type="hidden" name="csrf" value="{{.CSRF}}">
+            <button class="btn danger block" type="submit">Cancel Subscription</button>
+          </form>
+          <p class="muted small">Cancellation takes effect at the end of the current billing period. Your data is not deleted.</p>
+        {{end}}
+      {{end}}
+    {{else}}
+      <p class="muted">Only the Company Owner can change the subscription.</p>
+    {{end}}
+  </section>
+</div>
+
+{{if .Payments}}
+<section class="card" aria-labelledby="pay-h">
+  <h2 id="pay-h">Recent Payments</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">Date</th><th scope="col">Amount</th><th scope="col">Status</th></tr></thead>
+    <tbody>{{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td>{{money .AmountCents}} {{upper .Currency}}</td><td><span class="pill {{if eq .Status "paid"}}ok{{else}}bad{{end}}">{{.Status}}</span></td></tr>{{end}}</tbody>
+  </table></div>
+</section>
+{{end}}
+{{template "foot" .}}{{end}}

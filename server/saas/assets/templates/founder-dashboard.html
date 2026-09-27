@@ -1,0 +1,69 @@
+{{define "founder-dashboard"}}{{template "head" .}}
+<h1>Founder Dashboard</h1>
+<p class="lead">Platform overview · {{datetime .Now}}</p>
+
+<div class="metrics" role="list">
+  <div class="metric highlight" role="listitem"><div class="label">Monthly Recurring Revenue</div><div class="value">{{money .M.MRRCents}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Total Companies</div><div class="value">{{.M.TotalCompanies}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Active Companies</div><div class="value">{{.M.ActiveCompanies}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Active Subscriptions</div><div class="value">{{.M.ActiveSubscriptions}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Past Due</div><div class="value">{{.M.PastDueSubscriptions}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Canceled</div><div class="value">{{.M.CanceledSubscriptions}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Unpaid</div><div class="value">{{.M.UnpaidSubscriptions}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Awaiting Payment</div><div class="value">{{.M.IncompleteSubscriptions}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Total Users</div><div class="value">{{.M.TotalUsers}}</div></div>
+  <div class="metric" role="listitem"><div class="label">New This Month</div><div class="value">{{.M.NewCompaniesThisMonth}}</div></div>
+  <div class="metric" role="listitem"><div class="label">New This Week</div><div class="value">{{.M.NewCompaniesThisWeek}}</div></div>
+  <div class="metric" role="listitem"><div class="label">Disabled Companies</div><div class="value">{{.M.DisabledCompanies}}</div></div>
+</div>
+
+<section class="card" aria-labelledby="status-h">
+  <h2 id="status-h">System Status</h2>
+  <div class="grid-3">
+    <div><h3>Application</h3><span class="pill ok">Operational</span><div class="muted small">Version {{.Version}}</div></div>
+    <div><h3>Database</h3>{{if .DBOK}}<span class="pill ok">Connected</span>{{else}}<span class="pill bad">Unavailable</span>{{end}}<div class="muted small">PostgreSQL</div></div>
+    <div><h3>Stripe Webhook</h3>
+      {{if not .StripeConfigured}}<span class="pill bad">Not configured</span>
+      {{else if .LastWebhook}}<span class="pill {{if .WebhookFailures}}warn{{else}}ok{{end}}">Receiving</span><div class="muted small">Last event {{datetime .LastWebhook}}{{if .WebhookFailures}} · {{.WebhookFailures}} failed{{end}}</div>
+      {{else}}<span class="pill warn">No events yet</span>{{end}}
+    </div>
+  </div>
+</section>
+
+<section class="card" aria-labelledby="companies-h">
+  <div class="card-header"><h2 id="companies-h" style="margin:0">Recent Signups</h2><a href="/founder/companies">All companies</a></div>
+  {{template "founder-companies-table" .Recent}}
+</section>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="payments-h">
+    <div class="card-header"><h2 id="payments-h" style="margin:0">Recent Payments</h2><a href="/founder/billing">Billing</a></div>
+    {{if .Payments}}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Company</th><th>Amount</th></tr></thead><tbody>
+    {{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td><a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a></td><td>{{money .AmountCents}}</td></tr>{{end}}
+    </tbody></table></div>{{else}}<div class="empty">No payments recorded yet.</div>{{end}}
+  </section>
+  <section class="card" aria-labelledby="failed-h">
+    <h2 id="failed-h">Failed Payments</h2>
+    {{if .Failed}}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Company</th><th>Amount</th></tr></thead><tbody>
+    {{range .Failed}}<tr><td>{{date .CreatedAt}}</td><td><a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a></td><td>{{money .AmountCents}}</td></tr>{{end}}
+    </tbody></table></div>{{else}}<div class="empty">No failed payments.</div>{{end}}
+  </section>
+</div>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="cancel-h">
+    <h2 id="cancel-h">Recent Cancellations</h2>
+    {{if .Canceled}}<ul>{{range .Canceled}}<li><a href="/founder/companies/{{.ID}}">{{.Name}}</a> — {{.SubscriptionStatus.Label}}{{if .CancelAtPeriodEnd}} (at period end {{date .BillingPeriodEnd}}){{end}}</li>{{end}}</ul>{{else}}<div class="empty">No cancellations.</div>{{end}}
+  </section>
+  <section class="card" aria-labelledby="admin-h">
+    <div class="card-header"><h2 id="admin-h" style="margin:0">Recent Administrative Actions</h2><a href="/founder/audit">Audit log</a></div>
+    {{template "audit-table" .Audit}}
+  </section>
+</div>
+{{template "foot" .}}{{end}}
+
+{{define "audit-table"}}
+{{if .}}<div class="table-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Actor</th><th scope="col">Role</th><th scope="col">Company</th><th scope="col">Action</th><th scope="col">Target</th><th scope="col">Result</th><th scope="col">IP</th></tr></thead><tbody>
+{{range .}}<tr><td>{{datetime .OccurredAt}}</td><td>{{.ActorType}}{{if .ActorLabel}}: {{.ActorLabel}}{{else if .ActorID}}: {{.ActorID}}{{end}}</td><td>{{orDash .Role}}</td><td>{{if .CompanyID}}<a href="/founder/companies/{{.CompanyID}}">{{.CompanyID}}</a>{{else}}—{{end}}</td><td class="mono">{{.Action}}</td><td>{{orDash .Target}}</td><td><span class="pill {{if eq .Result "success"}}ok{{else if eq .Result "denied"}}warn{{else}}bad{{end}}">{{.Result}}</span></td><td class="mono">{{orDash .IP}}</td></tr>{{end}}
+</tbody></table></div>{{else}}<div class="empty">No events recorded.</div>{{end}}
+{{end}}

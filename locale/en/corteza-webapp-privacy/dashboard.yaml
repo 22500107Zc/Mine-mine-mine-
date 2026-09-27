@@ -6,7 +6,7 @@ description:
 user-options:
   data-overview:
     title: Data Overview
-    description: Review your profile information and your personal data stored in Corteza applications
+    description: Review your profile information and your personal data stored in CulpOS applications
     button-label: View your data
   privacy-requests:
     title: Privacy Requests

@@ -1,0 +1,20 @@
+{{define "founder-login"}}{{template "head" .}}
+<div class="card auth-card">
+  <div class="logo"><img src="/culpos/static/culpos-logo.svg" alt="{{brand.ProductName}}"></div>
+  <h1>{{brand.ProductName}}</h1>
+  <p class="lead">Founder sign in</p>
+  {{if .Error}}<div class="alert error" role="alert">{{.Error}}</div>{{end}}
+  <form method="post" action="/founder" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" type="text" name="username" required maxlength="100" autocomplete="username" autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" required maxlength="256" autocomplete="current-password">
+    </div>
+    <button class="btn block lg" type="submit">Sign In</button>
+  </form>
+</div>
+{{template "foot" .}}{{end}}

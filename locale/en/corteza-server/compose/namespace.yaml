@@ -2,15 +2,15 @@ errors:
   handleNotUnique: handle not unique
   invalidHandle: invalid handle
   invalidID: invalid ID
-  notAllowedToCreate: not allowed to create namespaces
-  notAllowedToDelete: not allowed to delete this namespace
-  notAllowedToRead: not allowed to read this namespace
-  notAllowedToSearch: not allowed to search or list namespaces
-  notAllowedToUndelete: not allowed to undelete this namespace
-  notAllowedToUpdate: not allowed to update this namespace
-  notFound: namespace does not exist
-  staleData: namespace was modified by someone else or by a workflow after you've opened it. Please refresh to see the latest updated version
+  notAllowedToCreate: not allowed to create workspaces
+  notAllowedToDelete: not allowed to delete this workspace
+  notAllowedToRead: not allowed to read this workspace
+  notAllowedToSearch: not allowed to search or list workspaces
+  notAllowedToUndelete: not allowed to undelete this workspace
+  notAllowedToUpdate: not allowed to update this workspace
+  notFound: workspace does not exist
+  staleData: workspace was modified by someone else or by a workflow after you've opened it. Please refresh to see the latest updated version
   unsupportedExportFormat: unsupported export format
   unsupportedImportFormat: unsupported import format
-  importMissingNamespace: the import source does not contain a namespace definition
-  cloneMultiple: not allowed to clone multiple namespaces at once
+  importMissingNamespace: the import source does not contain a workspace definition
+  cloneMultiple: not allowed to clone multiple workspaces at once

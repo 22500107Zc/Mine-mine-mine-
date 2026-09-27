@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'Namespaces',
+  appFlavour: 'Workspace',
   appName: 'compose',
-  appLabel: 'Corteza Compose',
+  appLabel: 'CulpOS | Workspace',
   theme: 'corteza-base',
   packageAlias: 'corteza-webapp-compose',
 })

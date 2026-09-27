@@ -272,7 +272,7 @@ functions:
         meta:
           label: Filter for records report
           description: |-
-            Filter in CortezaQL format
+            Filter in record query format
     results:
       report:
         wf: Any

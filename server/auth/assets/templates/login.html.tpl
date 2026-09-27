@@ -96,6 +96,9 @@
 						</a>
         </div>
         {{ end }}
+        <div class="col cols-6">
+            <a data-test-id="link-create-company" href="/signup">{{ tr "login.template.links.create-company" }}</a>
+        </div>
         {{ if .settings.SignupEnabled }}
         <div class="col cols-6">
             <a

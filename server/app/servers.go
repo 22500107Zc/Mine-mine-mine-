@@ -67,6 +67,11 @@ func (app *CortezaApp) mountHttpRoutes(r chi.Router) {
 		)
 	}()
 
+	// CulpOS commercial routes: /signup, /billing, /company, /founder, /legal, Stripe webhook
+	if app.SaaS != nil {
+		app.SaaS.MountRoutes(r)
+	}
+
 	// Auth server
 	app.AuthService.MountHttpRoutes(ho.BaseUrl, r)
 
@@ -83,6 +88,11 @@ func (app *CortezaApp) mountHttpRoutes(r chi.Router) {
 				"JSON REST API enabled",
 				zap.String("baseUrl", fullpathAPI),
 			)
+
+			// Server-side subscription gating and company isolation
+			if app.SaaS != nil {
+				r.Use(app.SaaS.APIGate(fullpathAPI))
+			}
 
 			r.Route("/system", systemRest.MountRoutes())
 			r.Route("/automation", automationRest.MountRoutes())

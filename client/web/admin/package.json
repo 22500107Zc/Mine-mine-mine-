@@ -1,6 +1,6 @@
 {
   "name": "corteza-webapp-admin",
-  "description": "Corteza Admin WebApp",
+  "description": "CulpOS Configuration Studio web application",
   "version": "2024.9.10",
   "license": "Apache-2.0",
   "contributors": [

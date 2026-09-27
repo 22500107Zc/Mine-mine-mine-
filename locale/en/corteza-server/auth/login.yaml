@@ -1,19 +1,20 @@
 template:
-  title: Log in to continue
+  title: Sign in to CulpOS
   form:
     email:
       label: Email
-      placeholder: email@domain.tld
+      placeholder: you@company.com
     password:
       label: Password
       placeholder: password
     button:
-      login-and-remember: Log in and remember me
-      login: Log in
+      login-and-remember: Sign In and remember me
+      login: Sign In
       continue: Continue
   links:
-    request-password-reset: Forgot your password?
+    request-password-reset: Forgot Password
     signup: Create a new account
+    create-company: Create a company
     external:
       login-with: Login with {{idp}}
 

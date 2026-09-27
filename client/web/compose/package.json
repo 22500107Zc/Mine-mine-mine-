@@ -1,6 +1,6 @@
 {
   "name": "corteza-webapp-compose",
-  "description": "Corteza Compose WebApp",
+  "description": "CulpOS Workspace web application",
   "version": "2024.9.10",
   "license": "Apache-2.0",
   "contributors": [

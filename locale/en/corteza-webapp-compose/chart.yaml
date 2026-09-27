@@ -257,6 +257,6 @@ notification:
   saved: Chart saved
   deleteFailed: Could not delete this chart
   deleted: Chart deleted
-searchPlaceholder: Search charts in this namespace
+searchPlaceholder: Search charts in this workspace
 title: List of Charts
 undefined: undefined

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 64" role="img" aria-label="CulpOS">
+  <title>CulpOS</title>
+  <rect width="64" height="64" rx="14" fill="#1F4E8C"/>
+  <path d="M43.3 20.7A16 16 0 1 0 43.3 43.3" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"/>
+  <rect x="38" y="27" width="10" height="10" rx="2.5" fill="#D4952B"/>
+  <text x="78" y="44" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="700" letter-spacing="-0.5" fill="#0E1A2B">Culp<tspan fill="#1F4E8C">OS</tspan></text>
+</svg>

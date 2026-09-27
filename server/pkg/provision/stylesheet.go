@@ -101,9 +101,9 @@ func processBrandingTheme(oldBranding *types.SettingValue) (themes []types.Theme
 	var brandingMap map[string]string
 
 	lightModeMap := map[string]string{
-		"black":       "#0B344E",
+		"black":       "#0E1A2B",
 		"white":       "#FFFFFF",
-		"primary":     "#FF9661",
+		"primary":     "#1F4E8C",
 		"secondary":   "#758D9B",
 		"success":     "#43AA8B",
 		"warning":     "#E27646",
@@ -140,8 +140,8 @@ func processBrandingTheme(oldBranding *types.SettingValue) (themes []types.Theme
 	darkModeValues := `
     {
         "black":"#FBF7F4",
-        "white":"#0B344E",
-        "primary":"#FF9661",
+        "white":"#0E1A2B",
+        "primary":"#6C9BDB",
         "secondary":"#758D9B",
         "success":"#43AA8B",
         "warning":"#E27646",
@@ -149,7 +149,7 @@ func processBrandingTheme(oldBranding *types.SettingValue) (themes []types.Theme
         "light":"#23495F",
         "extra-light":"#3E5A6F",
         "body-bg":"#092B40",
-        "sidebar-bg": "#0B344E",
+        "sidebar-bg": "#0E1A2B",
         "topbar-bg": "#092B40"
     }`
 

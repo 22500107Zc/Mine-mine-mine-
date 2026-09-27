@@ -1,0 +1,17 @@
+{{define "signup-checkout"}}{{template "head" .}}
+<div class="card auth-card">
+  <div class="logo"><img src="/culpos/static/culpos-logo.svg" alt="{{brand.ProductName}}"></div>
+  <h1>Checkout not completed</h1>
+  <p class="lead">Your company <strong>{{.Company.Name}}</strong> has been reserved, but payment has not been completed yet.</p>
+  <section class="plan">
+    <div class="name">{{brand.ProductName}}</div>
+    <div class="price">{{brand.PriceDisplay}}<span>/{{brand.BillingInterval}}</span></div>
+  </section>
+  {{if .Error}}<div class="alert error" role="alert">{{.Error}}</div>{{end}}
+  <form method="post" action="/signup/checkout">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <input type="hidden" name="ref" value="{{.Ref}}">
+    <button class="btn block lg" type="submit">Continue to Secure Checkout</button>
+  </form>
+</div>
+{{template "foot" .}}{{end}}

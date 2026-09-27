@@ -1,0 +1,59 @@
+{{define "signup"}}{{template "head" .}}
+<div class="card auth-card">
+  <div class="logo"><img src="/culpos/static/culpos-logo.svg" alt="{{brand.ProductName}}"></div>
+  <h1>Create your company</h1>
+  <p class="lead">{{brand.ProductDescription}} for running your company’s internal operations.</p>
+
+  <ol class="steps" aria-label="Signup progress">
+    <li aria-current="step">1. Company</li>
+    <li>2. Plan</li>
+    <li>3. Payment</li>
+    <li>4. Workspace</li>
+  </ol>
+
+  {{if .Error}}<div class="alert error" role="alert">{{.Error}}</div>{{end}}
+
+  <form method="post" action="/signup" novalidate>
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="field">
+      <label for="companyName">Company Name</label>
+      <input id="companyName" type="text" name="companyName" required maxlength="100" autocomplete="organization" value="{{.Form.companyName}}">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label for="firstName">Owner First Name</label>
+        <input id="firstName" type="text" name="firstName" required maxlength="60" autocomplete="given-name" value="{{.Form.firstName}}">
+      </div>
+      <div class="field">
+        <label for="lastName">Owner Last Name</label>
+        <input id="lastName" type="text" name="lastName" required maxlength="60" autocomplete="family-name" value="{{.Form.lastName}}">
+      </div>
+    </div>
+    <div class="field">
+      <label for="email">Owner Email</label>
+      <input id="email" type="email" name="email" required maxlength="254" autocomplete="email" value="{{.Form.email}}">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" required minlength="8" maxlength="256" autocomplete="new-password" aria-describedby="password-hint">
+      <div class="hint" id="password-hint">At least 8 characters. You will use this with your email to sign in.</div>
+    </div>
+
+    <section class="plan" aria-labelledby="plan-title">
+      <div class="name" id="plan-title">{{brand.ProductName}}</div>
+      <div class="price">{{brand.PriceDisplay}}<span>/{{brand.BillingInterval}}</span></div>
+      <div class="muted small">One subscription covers your whole company. Billed monthly. Cancel anytime from Billing.</div>
+      <ul>
+        <li>One isolated company workspace</li>
+        <li>Customers, contacts, records, cases, tasks and documents</li>
+        <li>Workflows, reports and team management</li>
+        <li>Invite your team at no additional per-user cost</li>
+      </ul>
+    </section>
+
+    <button class="btn block lg" type="submit">Continue to Secure Checkout</button>
+    <p class="muted small" style="margin-top:12px">Payment is processed by Stripe. Your workspace is activated as soon as payment is confirmed. By continuing you agree to the <a href="/legal/terms">Terms of Service</a> and <a href="/legal/privacy">Privacy Policy</a>.</p>
+  </form>
+  <p class="small" style="text-align:center;margin-top:16px">Already have an account? <a href="/auth/login">Sign In</a></p>
+</div>
+{{template "foot" .}}{{end}}

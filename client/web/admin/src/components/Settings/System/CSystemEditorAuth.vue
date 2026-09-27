@@ -343,7 +343,7 @@
               <b-input-group>
                 <b-form-input
                   v-model="authSettings['auth.multi-factor.totp.issuer']"
-                  placeholder="Corteza"
+                  placeholder="CulpOS"
                 />
               </b-input-group>
             </b-form-group>

@@ -118,7 +118,7 @@ chart:
   delete: Delete
   preview:
     chartId: Chart preview (ID {{0}})
-  searchPlaceholder: Type here to search all charts in this namespace
+  searchPlaceholder: Type here to search all charts in this workspace
   openInBuilder: Open in chart builder
   openChartList: Open chart list
   filter:

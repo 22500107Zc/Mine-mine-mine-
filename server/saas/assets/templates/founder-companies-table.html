@@ -1,0 +1,36 @@
+{{define "founder-companies-table"}}
+{{if .}}
+<div class="table-wrap"><table>
+  <thead><tr>
+    <th scope="col">Company Name</th><th scope="col">Owner</th><th scope="col">Owner Email</th>
+    <th scope="col">Subscription Status</th><th scope="col">Monthly Price</th><th scope="col">Created</th>
+    <th scope="col">Users</th><th scope="col">Last Activity</th><th scope="col">Stripe Customer ID</th>
+    <th scope="col">Stripe Subscription ID</th><th scope="col">Actions</th>
+  </tr></thead>
+  <tbody>
+  {{range .}}
+  <tr>
+    <td><a href="/founder/companies/{{.ID}}">{{.Name}}</a><br><span class="pill {{companyPill .Status}}">{{.Status}}</span></td>
+    <td>{{orDash .OwnerName}}</td>
+    <td>{{.OwnerEmail}}</td>
+    <td><span class="pill {{subPill .SubscriptionStatus}}">{{.SubscriptionStatus.Label}}</span>{{if .CancelAtPeriodEnd}}<br><span class="pill warn">cancels {{date .BillingPeriodEnd}}</span>{{end}}</td>
+    <td>{{money brand.PriceCents}}</td>
+    <td>{{date .CreatedAt}}</td>
+    <td>{{.UserCount}}</td>
+    <td>{{datetime .LastActivityAt}}</td>
+    <td class="mono">{{orDash .StripeCustomerID}}</td>
+    <td class="mono">{{orDash .StripeSubscriptionID}}</td>
+    <td class="actions">
+      <a class="btn small secondary" href="/founder/companies/{{.ID}}">Manage</a>
+      <a class="btn small secondary" href="/founder/companies/{{.ID}}#users">Users</a>
+      <a class="btn small secondary" href="/founder/companies/{{.ID}}#billing">Billing</a>
+      <a class="btn small secondary" href="/founder/audit?company={{.ID}}">Audit</a>
+    </td>
+  </tr>
+  {{end}}
+  </tbody>
+</table></div>
+{{else}}
+<div class="empty">No companies yet. Companies appear here after paid signup.</div>
+{{end}}
+{{end}}

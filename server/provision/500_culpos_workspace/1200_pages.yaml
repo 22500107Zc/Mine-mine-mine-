@@ -1,0 +1,697 @@
+# CulpOS workspace navigation
+namespace: culpos-workspace-template
+pages:
+  Dashboard:
+    handle: Dashboard
+    title: Dashboard
+    weight: 1
+    visible: true
+    blocks:
+    - title: Welcome
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 4
+      options:
+        body: <p>Welcome to <strong>CulpOS</strong> — your company’s operations in
+          one system. Use the navigation to manage customers, contacts, records, cases,
+          tasks, approvals and documents.</p>
+    - title: Open Tasks
+      kind: RecordList
+      xywh:
+      - 0
+      - 4
+      - 6
+      - 9
+      options:
+        module: Task
+        fields:
+        - name: Title
+        - name: Status
+        - name: Priority
+        - name: AssignedTo
+        - name: DueDate
+        presort: DueDate ASC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        prefilter: Status != 'Done'
+        hideImportButton: true
+    - title: Open Cases
+      kind: RecordList
+      xywh:
+      - 6
+      - 4
+      - 6
+      - 9
+      options:
+        module: Case
+        fields:
+        - name: Subject
+        - name: Customer
+        - name: Status
+        - name: Priority
+        - name: AssignedTo
+        presort: createdAt DESC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        prefilter: Status != 'Resolved' AND Status != 'Closed'
+        hideImportButton: true
+    - title: Pending Approvals
+      kind: RecordList
+      xywh:
+      - 0
+      - 13
+      - 6
+      - 9
+      options:
+        module: Approval
+        fields:
+        - name: Subject
+        - name: Type
+        - name: RequestedBy
+        - name: Approver
+        - name: DueDate
+        presort: DueDate ASC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        prefilter: Status = 'Pending'
+        hideImportButton: true
+    - title: Upcoming Work
+      kind: RecordList
+      xywh:
+      - 6
+      - 13
+      - 6
+      - 9
+      options:
+        module: Task
+        fields:
+        - name: Title
+        - name: AssignedTo
+        - name: DueDate
+        - name: Status
+        presort: DueDate ASC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        prefilter: Status != 'Done' AND DueDate IS NOT NULL
+        hideImportButton: true
+    - title: Recent Records
+      kind: RecordList
+      xywh:
+      - 0
+      - 22
+      - 6
+      - 9
+      options:
+        module: OperationsRecord
+        fields:
+        - name: Title
+        - name: Category
+        - name: Status
+        - name: Owner
+        presort: createdAt DESC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        hideImportButton: true
+    - title: Recent Documents
+      kind: RecordList
+      xywh:
+      - 6
+      - 22
+      - 6
+      - 9
+      options:
+        module: Document
+        fields:
+        - name: Title
+        - name: Category
+        - name: Customer
+        - name: Owner
+        presort: createdAt DESC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        hideImportButton: true
+    - title: Recent Changes — Customers
+      kind: RecordList
+      xywh:
+      - 0
+      - 31
+      - 6
+      - 9
+      options:
+        module: Customer
+        fields:
+        - name: Name
+        - name: Status
+        - name: AccountOwner
+        - name: updatedAt
+        presort: updatedAt DESC
+        perPage: 8
+        allowExport: true
+        showTotalCount: true
+        hideImportButton: true
+    - title: Cases by Status
+      kind: Chart
+      xywh:
+      - 6
+      - 31
+      - 6
+      - 9
+      options:
+        chart: CasesByStatus
+  Customers:
+    handle: Customers
+    title: Customers
+    weight: 2
+    visible: true
+    blocks:
+    - title: Customers
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Customer
+        fields:
+        - name: Name
+        - name: Status
+        - name: Industry
+        - name: Email
+        - name: Phone
+        - name: AccountOwner
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      CustomerRecord:
+        handle: CustomerRecord
+        module: Customer
+        title: Customer
+        blocks:
+        - title: Customer
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Name
+            - name: Status
+            - name: Industry
+            - name: Email
+            - name: Phone
+            - name: Website
+            - name: Address
+            - name: AccountOwner
+            - name: Notes
+  Contacts:
+    handle: Contacts
+    title: Contacts
+    weight: 3
+    visible: true
+    blocks:
+    - title: Contacts
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Contact
+        fields:
+        - name: FirstName
+        - name: LastName
+        - name: Customer
+        - name: JobTitle
+        - name: Email
+        - name: Phone
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      ContactRecord:
+        handle: ContactRecord
+        module: Contact
+        title: Contact
+        blocks:
+        - title: Contact
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: FirstName
+            - name: LastName
+            - name: Customer
+            - name: JobTitle
+            - name: Email
+            - name: Phone
+            - name: Notes
+  Records:
+    handle: Records
+    title: Records
+    weight: 4
+    visible: true
+    blocks:
+    - title: Records
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: OperationsRecord
+        fields:
+        - name: Title
+        - name: Category
+        - name: Status
+        - name: Customer
+        - name: Owner
+        - name: Date
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      OperationsRecordRecord:
+        handle: OperationsRecordRecord
+        module: OperationsRecord
+        title: Record
+        blocks:
+        - title: Record
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Title
+            - name: Category
+            - name: Status
+            - name: Customer
+            - name: Owner
+            - name: Date
+            - name: Details
+  Cases:
+    handle: Cases
+    title: Cases
+    weight: 5
+    visible: true
+    blocks:
+    - title: Cases
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Case
+        fields:
+        - name: Subject
+        - name: Customer
+        - name: Status
+        - name: Priority
+        - name: AssignedTo
+        - name: DueDate
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      CaseRecord:
+        handle: CaseRecord
+        module: Case
+        title: Case
+        blocks:
+        - title: Case
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Subject
+            - name: Customer
+            - name: Contact
+            - name: Status
+            - name: Priority
+            - name: AssignedTo
+            - name: DueDate
+            - name: Description
+            - name: Resolution
+  Tasks:
+    handle: Tasks
+    title: Tasks
+    weight: 6
+    visible: true
+    blocks:
+    - title: Tasks
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Task
+        fields:
+        - name: Title
+        - name: Status
+        - name: Priority
+        - name: AssignedTo
+        - name: DueDate
+        - name: Case
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      TaskRecord:
+        handle: TaskRecord
+        module: Task
+        title: Task
+        blocks:
+        - title: Task
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Title
+            - name: Status
+            - name: Priority
+            - name: AssignedTo
+            - name: DueDate
+            - name: Case
+            - name: Customer
+            - name: Notes
+  Workflows:
+    handle: Workflows
+    title: Workflows
+    weight: 7
+    visible: true
+    blocks:
+    - title: Approvals & Workflow Queue
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 5
+      options:
+        body: <p><strong>Workflows</strong> — approval requests and their decisions.
+          Create a request, assign an approver and track it to completion.</p>
+    - title: Approvals
+      kind: RecordList
+      xywh:
+      - 0
+      - 5
+      - 12
+      - 18
+      options:
+        module: Approval
+        fields:
+        - name: Subject
+        - name: Type
+        - name: Status
+        - name: RequestedBy
+        - name: Approver
+        - name: Amount
+        - name: DueDate
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      ApprovalRecord:
+        handle: ApprovalRecord
+        module: Approval
+        title: Approval
+        blocks:
+        - title: Approval
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Subject
+            - name: Type
+            - name: Status
+            - name: RequestedBy
+            - name: Approver
+            - name: Amount
+            - name: DueDate
+            - name: Details
+  Documents:
+    handle: Documents
+    title: Documents
+    weight: 9
+    visible: true
+    blocks:
+    - title: Documents
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Document
+        fields:
+        - name: Title
+        - name: Category
+        - name: File
+        - name: Customer
+        - name: Owner
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      DocumentRecord:
+        handle: DocumentRecord
+        module: Document
+        title: Document
+        blocks:
+        - title: Document
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Title
+            - name: Category
+            - name: File
+            - name: Customer
+            - name: Owner
+            - name: Notes
+  Departments:
+    handle: Departments
+    title: Departments
+    weight: 12
+    visible: true
+    blocks:
+    - title: Departments
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Department
+        fields:
+        - name: Name
+        - name: Manager
+        - name: Description
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+    pages:
+      DepartmentRecord:
+        handle: DepartmentRecord
+        module: Department
+        title: Department
+        blocks:
+        - title: Department
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Name
+            - name: Manager
+            - name: Description
+  Reports:
+    handle: Reports
+    title: Reports
+    weight: 10
+    visible: true
+    blocks:
+    - title: Cases by Status
+      kind: Chart
+      xywh:
+      - 0
+      - 0
+      - 6
+      - 8
+      options:
+        chart: CasesByStatus
+    - title: Cases by Priority
+      kind: Chart
+      xywh:
+      - 6
+      - 0
+      - 6
+      - 8
+      options:
+        chart: CasesByPriority
+    - title: Tasks by Status
+      kind: Chart
+      xywh:
+      - 0
+      - 8
+      - 6
+      - 8
+      options:
+        chart: TasksByStatus
+    - title: Customers by Status
+      kind: Chart
+      xywh:
+      - 6
+      - 8
+      - 6
+      - 8
+      options:
+        chart: CustomersByStatus
+    - title: Approvals by Status
+      kind: Chart
+      xywh:
+      - 0
+      - 16
+      - 6
+      - 8
+      options:
+        chart: ApprovalsByStatus
+  Team:
+    handle: Team
+    title: Team
+    weight: 11
+    visible: true
+    blocks:
+    - title: Team
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 5
+      options:
+        body: <p>Your team members, roles and invitations are managed in <a href="/company">Company
+          Admin</a>. Everyone on your team is included in your company subscription.</p><p><a
+          href="/company">Open Company Admin</a></p>
+    - title: Departments
+      kind: RecordList
+      xywh:
+      - 0
+      - 5
+      - 12
+      - 12
+      options:
+        module: Department
+        fields:
+        - name: Name
+        - name: Manager
+        - name: Description
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+  Settings:
+    handle: Settings
+    title: Settings
+    weight: 13
+    visible: true
+    blocks:
+    - title: Settings
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 5
+      options:
+        body: <ul><li><a href="/company">Company Profile, Users, Roles &amp; Permissions</a></li><li><a
+          href="/auth/security">Security</a></li><li><a href="/auth">Notifications
+          &amp; Preferences</a></li><li><a href="/billing">Billing</a></li></ul>
+  Billing:
+    handle: Billing
+    title: Billing
+    weight: 14
+    visible: true
+    blocks:
+    - title: Billing
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 5
+      options:
+        body: <p>Your CulpOS subscription, payment method and invoices are managed
+          on the <a href="/billing">Billing page</a>.</p><p><a href="/billing">Open
+          Billing</a></p>
+  CompanyAdmin:
+    handle: CompanyAdmin
+    title: Company Admin
+    weight: 15
+    visible: true
+    blocks:
+    - title: Company Admin
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 5
+      options:
+        body: <p>Manage your company profile, invite users and assign roles in <a
+          href="/company">Company Admin</a>.</p><p><a href="/company">Open Company
+          Admin</a></p>

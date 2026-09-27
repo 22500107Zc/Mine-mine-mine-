@@ -292,7 +292,7 @@ func defaultAuthClient(ctx context.Context, log *zap.Logger, s store.Storer, aut
 		ID:     id.Next(),
 		Handle: authOpt.DefaultClient,
 		Meta: &types.AuthClientMeta{
-			Name: "Corteza Web Applications",
+			Name: "CulpOS Web Applications",
 		},
 		ValidGrant: "authorization_code",
 		RedirectURI: func() string {

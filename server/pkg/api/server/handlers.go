@@ -34,7 +34,7 @@ func waitingRoutes(log *zap.Logger, httpOpt options.HttpServerOpt) (r chi.Router
 		// For non GET requests, return 503 (service unavailable)
 		errors.ServeHTTPWithCode(w, r,
 			http.StatusServiceUnavailable,
-			fmt.Errorf("corteza server initializing"),
+			fmt.Errorf("CulpOS is starting"),
 			true,
 		)
 	})
@@ -42,7 +42,7 @@ func waitingRoutes(log *zap.Logger, httpOpt options.HttpServerOpt) (r chi.Router
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		// Refresh the page in 15 seconds
 		w.Header().Set("Refresh", "15; url=/")
-		_, _ = fmt.Fprint(w, "Corteza server initializing\n\n")
+		_, _ = fmt.Fprint(w, "CulpOS is starting, please wait...\n\n")
 		if httpOpt.EnableHealthcheckRoute {
 			healthcheck.Defaults().Run(r.Context()).WriteTo(w)
 		}
@@ -59,7 +59,7 @@ func shutdownRoutes() (r chi.Router) {
 		// For non GET requests, return 503 (service unavailable)
 		errors.ServeHTTPWithCode(w, r,
 			http.StatusServiceUnavailable,
-			fmt.Errorf("corteza server shutting down"),
+			fmt.Errorf("CulpOS is restarting"),
 			true,
 		)
 	})
@@ -67,7 +67,7 @@ func shutdownRoutes() (r chi.Router) {
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		// Refresh the page in 15 seconds
 		w.Header().Set("Refresh", "15; url=/")
-		_, _ = fmt.Fprint(w, "corteza server shutting down")
+		_, _ = fmt.Fprint(w, "CulpOS is restarting, please wait...")
 	})
 
 	return
@@ -268,7 +268,7 @@ func mountDebugLogViewer(r chi.Router, log *zap.Logger) {
 func handleStaticPages(log *zap.Logger, hOpt options.HttpServerOpt, aOpt options.AuthOpt, file string) http.HandlerFunc {
 	// "good-enough" for now, plan to move to templates when
 	// merging with auth
-	const linkTpl = `<a class="btn btn-light font-weight-bold text-dark m-2" href="%s">%s</a>`
+	const linkTpl = `<a class="btn" style="margin:4px" href="%s">%s</a>`
 	var (
 		links = make([]string, 0)
 		buf   []byte
@@ -276,10 +276,10 @@ func handleStaticPages(log *zap.Logger, hOpt options.HttpServerOpt, aOpt options
 		placeholder = []byte("<!-- links -->")
 	)
 
-	links = append(links, fmt.Sprintf(linkTpl, aOpt.BaseURL, "Login"))
+	links = append(links, fmt.Sprintf(linkTpl, aOpt.BaseURL+"/login", "Sign In"))
 
 	if hOpt.ApiEnabled {
-		links = append(links, fmt.Sprintf(linkTpl, "https://docs.cortezaproject.org/", "Documentation"))
+		links = append(links, fmt.Sprintf(linkTpl, options.CleanBase(hOpt.BaseUrl, hOpt.ApiBaseUrl, "docs")+"/", "API Reference"))
 	}
 
 	if hOpt.WebConsoleEnabled {

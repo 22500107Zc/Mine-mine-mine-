@@ -71,8 +71,7 @@
         <b-dropdown-item
           v-if="!settings.hideForumLink"
           data-test-id="dropdown-helper-forum"
-          href="https://forum.cortezaproject.org/"
-          target="_blank"
+          href="/support"
         >
           {{ labels.helpForum }}
         </b-dropdown-item>
@@ -81,7 +80,6 @@
           v-if="!settings.hideDocumentationLink"
           data-test-id="dropdown-helper-docs"
           :href="documentationURL"
-          target="_blank"
         >
           {{ labels.helpDocumentation }}
         </b-dropdown-item>
@@ -89,8 +87,7 @@
         <b-dropdown-item
           v-if="!settings.hideFeedbackLink"
           data-test-id="dropdown-helper-feedback"
-          href="mailto:info@cortezaproject.org"
-          target="_blank"
+          href="/support"
         >
           {{ labels.helpFeedback }}
         </b-dropdown-item>
@@ -270,9 +267,7 @@ export default {
     },
 
     documentationURL () {
-      /* eslint-disable no-undef */
-      const [year, month] = VERSION.split('.')
-      return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/index.html`
+      return '/legal/open-source'
     },
 
     helpLinks () {

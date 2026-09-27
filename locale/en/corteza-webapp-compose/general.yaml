@@ -1,23 +1,23 @@
 label:
   app-name:
     namespace:
-      list: Namespaces
-      create: Create Namespace
-      edit: "Edit Namespace - {{label}}"
-      view: Namespace
+      list: "CulpOS | Workspaces"
+      create: "CulpOS | Create Workspace"
+      edit: "CulpOS | Workspace Configuration - {{label}}"
+      view: "CulpOS | Workspace"
     module:
-      list: "Modules - {{label}}"
-      create: Create Module
-      edit: "Edit Module - {{label}}"
+      list: "CulpOS | Data Configuration - {{label}}"
+      create: "CulpOS | Create Data Form"
+      edit: "CulpOS | Form Configuration - {{label}}"
     page:
-      list: "Pages - {{label}}"
-      builder: "PageBuilder - {{label}}"
-      edit: "Edit Page - {{label}}"
-      record: "Record - {{label}}"
+      list: "CulpOS | Page Configuration - {{label}}"
+      builder: "CulpOS | Page Builder - {{label}}"
+      edit: "CulpOS | Edit Page - {{label}}"
+      record: "CulpOS | Record - {{label}}"
     chart:
-      list: "Charts - {{label}}"
-      edit: "Edit Chart - {{label}}"
-      create: Create Chart
+      list: "CulpOS | Reports - {{label}}"
+      edit: "CulpOS | Edit Report - {{label}}"
+      create: "CulpOS | Create Report"
   actions: Actions
   active: Active
   add: Add
@@ -107,14 +107,14 @@ label:
     single: Chart
     plural: Charts
   namespace:
-    single: Namespace
-    plural: Namespaces
+    single: Workspace
+    plural: Workspaces
   module:
     single: Module
     plural: Modules
 navigation:
   chart: Charts
-  namespace: Namespaces
+  namespace: Workspaces
   module: Modules
   page: Pages
   pageLayout: Page Layouts

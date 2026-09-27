@@ -1600,7 +1600,7 @@ func (h recordsHandler) Report() *atypes.Function {
 				Types: []string{"String"}, Required: true,
 				Meta: &atypes.ParamMeta{
 					Label:       "Filter for records report",
-					Description: "Filter in CortezaQL format",
+					Description: "Filter in record query format",
 				},
 			},
 		},

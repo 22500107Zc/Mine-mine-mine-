@@ -3,18 +3,18 @@ errors:
   importSessionAlreadActive: import session already active
   invalidID: invalid ID
   invalidModuleID: invalid or missing module ID
-  invalidNamespaceID: invalid or missing namespace ID
+  invalidNamespaceID: invalid or missing workspace ID
   invalidReferenceFormat: invalid reference format
   invalidValueStructure: more than one value for a single-value field {field}
   moduleNotFoundModule: module not found
-  namespaceNotFound: namespace not found
+  namespaceNotFound: workspace not found
   notAllowedToChangeFieldValue: not allowed to change value of field {field}
   notAllowedToCreate: not allowed to create records
   notAllowedToDelete: not allowed to delete this record
   notAllowedToListRecords: not allowed to list records
   notAllowedToRead: not allowed to read this record
   notAllowedToReadModule: not allowed to read module
-  notAllowedToReadNamespace: not allowed to read this namespace
+  notAllowedToReadNamespace: not allowed to read this workspace
   notAllowedToSearch: not allowed to search or list records
   notAllowedToUndelete: not allowed to undelete this record
   notAllowedToUpdate: not allowed to update this record
@@ -22,4 +22,4 @@ errors:
   staleData: record was modified by someone else or by a workflow after you've opened it. Please refresh to see the latest updated version
   unknownBulkOperation: unknown bulk operation {bulkOperation}
   valueInput: invalid record value input
-  maxRecordsReached: maximum number of records per namespace reached
+  maxRecordsReached: maximum number of records per workspace reached

@@ -1,15 +1,15 @@
-adminPanel: Admin panel
+adminPanel: Configuration
 automation: Automation
 chart: Charts
 configuration: Configuration
 help:
-  documentation: Documentation
-  feedback: Send feedback
-  forum: Help
+  documentation: Open Source Notices
+  feedback: Contact Support
+  forum: Support
   version: 'Version:'
 module: Modules
 more: More
-namespace: Namespaces
+namespace: Workspaces
 noPageTitle: No page title
 page: Pages
 publicPages: Public pages

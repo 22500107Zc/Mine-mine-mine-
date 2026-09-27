@@ -103,7 +103,7 @@ func (app *CortezaApp) Setup() (err error) {
 
 		if app.Opt.Auth.SessionLifetime < time.Hour {
 			log.Warn("AUTH_SESSION_LIFETIME is set to less then an hour, this might not be what you want." +
-				"When user logs-in without 'remember-me',  AUTH_SESSION_LIFETIME is used to set a maximum time before session is expired if user does not interacts with Corteza. " +
+				"When user logs-in without 'remember-me',  AUTH_SESSION_LIFETIME is used to set a maximum time before session is expired if user does not interact with CulpOS. " +
 				"Recommended session lifetime value is between one hour (default) and a day")
 		}
 
@@ -535,6 +535,15 @@ func (app *CortezaApp) Activate(ctx context.Context) (err error) {
 
 	if app.AuthService, err = authService.New(ctx, app.Log, app.oa2m, app.Store, app.Opt.Auth, app.DefaultAuthClient); err != nil {
 		return fmt.Errorf("failed to init auth service: %w", err)
+	}
+
+	if err = app.initSaaS(ctx); err != nil {
+		return fmt.Errorf("failed to init CulpOS commercial layer: %w", err)
+	}
+
+	if app.SaaS != nil {
+		app.AuthService.SetAccessGuard(app.SaaS.AuthGuard)
+		app.SaaS.SetSessionUserResolver(app.AuthService.SessionUserID)
 	}
 
 	app.ApigwService = apigw.Service()

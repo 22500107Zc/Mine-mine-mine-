@@ -1,8 +1,8 @@
 appMenu: Menu
 help:
-  documentation: Documentation
-  feedback: Send feedback
-  forum: Help
+  documentation: Open Source Notices
+  feedback: Contact Support
+  forum: Support
   version: 'Version:'
 userSettings:
   changePassword: Change password

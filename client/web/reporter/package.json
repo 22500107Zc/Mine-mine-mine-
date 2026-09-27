@@ -1,6 +1,6 @@
 {
   "name": "corteza-webapp-reporter",
-  "description": "Corteza Reporter WebApp",
+  "description": "CulpOS Reports web application",
   "version": "2024.9.10",
   "license": "Apache-2.0",
   "private": true,

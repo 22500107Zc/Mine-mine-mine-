@@ -1,8 +1,11 @@
 		</main>
 		{{ template "inc_toasts.html.tpl" .alerts }}
-		<footer class="d-flex align-items-end justify-content-center text-white py-4">
-			{{ tr "inc_footer.code-link" }}
-			<a data-test-id="link-github" href="https://github.com/cortezaproject/" target="_blank" class="text-white ml-1">GitHub</a>
+		<footer class="d-flex flex-wrap align-items-end justify-content-center text-white py-4 small">
+				<span>&copy; Culp Industries &middot; CulpOS</span>
+			<a data-test-id="link-terms" href="/legal/terms" class="text-white ml-3">Terms</a>
+			<a data-test-id="link-privacy" href="/legal/privacy" class="text-white ml-3">Privacy</a>
+			<a data-test-id="link-support" href="/support" class="text-white ml-3">Support</a>
+			<a data-test-id="link-oss" href="/legal/open-source" class="text-white ml-3">Open Source Notices</a>
 		</footer>
 	</body>
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

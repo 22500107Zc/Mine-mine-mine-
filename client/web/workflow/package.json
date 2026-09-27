@@ -1,6 +1,6 @@
 {
   "name": "corteza-webapp-workflow",
-  "description": "Corteza Workflow WebApp",
+  "description": "CulpOS Workflow Configuration web application",
   "version": "2024.9.10",
   "license": "Apache-2.0",
   "private": true,

@@ -5,7 +5,7 @@ card:
   button-text: Show more
   type: Type
   handle: Handle
-  namespace: Namespace
+  namespace: Workspace
   module: Module
   user: User
   email: Email

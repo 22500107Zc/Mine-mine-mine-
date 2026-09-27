@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'Discovery',
+  appFlavour: 'Search',
   appName: 'discovery',
-  appLabel: 'Corteza Discovery Discovery',
+  appLabel: 'CulpOS | Search',
   theme: 'corteza-base',
   packageAlias: 'corteza-webapp-discovery',
 })

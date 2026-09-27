@@ -22,7 +22,9 @@ func (*authSettingsUpdaterMockedAuthService) MountHttpRoutes(string, chi.Router)
 func (*authSettingsUpdaterMockedAuthService) WellKnownOpenIDConfiguration() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {}
 }
-func (*authSettingsUpdaterMockedAuthService) Watch(context.Context) {}
+func (*authSettingsUpdaterMockedAuthService) Watch(context.Context)                               {}
+func (*authSettingsUpdaterMockedAuthService) SessionUserID(*http.Request) uint64                  { return 0 }
+func (*authSettingsUpdaterMockedAuthService) SetAccessGuard(func(context.Context, uint64) string) {}
 func (m *authSettingsUpdaterMockedAuthService) UpdateSettings(settings *authSettings.Settings) {
 	m.settings = settings
 }

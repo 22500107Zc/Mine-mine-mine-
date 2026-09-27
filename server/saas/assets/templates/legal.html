@@ -1,0 +1,70 @@
+{{define "legal-terms"}}{{template "head" .}}
+<article class="card legal">
+  <h1>Terms of Service</h1>
+  <p class="muted">{{brand.ProductName}} · {{brand.CompanyName}}</p>
+  <div class="review-note" role="note"><strong>Draft for legal review.</strong> This page is a structural placeholder. Final terms must be reviewed and approved by counsel for {{brand.CompanyName}} before publication. Nothing on this page creates additional guarantees.</div>
+
+  <h2>1. The Service</h2>
+  <p>{{brand.ProductName}} is a business operations system provided by {{brand.CompanyName}} (“we”, “us”) to the company that subscribes to it (“Customer”).</p>
+  <h2>2. Accounts and Company Workspaces</h2>
+  <p>One subscription provides one company account and workspace. The Company Owner is responsible for users invited to the workspace and for keeping credentials confidential.</p>
+  <h2>3. Subscription and Payment</h2>
+  <p>The {{brand.ProductName}} plan is billed at {{brand.PricePerInterval}} (USD) in advance, on a recurring monthly basis, through our payment processor. There is no free plan or free trial. [Taxes, refunds and price-change terms — to be completed by counsel.]</p>
+  <h2>4. Cancellation</h2>
+  <p>Customers may cancel from the Billing page. Cancellation takes effect at the end of the current paid period. [Data retention and export terms — to be completed by counsel.]</p>
+  <h2>5. Acceptable Use</h2>
+  <p>[To be completed by counsel.]</p>
+  <h2>6. Customer Data</h2>
+  <p>Customer retains ownership of data it stores in {{brand.ProductName}}. See the <a href="/legal/privacy">Privacy Policy</a>. [To be completed by counsel.]</p>
+  <h2>7. Suspension</h2>
+  <p>We may restrict access to a workspace for non-payment or violation of these terms. Restricting access does not delete Customer data. [To be completed by counsel.]</p>
+  <h2>8. Warranties, Liability and Governing Law</h2>
+  <p>[To be completed by counsel.]</p>
+  <h2>9. Open Source Components</h2>
+  <p>{{brand.ProductName}} includes open source software distributed under its own licenses. See <a href="/legal/open-source">Open Source Notices</a>.</p>
+  <h2>10. Contact</h2>
+  <p>{{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>{{else}}See the <a href="/support">Support</a> page.{{end}}</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-privacy"}}{{template "head" .}}
+<article class="card legal">
+  <h1>Privacy Policy</h1>
+  <p class="muted">{{brand.ProductName}} · {{brand.CompanyName}}</p>
+  <div class="review-note" role="note"><strong>Draft for legal review.</strong> This page is a structural placeholder. The final privacy policy must be reviewed and approved by counsel for {{brand.CompanyName}} before publication.</div>
+
+  <h2>1. Who We Are</h2>
+  <p>{{brand.CompanyName}} operates {{brand.ProductName}}.</p>
+  <h2>2. Information We Collect</h2>
+  <p>Account information (name, email), company information, content Customers store in their workspace, and technical logs (such as IP address and timestamps) used for security and audit purposes. Payment card details are collected and processed by our payment processor (Stripe) and are not stored on {{brand.ProductName}} servers.</p>
+  <h2>3. How We Use Information</h2>
+  <p>To provide and secure the service, process subscriptions, send transactional email (such as invitations, password resets and billing notices) and provide support. [To be completed by counsel.]</p>
+  <h2>4. Sharing</h2>
+  <p>With service providers necessary to operate {{brand.ProductName}} (for example payment processing and email delivery). [To be completed by counsel.]</p>
+  <h2>5. Retention</h2>
+  <p>[To be completed by counsel.]</p>
+  <h2>6. Security</h2>
+  <p>Passwords are stored as one-way hashes. Company workspaces are isolated from one another. [To be completed by counsel.]</p>
+  <h2>7. Your Rights</h2>
+  <p>[To be completed by counsel.]</p>
+  <h2>8. Contact</h2>
+  <p>{{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>{{else}}See the <a href="/support">Support</a> page.{{end}}</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-oss"}}{{template "head" .}}
+<article class="card legal">
+  <h1>Open Source Notices</h1>
+  <p>{{brand.ProductName}} is developed by {{brand.CompanyName}}. The {{brand.ProductName}} name, branding, user interface additions, subscription and billing functionality, Founder console and other original modifications are © {{brand.CompanyName}}.</p>
+  <p>{{brand.ProductName}} is built on open source software. We gratefully acknowledge the projects below and distribute them in accordance with their licenses. Modified files carry notices stating that they were changed.</p>
+
+  <h2>Corteza</h2>
+  <p>Portions of {{brand.ProductName}} are derived from the Corteza project, Copyright © the Corteza project authors and contributors (maintained by Planet Crust), licensed under the Apache License, Version 2.0. Source: <span class="mono">github.com/cortezaproject/corteza</span>.</p>
+
+  <h2>Third-party components</h2>
+  <p>{{brand.ProductName}} also includes third-party libraries (Go modules and JavaScript packages) under their respective licenses (including Apache-2.0, MIT, BSD and ISC). License texts for these components are distributed with the source code in the <span class="mono">vendor</span> directories and package metadata.</p>
+
+  <h2>Apache License, Version 2.0</h2>
+  <div class="license-text" tabindex="0" aria-label="Apache License text">{{.License}}</div>
+</article>
+{{template "foot" .}}{{end}}

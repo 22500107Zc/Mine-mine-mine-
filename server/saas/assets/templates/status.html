@@ -1,0 +1,12 @@
+{{define "status"}}{{template "head" .}}
+<div class="status-page">
+  {{if .Code}}<div class="code" aria-hidden="true">{{.Code}}</div>{{end}}
+  <h1>{{.Heading}}</h1>
+  <p class="lead">{{.Message}}</p>
+  <p>
+    {{if .ActionURL}}<a class="btn" href="{{.ActionURL}}">{{.ActionLabel}}</a>{{end}}
+    {{if .SecondaryURL}}<a class="btn secondary" href="{{.SecondaryURL}}">{{.SecondaryLabel}}</a>{{end}}
+  </p>
+  {{if brand.SupportEmail}}<p class="muted small">Need help? Contact <a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>.</p>{{end}}
+</div>
+{{template "foot" .}}{{end}}

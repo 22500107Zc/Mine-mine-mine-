@@ -2,7 +2,7 @@ list:
   title: Sensitive Modules
   columns:
     module: Module
-    namespace: Namespace
+    namespace: Workspace
     connection: Connection
     location: Location
     ownership:  Ownership

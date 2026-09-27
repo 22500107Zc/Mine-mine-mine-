@@ -78,7 +78,7 @@ func DiscoverOidcProvider(ctx context.Context, log *zap.Logger, opt options.Auth
 	}
 
 	client, err = provider.RegisterClient(ctx, &oidc.ClientRegistration{
-		Name:          "Corteza",
+		Name:          "CulpOS",
 		RedirectURIs:  []string{redirectUrl},
 		ResponseTypes: []string{"token id_token", "code"},
 	})

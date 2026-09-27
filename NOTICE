@@ -1,0 +1,17 @@
+CulpOS
+Copyright Culp Industries.
+
+CulpOS branding, user interface additions, subscription and billing
+functionality, the Founder console, company provisioning and other original
+modifications are Copyright Culp Industries.
+
+This product includes software derived from the Corteza project
+(https://github.com/cortezaproject/corteza), Copyright the Corteza project
+authors and contributors (the project is maintained by Planet Crust), licensed under the Apache License, Version 2.0.
+Files derived from Corteza have been modified by Culp Industries.
+
+This product includes third-party software under their respective licenses,
+distributed in the server/vendor and extra/*/vendor directories and in the
+JavaScript package manifests (package.json / yarn.lock).
+
+Licensed under the Apache License, Version 2.0; see the LICENSE file.

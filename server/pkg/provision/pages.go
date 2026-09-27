@@ -318,3 +318,52 @@ func adjustBlockScale(b [4]int, prev, new int) [4]int {
 
 	return b
 }
+
+// ensurePageLayouts creates layouts for pages that have none.
+//
+// migratePages only runs once per database (before config import), so pages
+// imported later (e.g. the CulpOS workspace template) would otherwise be left
+// without a layout and could not be displayed. Safe to run on every boot.
+func ensurePageLayouts(ctx context.Context, log *zap.Logger, s store.Storer) (err error) {
+	layouts, _, err := store.SearchComposePageLayouts(ctx, s, types.PageLayoutFilter{Deleted: filter.StateInclusive})
+	if err != nil {
+		return
+	}
+
+	withLayout := make(map[uint64]bool, len(layouts))
+	for _, l := range layouts {
+		withLayout[l.PageID] = true
+	}
+
+	pages, _, err := store.SearchComposePages(ctx, s, types.PageFilter{})
+	if err != nil {
+		return
+	}
+
+	var missing types.PageSet
+	for _, p := range pages {
+		if !withLayout[p.ID] {
+			missing = append(missing, p)
+		}
+	}
+
+	if len(missing) == 0 {
+		return nil
+	}
+
+	log.Info("creating layouts for pages without one", zap.Int("count", len(missing)))
+
+	return store.Tx(ctx, s, func(ctx context.Context, s store.Storer) (err error) {
+		translations, err := getRelevantTranslations(ctx, s)
+		if err != nil {
+			return
+		}
+
+		nsRules, pgRules, err := getRelevantRbacRules(ctx, s)
+		if err != nil {
+			return
+		}
+
+		return migratePageChunk(ctx, s, nsRules, pgRules, translations, missing)
+	})
+}

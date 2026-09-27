@@ -1,0 +1,336 @@
+# CulpOS workspace data model
+namespace: culpos-workspace-template
+modules:
+  Customer:
+    name: Customer
+    fields:
+      Name:
+        label: Customer Name
+        kind: String
+        required: true
+      Status:
+        label: Status
+        kind: Select
+        options:
+          options:
+          - Lead
+          - Active
+          - Inactive
+      Industry:
+        label: Industry
+        kind: String
+      Email:
+        label: Email
+        kind: Email
+      Phone:
+        label: Phone
+        kind: String
+      Website:
+        label: Website
+        kind: Url
+      Address:
+        label: Address
+        kind: String
+        options:
+          multiLine: true
+      AccountOwner:
+        label: Account Owner
+        kind: User
+      Notes:
+        label: Notes
+        kind: String
+        options:
+          multiLine: true
+  Contact:
+    name: Contact
+    fields:
+      FirstName:
+        label: First Name
+        kind: String
+        required: true
+      LastName:
+        label: Last Name
+        kind: String
+        required: true
+      Customer:
+        label: Customer
+        kind: Record
+        options:
+          module: Customer
+          labelField: Name
+          queryFields:
+          - Name
+      JobTitle:
+        label: Job Title
+        kind: String
+      Email:
+        label: Email
+        kind: Email
+      Phone:
+        label: Phone
+        kind: String
+      Notes:
+        label: Notes
+        kind: String
+        options:
+          multiLine: true
+  OperationsRecord:
+    name: Record
+    fields:
+      Title:
+        label: Title
+        kind: String
+        required: true
+      Category:
+        label: Category
+        kind: Select
+        options:
+          options:
+          - Operations
+          - Finance
+          - Compliance
+          - Facilities
+          - HR
+          - Other
+      Status:
+        label: Status
+        kind: Select
+        options:
+          options:
+          - Open
+          - In Review
+          - Closed
+      Customer:
+        label: Customer
+        kind: Record
+        options:
+          module: Customer
+          labelField: Name
+          queryFields:
+          - Name
+      Owner:
+        label: Owner
+        kind: User
+      Date:
+        label: Date
+        kind: DateTime
+        options:
+          onlyDate: true
+      Details:
+        label: Details
+        kind: String
+        options:
+          multiLine: true
+  Case:
+    name: Case
+    fields:
+      Subject:
+        label: Subject
+        kind: String
+        required: true
+      Customer:
+        label: Customer
+        kind: Record
+        options:
+          module: Customer
+          labelField: Name
+          queryFields:
+          - Name
+      Contact:
+        label: Contact
+        kind: Record
+        options:
+          module: Contact
+          labelField: LastName
+          queryFields:
+          - FirstName
+          - LastName
+      Status:
+        label: Status
+        kind: Select
+        options:
+          options:
+          - New
+          - Open
+          - Pending
+          - Resolved
+          - Closed
+      Priority:
+        label: Priority
+        kind: Select
+        options:
+          options:
+          - Low
+          - Normal
+          - High
+          - Urgent
+      AssignedTo:
+        label: Assigned To
+        kind: User
+      DueDate:
+        label: Due Date
+        kind: DateTime
+        options:
+          onlyDate: true
+      Description:
+        label: Description
+        kind: String
+        options:
+          multiLine: true
+      Resolution:
+        label: Resolution
+        kind: String
+        options:
+          multiLine: true
+  Task:
+    name: Task
+    fields:
+      Title:
+        label: Title
+        kind: String
+        required: true
+      Status:
+        label: Status
+        kind: Select
+        options:
+          options:
+          - Open
+          - In Progress
+          - Waiting
+          - Done
+      Priority:
+        label: Priority
+        kind: Select
+        options:
+          options:
+          - Low
+          - Normal
+          - High
+          - Urgent
+      AssignedTo:
+        label: Assigned To
+        kind: User
+      DueDate:
+        label: Due Date
+        kind: DateTime
+        options:
+          onlyDate: true
+      Case:
+        label: Related Case
+        kind: Record
+        options:
+          module: Case
+          labelField: Subject
+          queryFields:
+          - Subject
+      Customer:
+        label: Customer
+        kind: Record
+        options:
+          module: Customer
+          labelField: Name
+          queryFields:
+          - Name
+      Notes:
+        label: Notes
+        kind: String
+        options:
+          multiLine: true
+  Approval:
+    name: Approval
+    fields:
+      Subject:
+        label: Subject
+        kind: String
+        required: true
+      Type:
+        label: Type
+        kind: Select
+        options:
+          options:
+          - Purchase
+          - Expense
+          - Time Off
+          - Contract
+          - Other
+      Status:
+        label: Status
+        kind: Select
+        options:
+          options:
+          - Pending
+          - Approved
+          - Rejected
+      RequestedBy:
+        label: Requested By
+        kind: User
+      Approver:
+        label: Approver
+        kind: User
+      Amount:
+        label: Amount
+        kind: Number
+        options:
+          precision: 2
+      DueDate:
+        label: Decision Due
+        kind: DateTime
+        options:
+          onlyDate: true
+      Details:
+        label: Details
+        kind: String
+        options:
+          multiLine: true
+  Document:
+    name: Document
+    fields:
+      Title:
+        label: Title
+        kind: String
+        required: true
+      Category:
+        label: Category
+        kind: Select
+        options:
+          options:
+          - Contract
+          - Invoice
+          - Policy
+          - Proposal
+          - Report
+          - Other
+      File:
+        label: File
+        kind: File
+      Customer:
+        label: Customer
+        kind: Record
+        options:
+          module: Customer
+          labelField: Name
+          queryFields:
+          - Name
+      Owner:
+        label: Owner
+        kind: User
+      Notes:
+        label: Notes
+        kind: String
+        options:
+          multiLine: true
+  Department:
+    name: Department
+    fields:
+      Name:
+        label: Department
+        kind: String
+        required: true
+      Manager:
+        label: Manager
+        kind: User
+      Description:
+        label: Description
+        kind: String
+        options:
+          multiLine: true
