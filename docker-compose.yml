@@ -5,6 +5,8 @@
 #
 # Put a TLS-terminating reverse proxy (e.g. Caddy, nginx, a load balancer)
 # in front of port 8080 in production and set APP_URL to the https URL.
+name: culpos
+
 services:
   db:
     image: postgres:16
