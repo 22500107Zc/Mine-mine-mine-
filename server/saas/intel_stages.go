@@ -379,7 +379,7 @@ func (in *Intel) StagesOf(module string) ProcessStages {
 		}
 		e.Backward = tr < fr && !st.terminal(statusOrEmpty(e.To))
 		e.Fallout = st.Failed[statusOrEmpty(e.To)]
-		e.Skip = !e.Backward && e.ToIndex-e.FromIndex > 1
+		e.Skip = !e.Backward && !st.terminal(statusOrEmpty(e.To)) && tr-fr > 1
 		ps.Edges = append(ps.Edges, *e)
 	}
 	sort.Slice(ps.Edges, func(i, j int) bool { return ps.Edges[i].Count > ps.Edges[j].Count })
@@ -472,16 +472,16 @@ func (in *Intel) TopBottleneck(pp []ProcessStages) *StageRow {
 
 // SLARow analyzes one configured target
 type SLARow struct {
-	Module, Label, Stage string // Stage "" = whole workflow
-	Target                     float64
-	Actual                     Stats
-	Items, Breaches            int
-	Compliance, BreachRate     float64
-	AvgOver, MaxOver           float64
-	Trend                      []float64 // weekly compliance
-	TrendDir                   string
-	Teams, People              []NameCount
-	Link                       string
+	Module, Label, Stage   string // Stage "" = whole workflow
+	Target                 float64
+	Actual                 Stats
+	Items, Breaches        int
+	Compliance, BreachRate float64
+	AvgOver, MaxOver       float64
+	Trend                  []float64 // weekly compliance
+	TrendDir               string
+	Teams, People          []NameCount
+	Link                   string
 }
 
 type NameCount struct {
@@ -492,16 +492,16 @@ type NameCount struct {
 
 // Breach is one record that exceeded a target
 type Breach struct {
-	Item      *WorkItem
-	Customer  string
-	Stage     string
-	Entered   time.Time
-	Deadline  time.Time
-	Finished  *time.Time
-	OverH     float64
-	Assignee  string
-	Status    string
-	Open      bool
+	Item     *WorkItem
+	Customer string
+	Stage    string
+	Entered  time.Time
+	Deadline time.Time
+	Finished *time.Time
+	OverH    float64
+	Assignee string
+	Status   string
+	Open     bool
 }
 
 // SLA analyzes every configured target over the window

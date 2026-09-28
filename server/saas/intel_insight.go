@@ -63,23 +63,23 @@ type EvLine struct {
 }
 
 type Rec struct {
-	Key       string
-	Priority  string // High | Medium | Low
-	Issue     string
-	Evidence  []EvLine
-	Metrics   []string
-	Process   string
-	Module    string
-	Stage     string
-	Records   string // link to affected records
-	RecordsN  int
-	Window    string
-	Action    string
-	Expected  string
-	Strength  Evidence
-	Why       string
-	Metric    string // intervention metric for "Start test"
-	score     float64
+	Key      string
+	Priority string // High | Medium | Low
+	Issue    string
+	Evidence []EvLine
+	Metrics  []string
+	Process  string
+	Module   string
+	Stage    string
+	Records  string // link to affected records
+	RecordsN int
+	Window   string
+	Action   string
+	Expected string
+	Strength Evidence
+	Why      string
+	Metric   string // intervention metric for "Start test"
+	score    float64
 }
 
 // Recommendations derives specific, evidence-backed actions from the scope
@@ -386,15 +386,15 @@ func (in *Intel) accumulationHours(module, status string) (int, int, int) {
 // What changed / Why
 
 type Change struct {
-	Label      string
-	Dimension  string
-	Cur, Prev  string
-	Delta      string
-	Dir        string
-	Good       bool
-	Neutral    bool
-	Link       string
-	magnitude  float64
+	Label     string
+	Dimension string
+	Cur, Prev string
+	Delta     string
+	Dir       string
+	Good      bool
+	Neutral   bool
+	Link      string
+	magnitude float64
 }
 
 type changeMetric struct {
@@ -608,13 +608,13 @@ type Driver struct {
 }
 
 type WhyView struct {
-	Metric       string
-	Cur, Prev    float64
-	N, PrevN     int
-	Drivers      []Driver
-	Lenses       []Driver
-	Throughput   []DimChange
-	Enough       bool
+	Metric     string
+	Cur, Prev  float64
+	N, PrevN   int
+	Drivers    []Driver
+	Lenses     []Driver
+	Throughput []DimChange
+	Enough     bool
 }
 
 // WhyCycle decomposes the change in average cycle time between two windows
@@ -872,17 +872,17 @@ func (in *Intel) Compare(cur, prev Window) []CompareRow {
 // Data coverage
 
 type Coverage struct {
-	Records       int
-	Events        int
-	FullHistory   float64
-	Assignment    float64
-	Department    float64
-	Team          float64
-	DueDates      float64
-	HistoryDays   float64
-	Earliest      time.Time
-	Live          int
-	Partial       int
+	Records     int
+	Events      int
+	FullHistory float64
+	Assignment  float64
+	Department  float64
+	Team        float64
+	DueDates    float64
+	HistoryDays float64
+	Earliest    time.Time
+	Live        int
+	Partial     int
 }
 
 // Coverage reports how complete the history behind the scope is
@@ -946,13 +946,13 @@ type MonthReport struct {
 }
 
 type MonthRow struct {
-	Label        string
-	Cur, Prev    string
-	Avg3         string
-	Delta        string
-	Dir          string
-	Status       string
-	Series       []float64
+	Label     string
+	Cur, Prev string
+	Avg3      string
+	Delta     string
+	Dir       string
+	Status    string
+	Series    []float64
 }
 
 type MonthOption struct {

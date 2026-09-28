@@ -19,8 +19,8 @@ import (
 // deckTab is one Command Deck view
 type deckTab struct {
 	Key, Label, Path, Title, Question string
-	Group                            string // pipeline | process | org (sub-navigation)
-	Sub                              string // label inside its group
+	Group                             string // pipeline | process | org (sub-navigation)
+	Sub                               string // label inside its group
 }
 
 // deckTabs are the Command Deck views, in navigation order
@@ -1166,4 +1166,3 @@ func (svc *Service) reportIssue(w http.ResponseWriter, r *http.Request) {
 	svc.setFlash(w, "success", fmt.Sprintf("Thanks — issue #%d was sent to %s support.", ir.ID, svc.cfg.Brand.CompanyName))
 	http.Redirect(w, r, back, http.StatusSeeOther)
 }
-

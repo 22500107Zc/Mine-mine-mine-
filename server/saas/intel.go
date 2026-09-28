@@ -33,7 +33,7 @@ type Scope struct {
 // Window is a half-open time range [From, To)
 type Window struct{ From, To time.Time }
 
-func (w Window) Days() float64       { return w.To.Sub(w.From).Hours() / 24 }
+func (w Window) Days() float64        { return w.To.Sub(w.From).Hours() / 24 }
 func (w Window) Has(t time.Time) bool { return !t.Before(w.From) && t.Before(w.To) }
 
 // overlap returns the part of [a, b) inside the window

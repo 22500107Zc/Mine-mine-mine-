@@ -298,7 +298,7 @@ func TestIntelExactMeasurements(t *testing.T) {
 	}
 	events := []saas.ActivityEvent{
 		ev(h(0), saas.ActivityCreated, "", "Pending", 11, 10),
-		ev(h(4), saas.ActivityUpdated, "", "Pending", 12, 11), // handoff 11 → 12
+		ev(h(4), saas.ActivityUpdated, "", "Pending", 12, 11),         // handoff 11 → 12
 		ev(h(10), saas.ActivityStatus, "Pending", "Approved", 12, 12), // picked up after 6h
 		ev(h(30), saas.ActivityStatus, "Approved", "Pending", 12, 12), // reopened: loop
 		ev(h(36), saas.ActivityStatus, "Pending", "Approved", 12, 12), // loop closed after 6h

@@ -168,34 +168,65 @@ async function signup(b, co, first, email, pw) {
     ok('generated profile indicator follows the theme', !!avatar && /^[A-Z]{1,3}$/.test(avatar.text) && avatar.bg === 'rgb(18, 23, 29)' && avatar.fg === 'rgb(0, 224, 192)', JSON.stringify(avatar));
     await page.goto(B + '/command');
     const deck = await snap(page, 'command-deck');
-    ok('Command Deck shows all sections', ['Activity 7d', 'Completion rate', 'What is happening', 'Where is it happening',
-      'Why might it be happening', 'What is it affecting', 'What should we test next'].every(x => deck.toLowerCase().includes(x.toLowerCase())));
-    const evCount = Number(((deck.match(/([\d,]+) events \/ 12 months/i) || [])[1] || '0').replace(/,/g, ''));
+    ok('Command Deck overview shows the execution picture', ['What is happening', 'Total active work', 'Median cycle time', 'P95 cycle time',
+      'SLA compliance', 'Handoff delay', 'Rework rate', 'Where work is stuck', 'What changed', 'Activity history',
+      'What management should investigate', 'Data coverage'].every(x => deck.toLowerCase().includes(x.toLowerCase())));
+    const evCount = Number(((deck.match(/([\d,]+) events · \d+ active days/i) || [])[1] || '0').replace(/,/g, ''));
     ok('Command Deck counts the recorded activity', evCount >= 3, String(evCount));
-    ok('Command Deck shows no demo data', !/demo/i.test(deck));
-    await page.goto(B + '/command/activity?day=' + new Date().toISOString().slice(0, 10));
+    ok('Command Deck shows no demo data', !/demo|lorem/i.test(deck));
+    ok('KPI cards carry trend lines and drilldowns', await page.locator('.kpi .spark').count() >= 15 && await page.locator('.kpi a.more').count() >= 15);
+    await Promise.all([page.waitForNavigation(), page.selectOption('#s-range', '7d')]);
+    ok('scope bar changes the analysis window', page.url().includes('range=7d') && /last 7 days/i.test(await page.evaluate(() => document.body.innerText)), page.url());
+    await page.goto(B + '/command/activity?view=day&date=' + new Date().toISOString().slice(0, 10));
     const day = await snap(page, 'command-deck-day');
-    ok('Activity Graph day lists records created in the app', ['Northwind Traders', 'Contoso Freight', 'Call Northwind about Q4 order'].every(x => day.includes(x)));
-    const recLink = await page.locator('a[href*="/record/"]').first().getAttribute('href').catch(() => null);
-    ok('day records link into the workspace', !!recLink && recLink.includes('/compose/ns/'), recLink || '');
-    for (const [p, label] of [['/command/pipeline', 'Where does work stop moving?'], ['/command/outcomes', 'What is it affecting?'],
-      ['/command/process', 'How does work actually move?'], ['/command/organization', 'Who carries the work?'],
-      ['/command/goals', 'What should we aim for'], ['/command/tests', 'Did the change work?'],
+    ok('Activity day view lists records created in the app', ['Northwind Traders', 'Contoso Freight', 'Call Northwind about Q4 order'].every(x => day.includes(x)));
+    await page.locator('a[href^="/command/record/"]').first().click();
+    await page.waitForSelector('#drawer:not([hidden]) .ri', { timeout: 10000 }).catch(() => {});
+    const drawer = await page.evaluate(() => { const d = document.getElementById('drawer'); return d && !d.hidden ? d.innerText : ''; });
+    ok('record intelligence opens in a drawer with its timeline', /timeline/i.test(drawer) && /path/i.test(drawer), drawer.slice(0, 80));
+    const wsLink = await page.locator('#drawer a[href^="/compose/ns/"]').first().getAttribute('href').catch(() => null);
+    ok('record intelligence links into the workspace', !!wsLink, wsLink || '');
+    await page.keyboard.press('Escape');
+    for (const [p, label] of [['/command/pipeline', 'Where does work stop moving?'], ['/command/map', 'where does it pile up'],
+      ['/command/sla', 'Which targets are missed'], ['/command/aging', 'open too long'], ['/command/throughput', 'finishing as fast'],
+      ['/command/outcomes', 'What did the month deliver'], ['/command/process', 'How does work actually move?'],
+      ['/command/handoffs', 'wait between owners'], ['/command/rework', 'What comes back'], ['/command/organization', 'Who carries the work'],
+      ['/command/capacity', 'How is work distributed'], ['/command/goals', 'What are we aiming for'], ['/command/tests', 'Did the change work?'],
+      ['/command/recommendations', 'investigate next'], ['/command/changes', 'What moved'], ['/command/definitions', 'How every number is calculated'],
       ['/command/access', 'Who can see and change what?'], ['/command/report', 'Something wrong or missing?']]) {
       const rsp = await page.goto(B + p);
-      ok(`Command Deck tab ${p}`, rsp.status() === 200 && (await snap(page, p.split('/').pop())).toLowerCase().includes(label.toLowerCase()));
+      ok(`Command Deck view ${p}`, rsp.status() === 200 && (await snap(page, p.split('/').pop())).toLowerCase().includes(label.toLowerCase()));
     }
     await page.goto(B + '/command/pipeline');
     const pipe = (await page.evaluate(() => document.body.innerText)).toLowerCase();
-    ok('Pipeline shows the four KPI cards', ['avg end-to-end cycle', 'waiting share of cycle', 'stages breaching sla', 'items still in stage'].every(x => pipe.includes(x)));
+    ok('Pipeline shows its KPI cards and stage table', ['avg end-to-end cycle', 'waiting share of cycle', 'sla breaches', 'items still in stage', 'net wip', 'p95'].every(x => pipe.includes(x)));
     await page.goto(B + '/command/goals');
-    await page.fill('#t-Task', '12');
-    await post(page, 'button:has-text("Save Targets")');
-    ok('Goal Intelligence saves a target', (await page.inputValue('#t-Task')) === '12');
+    await page.fill('#target_Task', '12');
+    await page.fill('[id="target_Task|In Progress"]', '6');
+    await post(page, 'button:has-text("Save targets")');
+    ok('SLA targets save for a workflow and a stage', (await page.inputValue('#target_Task')) === '12' && (await page.inputValue('[id="target_Task|In Progress"]')) === '6');
+    await page.fill('#g-title', 'Median cycle under two days');
+    await page.selectOption('#g-metric', 'cycle_median');
+    await page.fill('#g-target', '48');
+    await post(page, 'button:has-text("Create goal")');
+    const goal = (await page.evaluate(() => document.body.innerText)).toLowerCase();
+    ok('Goal created with baseline, drivers and confidence', page.url().includes('/command/goals/') && ['baseline', 'goal drivers', 'confidence in the projection'].every(x => goal.includes(x)), page.url());
     await page.goto(B + '/command/tests');
-    await page.fill('#nt-title', 'Morning triage of new tasks');
-    await post(page, 'button:has-text("Start Test")');
-    ok('Intervention test started', /morning triage of new tasks/i.test(await page.evaluate(() => document.body.innerText)));
+    await page.fill('#t-title', 'Morning triage of new tasks');
+    await page.fill('#t-notes', 'Owner reviews new tasks at 9:00');
+    await post(page, 'button:has-text("Start measuring")');
+    const test = (await page.evaluate(() => document.body.innerText)).toLowerCase();
+    ok('Intervention test measures before and after', /morning triage of new tasks/.test(test) && /before/.test(test) && /evidence strength/.test(test), page.url());
+    {
+      const mctx = await b.newContext({ viewport: { width: 390, height: 844 }, storageState: await page.context().storageState() });
+      const mp = await mctx.newPage();
+      for (const p of ['/command', '/command/pipeline', '/command/map', '/command/sla']) {
+        await mp.goto(B + p);
+        const over = await mp.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+        ok(`phone: ${p} does not scroll sideways`, !over);
+      }
+      await mctx.close();
+    }
 
     await page.goto(B + '/billing');
     const bill = await snap(page, 'billing-active');
@@ -323,11 +354,20 @@ async function signup(b, co, first, email, pw) {
     await X.close();
 
     ok('Founder dashboard: both companies, MRR $667.76', d.includes('Acme Operations') && d.includes('Beta Logistics') && d.includes('$667.76'));
+    ok('Founder dashboard: platform usage and Command Deck adoption', /platform usage/i.test(d) && /command deck adoption/i.test(d));
     await post(fp, 'a:has-text("Acme Operations")');
     const c = await snap(fp, 'founder-company');
+    const companyURL = fp.url();
     await fp.goto(B + '/founder/issues');
     ok('Founder sees the reported issue', (await fp.evaluate(() => document.body.innerText)).includes('Customer export is missing the phone column'));
-    await fp.goBack();
+    await post(fp, 'button:has-text("Start review")');
+    ok('Founder moves the issue into review', /in review · 1/i.test(await fp.evaluate(() => document.body.innerText)));
+    await fp.fill('textarea[name=note]', 'Phone column added to the export');
+    await post(fp, 'button:has-text("Resolve")');
+    const inbox = await fp.evaluate(() => document.body.innerText);
+    ok('Founder resolves the issue with a note', /resolved · 1/i.test(inbox) && inbox.includes('Phone column added to the export'));
+    await fp.goto(companyURL);
+    ok('Founder company intelligence', /company intelligence/i.test(c) && /operational usage/i.test(c) && /recent sign-ins/i.test(c));
     ok('Founder company detail: users, subscription, Stripe IDs, audit', c.includes('eve@acme.test') && /cus_/.test(c) && /sub_/.test(c) && /Audit/i.test(c));
     await post(fp, 'button:has-text("Disable Company")');
     await snap(fp, 'founder-company-disabled');

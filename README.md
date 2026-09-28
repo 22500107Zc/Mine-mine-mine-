@@ -31,24 +31,50 @@ hand. CulpOS does this itself:
 3. The owner signs in and is guided through a short setup (company profile,
    invite team, first customer, first task). Invited team members are included
    in the company subscription.
-4. Every change to a workspace record is measured. Owners, administrators and
-   managers get the **Command Deck** at `/command`, built only from the
-   company's own data:
-   - **Command Deck** – activity KPIs, what is happening, where, why, what it
-     affects and what to test next
-   - **Activity Graph** – 12-month activity graph with day drill-down to records
-   - **Pipeline & Bottlenecks** – scope filters, end-to-end cycle, waiting
-     share, workflows breaching their target, per-status stages, aging work
-   - **Outcomes & Effects** – monthly trend and the measured effect of waiting,
-     missed due dates and rework on completion time
-   - **Process Review** – how work really moves: transitions, loops, paths
-   - **Organization Frame** – workload by person and department
-   - **Goal Intelligence** – cycle-time targets and ranked recommendations
-   - **Intervention Tests** – start a test and get an automatic before/after
-     measurement
-   - **Org & Access** – people, roles and what each role can do
-   - **Report an Issue** – sent to Culp Industries support (also on `/support`
-     for every member); the Founder sees reports at `/founder/issues`
+4. Every change to a workspace record is measured (status, owner, department,
+   team, type, priority, customer, linked case). Owners, administrators and
+   managers get the **Command Deck** at `/command` — an execution
+   intelligence layer built only from the company's own recorded history.
+   A persistent scope bar (date presets or a custom range, process, status,
+   type, priority, department, team, assignee) applies to every view, and
+   every number drills down to the exact records behind it:
+   - **Command Deck** – management summary, 21 KPI cards (WIP, throughput,
+     cycle time avg/median/P90/P95, SLA compliance and breaches, blocked,
+     rework, handoff delay, aging, overdue, completion and failure rates…)
+     with the previous comparable period and a trend line, where work is
+     stuck, what changed, activity history and recommendations
+   - **Activity Graph** – year → month → week → day → event, with filters
+   - **Pipeline & Bottlenecks** – per-stage WIP, entries/exits, time-in-stage
+     percentiles, SLA, aging, blocked, rework, fallout, flow rates, handoff
+     delay, owners, trend and a component-based severity score; plus the
+     **Bottleneck Map**, stage detail, **SLA** intelligence (per workflow and
+     per stage targets, breached records), **Aging** (buckets, at-risk work
+     compared with completed history) and **Throughput**
+   - **Outcomes & Effects** – monthly management report versus the previous
+     month, the 3-month average and 12 months of history
+   - **Process Review** – execution paths, fastest/slowest/rework paths,
+     stalled and skipped work, variance, distribution; **Handoffs** (owner and
+     stage) and **Rework** (loops and the time they cost)
+   - **Organization Frame** / **Capacity** – departments, teams, people
+     (workload, not performance ratings) with detail pages
+   - **Goal Intelligence** – goals with baseline, trend, projection,
+     explained confidence and observed drivers; SLA targets
+   - **Intervention Tests** – before/after windows, sample sizes, evidence
+     strength and notes; results are associations, never claimed causes
+   - **Recommendations** and **What Changed** (with the drivers of cycle-time
+     change and period comparisons)
+   - **Record intelligence** – any record's path, timeline (including SLA
+     breach moments), handoffs, loops and related records
+   - **Definitions** (`/command/definitions`) and a data-coverage line on
+     every view: how each number is calculated and how complete the history is
+   - **Org & Access** and **Report an Issue** (the Founder works reports
+     through open → in review → resolved → reopened at `/founder/issues`)
+
+   New companies see explicit "not enough history yet" states — nothing is
+   estimated or invented. Synthetic history exists only in tests and in the
+   `server/saas/fixture` generator, whose development command refuses to run
+   unless `CULPOS_FIXTURE_CONFIRM=test-environment` is set and marks every
+   event `source = 'fixture'`.
 5. Subscription changes (payment failures, recovery, cancellation at period
    end, resumption, cancellation) arrive through webhooks and are enforced on
    the server for every request. Customer data is never deleted because of
@@ -59,7 +85,7 @@ hand. CulpOS does this itself:
 | Sign in / forgot password / accept invitation | `/auth/login` |
 | Paid signup | `/signup` |
 | Workspace | `/` |
-| Command Deck (activity graph, bottlenecks, findings, recommendations) | `/command` |
+| Command Deck (execution intelligence, drilldowns, goals, interventions) | `/command` |
 | Company Admin (profile, users, roles, invitations) | `/company` |
 | Billing (status, next billing date, manage billing, cancel/resume) | `/billing` |
 | Support | `/support` |

@@ -9,7 +9,7 @@ import (
 
 // Stats summarizes a set of durations (hours)
 type Stats struct {
-	N                                   int
+	N                                    int
 	Avg, Median, P75, P90, P95, Min, Max float64
 }
 
@@ -279,11 +279,17 @@ var kpiSpecs = []kpiSpec{
 			}
 			return fmt.Sprintf("%d of %d within target", m.SLAMet, m.SLAApplicable)
 		}},
-	{"breaches", "SLA breaches", "breaches", "sla_breached", "n", lower, func(m Measures) (float64, bool) { return float64(m.SLABreaches + m.OpenBreaching), m.SLAApplicable > 0 || m.OpenBreaching > 0 },
-		func(m Measures) string { return fmt.Sprintf("%d completed late · %d open past target", m.SLABreaches, m.OpenBreaching) }},
+	{"breaches", "SLA breaches", "breaches", "sla_breached", "n", lower, func(m Measures) (float64, bool) {
+		return float64(m.SLABreaches + m.OpenBreaching), m.SLAApplicable > 0 || m.OpenBreaching > 0
+	},
+		func(m Measures) string {
+			return fmt.Sprintf("%d completed late · %d open past target", m.SLABreaches, m.OpenBreaching)
+		}},
 	{"blocked", "Blocked work", "blocked", "blocked", "n", lower, func(m Measures) (float64, bool) { return float64(m.Blocked), true }, nil},
 	{"rework", "Rework rate", "rework", "rework", "%", lower, func(m Measures) (float64, bool) { return m.ReworkRate, m.Completed > 0 },
-		func(m Measures) string { return fmt.Sprintf("%d of %d completed went backward", m.ReworkItems, m.Completed) }},
+		func(m Measures) string {
+			return fmt.Sprintf("%d of %d completed went backward", m.ReworkItems, m.Completed)
+		}},
 	{"handoff", "Handoff delay", "handoff", "handoffs", "h", lower, func(m Measures) (float64, bool) { return m.HandoffWait.Median, m.HandoffWait.N > 0 },
 		func(m Measures) string { return fmt.Sprintf("median · %d handoffs", m.HandoffWait.N) }},
 	{"aging", "Aging work", "aging", "aging", "n", lower, func(m Measures) (float64, bool) { return float64(m.Aging), true }, func(Measures) string { return "open more than 7 days" }},

@@ -105,10 +105,10 @@ func (r *Repo) CompanyDailyEvents(ctx context.Context, companyID uint64, since t
 
 // ModuleCount is created/changed records of one kind
 type ModuleCount struct {
-	Module          string
-	Created30       int
-	CreatedAll      int
-	Changes30       int
+	Module     string
+	Created30  int
+	CreatedAll int
+	Changes30  int
 }
 
 // CompanyModuleCounts counts records created and changed per module

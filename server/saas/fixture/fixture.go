@@ -40,6 +40,10 @@ const (
 	updated = "updated"
 )
 
+// TeamIDs are the teams the generator routes work through: intake,
+// review, approvals and support
+var TeamIDs = [4]uint64{9101, 9102, 9103, 9104}
+
 // Org describes the organization the history is generated for
 type Org struct {
 	Departments map[uint64]string
@@ -70,12 +74,12 @@ func DefaultOrg(people []uint64) Org {
 
 // Options control the generated history
 type Options struct {
-	Now      time.Time
-	Days     int     // length of history
-	Volume   float64 // 1.0 ≈ 24 new work items per weekday
-	Seed     int64
-	FirstID  uint64
-	Org      Org
+	Now       time.Time
+	Days      int     // length of history
+	Volume    float64 // 1.0 ≈ 24 new work items per weekday
+	Seed      int64
+	FirstID   uint64
+	Org       Org
 	Customers int
 }
 
@@ -106,10 +110,10 @@ func Generate(o Options) []Event {
 		customers = append(customers, id)
 		at := start.Add(time.Duration(g.r.Intn(72)) * time.Hour).Add(-96 * time.Hour)
 		g.emit(Event{OccurredAt: at, Module: "Customer", RecordID: id, Title: customerNames[i%len(customerNames)] + suffix(i), Kind: created,
-			ToStatus: "Active", CustomerID: id, AssigneeID: g.member(9104), ActorID: g.member(9101)})
+			ToStatus: "Active", CustomerID: id, AssigneeID: g.member(TeamIDs[3]), ActorID: g.member(TeamIDs[0])})
 	}
 
-	for d := 0; d < o.Days; d++ {
+	for d := 0; d <= o.Days; d++ {
 		day := start.AddDate(0, 0, d)
 		wd := day.Weekday()
 		weekend := wd == time.Saturday || wd == time.Sunday
@@ -234,7 +238,7 @@ func (g *gen) start(module, title string, at time.Time, status string, team uint
 		extra(&e)
 	}
 	c := e
-	c.OccurredAt, c.Kind, c.ToStatus, c.ActorID = at, created, status, g.member(9101)
+	c.OccurredAt, c.Kind, c.ToStatus, c.ActorID = at, created, status, g.member(TeamIDs[0])
 	g.emit(c)
 	return &rec{g: g, base: e, at: at, st: status, who: e.AssigneeID}
 }
@@ -264,7 +268,7 @@ func (r *rec) handoff(after time.Duration, team uint64) {
 func (g *gen) task(day time.Time, customers []uint64, improved bool) {
 	prio := []string{"Low", "Normal", "Normal", "High", "Urgent"}[g.r.Intn(5)]
 	due := day.AddDate(0, 0, 2+g.r.Intn(6))
-	r := g.start("Task", fmt.Sprintf("%s #%d", taskNames[g.r.Intn(len(taskNames))], g.next%100000), g.workTime(day), "Open", 9101, func(e *Event) {
+	r := g.start("Task", fmt.Sprintf("%s #%d", taskNames[g.r.Intn(len(taskNames))], g.next%100000), g.workTime(day), "Open", TeamIDs[0], func(e *Event) {
 		e.Priority, e.DueAt, e.CustomerID = prio, &due, customers[g.r.Intn(len(customers))]
 	})
 	r.move(g.hours(5, 0.9), "In Progress")
@@ -274,7 +278,7 @@ func (g *gen) task(day time.Time, customers []uint64, improved bool) {
 	}
 	if g.r.Float64() < 0.45 {
 		// review by a second team
-		r.handoff(g.hours(4, 0.6), 9102)
+		r.handoff(g.hours(4, 0.6), TeamIDs[1])
 		review := 9.0
 		if improved {
 			review = 4.0
@@ -292,7 +296,7 @@ func (g *gen) task(day time.Time, customers []uint64, improved bool) {
 func (g *gen) caseFlow(day time.Time, customers []uint64) {
 	cust := customers[g.r.Intn(len(customers))]
 	due := day.AddDate(0, 0, 3+g.r.Intn(5))
-	r := g.start("Case", fmt.Sprintf("%s — %s", caseNames[g.r.Intn(len(caseNames))], customerNames[int(cust)%len(customerNames)]), g.workTime(day), "New", 9104, func(e *Event) {
+	r := g.start("Case", fmt.Sprintf("%s — %s", caseNames[g.r.Intn(len(caseNames))], customerNames[int(cust)%len(customerNames)]), g.workTime(day), "New", TeamIDs[3], func(e *Event) {
 		e.Category = []string{"Question", "Problem", "Incident", "Request", "Complaint"}[g.r.Intn(5)]
 		e.Priority, e.DueAt, e.CustomerID = []string{"Low", "Normal", "High", "Urgent"}[g.r.Intn(4)], &due, cust
 	})
@@ -311,7 +315,7 @@ func (g *gen) caseFlow(day time.Time, customers []uint64) {
 	// follow-up task linked to the case
 	if g.r.Float64() < 0.4 {
 		caseID := r.base.RecordID
-		t := g.start("Task", "Follow up: "+r.base.Title, r.at.Add(-g.hours(8, 0.5)), "Open", 9104, func(e *Event) {
+		t := g.start("Task", "Follow up: "+r.base.Title, r.at.Add(-g.hours(8, 0.5)), "Open", TeamIDs[3], func(e *Event) {
 			e.CaseID, e.CustomerID, e.Priority = caseID, cust, "Normal"
 		})
 		t.move(g.hours(4, 0.6), "In Progress")
@@ -320,7 +324,7 @@ func (g *gen) caseFlow(day time.Time, customers []uint64) {
 }
 
 func (g *gen) approval(day time.Time, slower bool) {
-	r := g.start("Approval", fmt.Sprintf("%s request #%d", approvalNames[g.r.Intn(len(approvalNames))], g.next%100000), g.workTime(day), "Pending", 9103, func(e *Event) {
+	r := g.start("Approval", fmt.Sprintf("%s request #%d", approvalNames[g.r.Intn(len(approvalNames))], g.next%100000), g.workTime(day), "Pending", TeamIDs[2], func(e *Event) {
 		e.Category = approvalNames[g.r.Intn(len(approvalNames))]
 	})
 	wait := 14.0
@@ -328,7 +332,7 @@ func (g *gen) approval(day time.Time, slower bool) {
 		wait = 30.0
 	}
 	if g.r.Float64() < 0.3 {
-		r.handoff(g.hours(6, 0.7), 9103)
+		r.handoff(g.hours(6, 0.7), TeamIDs[2])
 	}
 	final := "Approved"
 	if g.r.Float64() < 0.12 {
@@ -342,7 +346,7 @@ func (g *gen) approval(day time.Time, slower bool) {
 }
 
 func (g *gen) record(day time.Time, customers []uint64, improved bool) {
-	r := g.start("OperationsRecord", fmt.Sprintf("%s %d", recordNames[g.r.Intn(len(recordNames))], g.next%100000), g.workTime(day), "Open", 9102, func(e *Event) {
+	r := g.start("OperationsRecord", fmt.Sprintf("%s %d", recordNames[g.r.Intn(len(recordNames))], g.next%100000), g.workTime(day), "Open", TeamIDs[1], func(e *Event) {
 		e.Category = []string{"Operations", "Finance", "Compliance", "Facilities", "HR"}[g.r.Intn(5)]
 		e.CustomerID = customers[g.r.Intn(len(customers))]
 	})

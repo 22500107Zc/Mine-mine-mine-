@@ -667,10 +667,10 @@ table.hours td.l1 { background: #1e4a42; } table.hours td.l2 { background: #2a75
 .ri-time { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 1px solid var(--line); }
 .ri-time li { display: grid; grid-template-columns: 110px 1fr auto; gap: 12px; padding: 6px 0; font-size: 14px; position: relative; }
 .ri-time li::before { content: ""; position: absolute; left: -18px; top: 12px; width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
-.ri-time li.completed::before { background: var(--green); } .ri-time li.alert::before { background: var(--red); } .ri-time li.handoff::before, .ri-time li.assigned::before { background: var(--accent); }
+.ri-time li.completed::before { background: var(--green); } .ri-time li.is-alert::before { background: var(--red); } .ri-time li.handoff::before, .ri-time li.assigned::before { background: var(--accent); }
 .ri-time time { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .ri-time em { font-style: normal; color: var(--muted); font-size: 13px; }
-.ri-time li.alert span { color: var(--red); }
+.ri-time li.is-alert span { color: var(--red); }
 
 /* drawer */
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(760px, 100vw); background: var(--bg); border-left: 1px solid var(--line); z-index: 60;
@@ -723,3 +723,13 @@ a[data-tip] { cursor: pointer; }
 .issue-actions textarea { font-size: 13px; padding: 6px 8px; margin-bottom: 4px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pill.neutral { color: var(--muted); }
+.issue-actions .note { color: var(--text); margin-bottom: 6px; white-space: pre-wrap; }
+
+.ri-head h2 { font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 24px; }
+.ri-facts div { min-width: 0; }
+.stage-table th, .stage-table td { padding: 10px 10px; font-size: 13px; }
+.stage-table th { font-size: 11px; letter-spacing: .1em; }
+.stage-table td:first-child, .stage-table th:first-child { position: sticky; left: 0; background: var(--panel); z-index: 1; white-space: nowrap; min-width: 150px; }
+.kpi .v { font-size: 26px; }
+.kpi .spark { width: 92px; }
+.pmap .elabel { font-size: 10.5px; }

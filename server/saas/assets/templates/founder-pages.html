@@ -301,7 +301,7 @@
     <td><strong>{{.Summary}}</strong>{{if .Details}}<div class="muted small" style="white-space:pre-wrap">{{.Details}}</div>{{end}}</td>
     <td class="small">{{orDash .Page}}</td>
     <td><span class="pill {{statusClass .Status}}">{{issueLabel .Status}}</span></td>
-    <td class="issue-actions">
+    <td class="issue-actions">{{if .ResolutionNote}}<div class="small note">Note: {{.ResolutionNote}}</div>{{end}}
       <form method="post" action="/founder/issues/{{.ID}}/in_review?filter={{$.Filter}}"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="note" value="{{.ResolutionNote}}">{{if or (eq .Status "open") (eq .Status "reopened")}}<button class="btn small secondary" type="submit">Start review</button>{{end}}</form>
       <form method="post" action="/founder/issues/{{.ID}}/resolved?filter={{$.Filter}}"><input type="hidden" name="csrf" value="{{$.CSRF}}">
         <label class="sr-only" for="note-{{.ID}}">Resolution note</label><textarea id="note-{{.ID}}" name="note" rows="2" maxlength="2000" placeholder="Resolution note">{{.ResolutionNote}}</textarea>

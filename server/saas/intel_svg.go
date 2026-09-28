@@ -79,10 +79,10 @@ func processMap(ps ProcessStages, scope Scope) template.HTML {
 	if len(ps.Rows) == 0 {
 		return ""
 	}
-	const nodeW, nodeH, gap, top = 170.0, 108.0, 70.0, 96.0
+	const nodeW, nodeH, gap, top = 140.0, 108.0, 74.0, 150.0
 	n := len(ps.Rows)
 	width := 20 + float64(n)*nodeW + float64(n-1)*gap + 20
-	height := top + nodeH + 120
+	height := top + nodeH + 150
 
 	x := func(i int) float64 { return 20 + float64(i)*(nodeW+gap) }
 	var b strings.Builder
@@ -123,15 +123,15 @@ func processMap(ps ProcessStages, scope Scope) template.HTML {
 		case !e.Backward && e.ToIndex == e.FromIndex+1:
 			y := top + nodeH/2
 			d = fmt.Sprintf("M%.0f,%.0f L%.0f,%.0f", x(e.FromIndex)+nodeW, y, x(e.ToIndex)-4, y)
-			lx, ly = (x(e.FromIndex)+nodeW+x(e.ToIndex))/2, y-8
+			lx, ly = (x(e.FromIndex)+nodeW+x(e.ToIndex))/2, y-14
 		case !e.Backward:
 			fwd++
-			lift := 26.0 + float64(fwd%3)*18
+			lift := 18.0 + float64(fwd)*16
 			d = fmt.Sprintf("M%.0f,%.0f C%.0f,%.0f %.0f,%.0f %.0f,%.0f", x1, top, x1, top-lift*1.6, x2, top-lift*1.6, x2, top-4)
-			lx, ly = (x1+x2)/2, top-lift*1.2-4
+			lx, ly = (x1+x2)/2, top-lift*1.2-6
 		default:
 			back++
-			drop := 30.0 + float64(back%3)*22
+			drop := 22.0 + float64(back)*18
 			yb := top + nodeH
 			d = fmt.Sprintf("M%.0f,%.0f C%.0f,%.0f %.0f,%.0f %.0f,%.0f", x1, yb, x1, yb+drop*1.6, x2, yb+drop*1.6, x2, yb+4)
 			lx, ly = (x1+x2)/2, yb+drop*1.2+14
@@ -156,7 +156,7 @@ func processMap(ps ProcessStages, scope Scope) template.HTML {
 		href := link("/command/stage", "workflow", ps.Module, "stage", r.Status)
 		fmt.Fprintf(&b, `<a href="%s"><title>%s · %s</title><g class="node %s"><rect x="%.0f" y="%.0f" width="%.0f" height="%.0f" rx="3"/>`,
 			href, html.EscapeString(ps.Label), html.EscapeString(r.Status), cls, x(i), top, nodeW, nodeH)
-		fmt.Fprintf(&b, `<text class="nname" x="%.0f" y="%.0f">%s</text>`, x(i)+12, top+22, html.EscapeString(truncate(r.Status, 18)))
+		fmt.Fprintf(&b, `<text class="nname" x="%.0f" y="%.0f">%s</text>`, x(i)+12, top+22, html.EscapeString(truncate(r.Status, 16)))
 		if r.Terminal {
 			fmt.Fprintf(&b, `<text class="nstat" x="%.0f" y="%.0f">%d reached</text>`, x(i)+12, top+46, r.Entered)
 		} else {
@@ -166,9 +166,9 @@ func processMap(ps ProcessStages, scope Scope) template.HTML {
 				sla = fmt.Sprintf("SLA %.0f%% · %d br", r.Compliance, r.Breaches)
 			}
 			fmt.Fprintf(&b, `<text class="nstat" x="%.0f" y="%.0f">%s</text>`, x(i)+12, top+66, html.EscapeString(sla))
-			fmt.Fprintf(&b, `<text class="nstat" x="%.0f" y="%.0f">%.1f/day out</text>`, x(i)+12, top+86, r.OutRate)
+			fmt.Fprintf(&b, `<text class="nstat" x="%.0f" y="%.0f">%.1f/day out</text>`, x(i)+12, top+84, r.OutRate)
 			if r.Band != "—" && r.Band != "" {
-				fmt.Fprintf(&b, `<text class="nband %s" x="%.0f" y="%.0f" text-anchor="end">%s</text>`, cls, x(i)+nodeW-10, top+22, html.EscapeString(strings.ToUpper(r.Band)))
+				fmt.Fprintf(&b, `<text class="nband %s" x="%.0f" y="%.0f" text-anchor="end">%s %.0f</text>`, cls, x(i)+nodeW-10, top+nodeH-10, html.EscapeString(strings.ToUpper(r.Band)), r.Severity)
 			}
 		}
 		b.WriteString(`</g></a>`)
@@ -241,8 +241,12 @@ func lineChart(series []float64, target float64, hasTarget bool, marker int, uni
 		hi, lo = hi+1, lo-1
 	}
 	span := hi - lo
+	floor := lo >= 0
 	lo -= span * 0.1
 	hi += span * 0.1
+	if floor && lo < 0 {
+		lo = 0
+	}
 	step := (w - 2*pad) / float64(max(1, len(series)-1))
 	y := func(v float64) float64 { return h - pad - (v-lo)/(hi-lo)*(h-2*pad) }
 	var b strings.Builder
@@ -289,4 +293,3 @@ func scopeHidden(s Scope, skip ...string) template.HTML {
 	}
 	return template.HTML(b.String())
 }
-

@@ -554,8 +554,8 @@
 {{end}}
 
 {{if and (ne $v "access") (ne $v "report") (ne $v "defs") (ne $v "record")}}{{template "coverage" .}}{{end}}
-</div>
 <aside class="drawer" id="drawer" hidden aria-label="Record intelligence"><div class="drawer-bar"><button type="button" class="btn secondary small" data-close>Close</button><a class="deck-link" data-full href="#">Open full page →</a></div><div class="drawer-body"></div></aside>
+</div>
 {{template "foot" .}}{{end}}
 
 {{/* ================================================================ parts */}}
@@ -620,7 +620,7 @@
     <th class="r">Target</th><th class="r">SLA</th><th class="r">Breaches</th><th class="r">Aging</th><th class="r">Blocked</th><th class="r">Rework</th><th class="r">Drop</th><th class="r">In/day</th><th class="r">Out/day</th><th class="r">Net WIP</th><th class="r">Handoff delay</th><th>Owner · team</th><th>Trend</th><th>Severity</th></tr></thead>
   <tbody>{{range .PS.Rows}}<tr class="{{if .Terminal}}term{{end}}">
     <td class="t"><a href="{{$.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Status}}</a> <span class="kind {{.Kind}}">{{.Kind}}</span></td>
-    {{if .Terminal}}<td class="r">—</td><td class="r">{{num .Entered}}</td><td colspan="22" class="muted t">finished state · {{num .Completed}} reached in period</td>
+    {{if .Terminal}}<td class="r">—</td><td class="r">{{num .Entered}}</td><td colspan="22" class="muted t">finished state · {{num .Entered}} reached in period</td>
     {{else}}<td class="r">{{num .WIP}}</td><td class="r">{{num .Entered}}</td><td class="r">{{num .Exited}}</td>
     {{if .Time.N}}<td class="r">{{hr .Time.Avg}}</td><td class="r">{{hr .Time.Median}}</td><td class="r">{{hr .Time.P75}}</td><td class="r">{{hr .Time.P90}}</td><td class="r">{{hr .Time.P95}}</td><td class="r">{{hr .Time.Min}}</td><td class="r">{{hr .Time.Max}}</td>{{else}}<td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>{{end}}
     <td class="r muted">{{if .HasTarget}}{{hr .Target}}{{else}}—{{end}}</td><td class="r {{if .HasTarget}}{{if lt .Compliance 90.0}}bad{{else}}good{{end}}{{end}}">{{if .HasTarget}}{{pct0 .Compliance}}{{else}}—{{end}}</td>
@@ -730,8 +730,8 @@
   <p class="crumbs">Record intelligence · {{.Module}}</p>
   <div class="ri-head"><h2>{{orDash .Item.Title}}</h2><span class="tag {{if eq .Kind "done"}}ok{{else if eq .Kind "failed"}}bad{{else if eq .Kind "blocked"}}warn{{else}}neutral{{end}}">{{.Status}}</span><span class="tag {{statusClass .SLA}}">SLA: {{.SLA}}</span></div>
   {{if .Partial}}<p class="deck-note warn-note">This record existed before activity tracking started; its earlier stage history is not available.</p>{{end}}
-  <dl class="ri-facts"><dt>Owner</dt><dd>{{.Owner}}</dd><dt>Department</dt><dd>{{.Department}}</dd><dt>Team</dt><dd>{{.Team}}</dd>{{if .Customer}}<dt>Customer</dt><dd>{{.Customer}}</dd>{{end}}{{if .CaseTitle}}<dt>Case</dt><dd>{{.CaseTitle}}</dd>{{end}}
-    <dt>Created</dt><dd>{{datetime .Created}}</dd>{{if .Item.Priority}}<dt>Priority</dt><dd>{{.Item.Priority}}</dd>{{end}}{{if .Item.Category}}<dt>Type</dt><dd>{{.Item.Category}}</dd>{{end}}{{if .Item.DueAt}}<dt>Due</dt><dd>{{date .Item.DueAt}}</dd>{{end}}</dl>
+  <dl class="ri-facts"><div><dt>Owner</dt><dd>{{.Owner}}</dd></div><div><dt>Department</dt><dd>{{.Department}}</dd></div><div><dt>Team</dt><dd>{{.Team}}</dd></div>{{if .Customer}}<div><dt>Customer</dt><dd>{{.Customer}}</dd></div>{{end}}{{if .CaseTitle}}<div><dt>Case</dt><dd>{{.CaseTitle}}</dd></div>{{end}}
+    <div><dt>Created</dt><dd>{{datetime .Created}}</dd></div>{{if .Item.Priority}}<div><dt>Priority</dt><dd>{{.Item.Priority}}</dd></div>{{end}}{{if .Item.Category}}<div><dt>Type</dt><dd>{{.Item.Category}}</dd></div>{{end}}{{if .Item.DueAt}}<div><dt>Due</dt><dd>{{date .Item.DueAt}}</dd></div>{{end}}</dl>
   <div class="ri-stats">
     <div><span>{{if .Cycle}}Total cycle{{else}}Age{{end}}</span><b>{{if .Cycle}}{{.Cycle}}{{else}}{{.Age}}{{end}}</b></div>
     <div><span>Active time</span><b>{{.Active}}</b></div><div><span>Wait time</span><b>{{.Wait}}</b></div><div><span>Blocked</span><b>{{.Blocked}}</b></div>
@@ -742,7 +742,7 @@
   <h3 class="ri-h">Path</h3>
   <ol class="ri-path">{{range .Path}}<li class="{{.Kind}} {{if .Breached}}breach{{end}} {{if .Reentry}}reentry{{end}}"><span class="st">{{.Status}}</span>{{if .Dur}}<span class="bar"><i style="width:{{barPct .Hours $.MaxHours}}%"></i></span><span class="mono">{{.Dur}}{{if .Open}} · now{{end}}</span>{{end}}<span class="muted small">{{.Assignee}}{{if .Target}} · target {{.Target}}{{end}}{{if .Reentry}} · returned{{end}}</span></li>{{end}}</ol>
   <h3 class="ri-h">Timeline</h3>
-  <ol class="ri-time">{{range .Timeline}}<li class="{{.Kind}} {{if .Alert}}alert{{end}}"><time>{{.At.UTC.Format "Jan 02 15:04"}}</time><span>{{.Text}}</span>{{if .Who}}<em>{{.Who}}</em>{{end}}</li>{{end}}</ol>
+  <ol class="ri-time">{{range .Timeline}}<li class="{{.Kind}} {{if .Alert}}is-alert{{end}}"><time>{{.At.UTC.Format "Jan 02 15:04"}}</time><span>{{.Text}}</span>{{if .Who}}<em>{{.Who}}</em>{{end}}</li>{{end}}</ol>
   {{if .Related}}<h3 class="ri-h">Related records</h3><ul class="sev-list">{{range .Related}}<li><a href="{{.Link}}" data-drawer>{{.Title}}</a><span class="mono muted">{{.Module}} · {{.Status}}</span></li>{{end}}</ul>{{end}}
   {{if .Workspace}}<p><a class="btn secondary small" href="{{.Workspace}}">Open in workspace</a></p>{{end}}
 </div>
