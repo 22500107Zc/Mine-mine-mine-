@@ -21,7 +21,49 @@ type stageDef struct {
 	Work   map[string]bool
 	Done   map[string]bool
 	Failed map[string]bool
+
+	// Blocked statuses are waiting on something outside the team
+	Blocked map[string]bool
+
+	// Order lists the known statuses in process order; Rank gives each its
+	// position (moving to a lower rank is a backward move, i.e. rework)
+	Order []string
+	Rank  map[string]int
 }
+
+func ranks(kv ...any) map[string]int {
+	m := map[string]int{}
+	for i := 0; i+1 < len(kv); i += 2 {
+		m[kv[i].(string)] = kv[i+1].(int)
+	}
+	return m
+}
+
+// rankOf returns the process position of a status; statuses a company added
+// themselves are treated as working states
+func (st *stageDef) rankOf(status string) int {
+	if r, ok := st.Rank[status]; ok {
+		return r
+	}
+	return 1
+}
+
+// kindOf classifies a status: wait, work, blocked, done or failed
+func (st *stageDef) kindOf(status string) string {
+	switch {
+	case st.Done[status]:
+		return "done"
+	case st.Failed[status]:
+		return "failed"
+	case st.Blocked[status]:
+		return "blocked"
+	case st.Wait[status]:
+		return "wait"
+	}
+	return "work"
+}
+
+func (st *stageDef) terminal(status string) bool { return st.Done[status] || st.Failed[status] }
 
 func set(ss ...string) map[string]bool {
 	m := map[string]bool{}
@@ -32,10 +74,18 @@ func set(ss ...string) map[string]bool {
 }
 
 var pipelineStages = []stageDef{
-	{Module: "Task", Label: "Tasks", Wait: set("", "Open", "Waiting"), Work: set("In Progress"), Done: set("Done"), Failed: set()},
-	{Module: "Case", Label: "Cases", Wait: set("", "New", "Pending"), Work: set("Open"), Done: set("Resolved", "Closed"), Failed: set()},
-	{Module: "Approval", Label: "Approvals", Wait: set("", "Pending"), Work: set(), Done: set("Approved"), Failed: set("Rejected")},
-	{Module: "OperationsRecord", Label: "Records", Wait: set("", "Open"), Work: set("In Review"), Done: set("Closed"), Failed: set()},
+	{Module: "Task", Label: "Tasks", Wait: set("", "Open", "Waiting", "Blocked"), Work: set("In Progress"), Done: set("Done"), Failed: set(),
+		Blocked: set("Blocked", "Waiting"), Order: []string{"Open", "In Progress", "Waiting", "Blocked", "Done"},
+		Rank: ranks("", 0, "Open", 0, "In Progress", 1, "Waiting", 1, "Blocked", 1, "Done", 2)},
+	{Module: "Case", Label: "Cases", Wait: set("", "New", "Pending"), Work: set("Open"), Done: set("Resolved", "Closed"), Failed: set(),
+		Blocked: set("Pending"), Order: []string{"New", "Open", "Pending", "Resolved", "Closed"},
+		Rank: ranks("", 0, "New", 0, "Open", 1, "Pending", 1, "Resolved", 2, "Closed", 3)},
+	{Module: "Approval", Label: "Approvals", Wait: set("", "Pending"), Work: set(), Done: set("Approved"), Failed: set("Rejected"),
+		Blocked: set(), Order: []string{"Pending", "Approved", "Rejected"},
+		Rank: ranks("", 0, "Pending", 0, "Approved", 1, "Rejected", 1)},
+	{Module: "OperationsRecord", Label: "Records", Wait: set("", "Open"), Work: set("In Review"), Done: set("Closed"), Failed: set(),
+		Blocked: set(), Order: []string{"Open", "In Review", "Closed"},
+		Rank: ranks("", 0, "Open", 0, "In Review", 1, "Closed", 2)},
 }
 
 // module labels for activity lists
@@ -203,8 +253,124 @@ type (
 		AgeH                float64
 		DepartmentName      string
 		completionHandlerCt int
+
+		// Execution history
+		Team        uint64
+		Category    string
+		Priority    string
+		Customer    uint64
+		Case        uint64
+		CreatedBy   uint64
+		LastEventAt time.Time
+		Segments    []Segment    // every visit to a status, in order
+		Assignments []Assignment // every ownership change (From 0 = first assignment)
+		Loops       []Loop       // backward moves and how long until the item recovered
+		Partial     bool         // history seeded from a snapshot, not fully recorded
+		HadAssignee bool
+		events      int
+		openLoop    int
+	}
+
+	// Segment is one continuous stay in a status
+	Segment struct {
+		Status   string
+		Kind     string // wait | work | blocked | done | failed
+		Start    time.Time
+		End      *time.Time // nil while the item is still there
+		Assignee uint64
+		Reentry  bool // the item had been in this status before
+	}
+
+	// Assignment is a change of owner; with From > 0 it is a handoff
+	Assignment struct {
+		At       time.Time
+		From, To uint64
+		Status   string     // status at the time
+		PickupAt *time.Time // next status change or first action by the new owner
+		Rework   bool       // a backward move followed this handoff
+	}
+
+	// Loop is a backward move (including a reopen) until the item regained
+	// the position it lost, or completed
+	Loop struct {
+		From, To string
+		At       time.Time
+		ClosedAt *time.Time
+		Path     []string
+		rank     int
 	}
 )
+
+// Dur is the time spent in the segment (until now when still open)
+func (sg Segment) Dur(now time.Time) time.Duration {
+	if sg.End != nil {
+		return sg.End.Sub(sg.Start)
+	}
+	return now.Sub(sg.Start)
+}
+
+// Wait is the time from the handoff until the new owner picked it up
+func (a Assignment) Wait(now time.Time) time.Duration {
+	if a.PickupAt != nil {
+		return a.PickupAt.Sub(a.At)
+	}
+	return now.Sub(a.At)
+}
+
+// Dur is the extra time the loop cost (until now while unresolved)
+func (l Loop) Dur(now time.Time) time.Duration {
+	if l.ClosedAt != nil {
+		return l.ClosedAt.Sub(l.At)
+	}
+	return now.Sub(l.At)
+}
+
+// Handoffs returns the ownership changes between two people
+func (it *WorkItem) Handoffs() []Assignment {
+	var out []Assignment
+	for _, a := range it.Assignments {
+		if a.From > 0 {
+			out = append(out, a)
+		}
+	}
+	return out
+}
+
+// Cycle is the created-to-completed time of a finished item
+func (it *WorkItem) Cycle() time.Duration {
+	if it.CompletedAt == nil {
+		return 0
+	}
+	return it.CompletedAt.Sub(it.CreatedAt)
+}
+
+// Done reports a successfully completed item
+func (it *WorkItem) Done() bool { return it.CompletedAt != nil && !it.Failed }
+
+// OpenAt reports whether the item was open (created, not finished) at t
+func (it *WorkItem) OpenAt(t time.Time) bool {
+	return !it.CreatedAt.After(t) && (it.CompletedAt == nil || it.CompletedAt.After(t))
+}
+
+// StatusAt returns the status the item was in at t
+func (it *WorkItem) StatusAt(t time.Time) (Segment, bool) {
+	for i := len(it.Segments) - 1; i >= 0; i-- {
+		sg := it.Segments[i]
+		if !sg.Start.After(t) && (sg.End == nil || sg.End.After(t)) {
+			return sg, true
+		}
+	}
+	return Segment{}, false
+}
+
+// ReworkTime is the time lost to loops
+func (it *WorkItem) ReworkTime(now time.Time) time.Duration {
+	var d time.Duration
+	for _, l := range it.Loops {
+		d += l.Dur(now)
+	}
+	return d
+}
 
 func hours(d time.Duration) float64 { return d.Hours() }
 
@@ -266,7 +432,8 @@ func BuildDeck(events []ActivityEvent, now time.Time, departments map[uint64]str
 	return d
 }
 
-// reconstruct replays events into work items with time spent per state
+// reconstruct replays events into work items: time per state, every stage
+// visit, ownership changes with their pickup time, and rework loops
 func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]string) []*WorkItem {
 	byID := map[uint64]*WorkItem{}
 	var order []*WorkItem
@@ -275,17 +442,21 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		it := byID[e.RecordID]
 		if it == nil {
 			it = &WorkItem{Module: e.Module, ID: e.RecordID, CreatedAt: e.OccurredAt, People: map[uint64]bool{}, StatusTime: map[string]time.Duration{},
-				stage: stageFor(e.Module), lastStatusChangeAt: e.OccurredAt, createdWeekday: e.OccurredAt.Weekday()}
+				stage: stageFor(e.Module), lastStatusChangeAt: e.OccurredAt, createdWeekday: e.OccurredAt.Weekday(), openLoop: -1}
 			byID[e.RecordID] = it
 			order = append(order, it)
+			if e.Kind != ActivityCreated || e.Source == "baseline" {
+				it.Partial = true
+			}
+			if e.Kind == ActivityCreated {
+				it.CreatedBy = e.ActorID
+			}
 		}
+		it.events++
+		it.LastEventAt = e.OccurredAt
 
 		if e.Title != "" {
 			it.Title = e.Title
-		}
-		if e.AssigneeID > 0 {
-			it.People[e.AssigneeID] = true
-			it.Assignee = e.AssigneeID
 		}
 		if e.ActorID > 0 {
 			it.People[e.ActorID] = true
@@ -293,8 +464,45 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		if e.DepartmentID > 0 {
 			it.Department = e.DepartmentID
 		}
+		if e.TeamID > 0 {
+			it.Team = e.TeamID
+		}
+		if e.Category != "" {
+			it.Category = e.Category
+		}
+		if e.Priority != "" {
+			it.Priority = e.Priority
+		}
+		if e.CustomerID > 0 {
+			it.Customer = e.CustomerID
+		}
+		if e.CaseID > 0 {
+			it.Case = e.CaseID
+		}
 		if e.DueAt != nil {
 			it.DueAt = e.DueAt
+		}
+
+		// pickups: the next status change, or the new owner acting on it
+		for k := range it.Assignments {
+			a := &it.Assignments[k]
+			if a.PickupAt == nil && e.OccurredAt.After(a.At) && (e.Kind == ActivityStatus || (a.To > 0 && e.ActorID == a.To)) {
+				t := e.OccurredAt
+				a.PickupAt = &t
+			}
+		}
+
+		// ownership
+		if e.AssigneeID > 0 {
+			it.People[e.AssigneeID] = true
+			it.HadAssignee = true
+			if e.AssigneeID != it.Assignee {
+				it.Assignments = append(it.Assignments, Assignment{At: e.OccurredAt, From: it.Assignee, To: e.AssigneeID, Status: statusName(it.Status)})
+				if n := len(it.Segments); n > 0 && it.Segments[n-1].End == nil && it.Segments[n-1].Assignee == 0 {
+					it.Segments[n-1].Assignee = e.AssigneeID
+				}
+			}
+			it.Assignee = e.AssigneeID
 		}
 
 		switch e.Kind {
@@ -305,6 +513,7 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 			it.Status = e.ToStatus
 			it.lastStatusChangeAt = e.OccurredAt
 			it.Path = []string{statusName(e.ToStatus)}
+			it.enter(e.ToStatus, e.OccurredAt)
 			continue
 		case ActivityStatus:
 		default:
@@ -319,14 +528,21 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		// close the interval spent in the previous status
 		it.account(e.OccurredAt)
 
-		wasTerminal := it.stage.Done[it.Status] || it.stage.Failed[it.Status]
+		wasTerminal := it.stage.terminal(it.Status)
 		if len(it.Path) == 0 {
 			it.Path = []string{statusName(it.Status)}
 		}
-		it.Transitions = append(it.Transitions, [2]string{statusName(it.Status), statusName(e.ToStatus)})
+		if len(it.Segments) == 0 {
+			// history starts mid-way (snapshot): the first known status
+			it.enter(it.Status, it.CreatedAt)
+		}
+		from := it.Status
+		it.Transitions = append(it.Transitions, [2]string{statusName(from), statusName(e.ToStatus)})
 		it.Path = append(it.Path, statusName(e.ToStatus))
 		it.Status = e.ToStatus
 		it.lastStatusChangeAt = e.OccurredAt
+		it.enter(e.ToStatus, e.OccurredAt)
+		it.trackLoops(from, e.ToStatus, e.OccurredAt)
 
 		switch {
 		case it.stage.Done[e.ToStatus]:
@@ -362,6 +578,61 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 	}
 
 	return order
+}
+
+// enter starts a stay in a status (closing the previous one)
+func (it *WorkItem) enter(status string, at time.Time) {
+	if it.stage == nil {
+		return
+	}
+	seen := false
+	if n := len(it.Segments); n > 0 {
+		t := at
+		it.Segments[n-1].End = &t
+		for _, sg := range it.Segments {
+			if sg.Status == statusName(status) {
+				seen = true
+			}
+		}
+	}
+	it.Segments = append(it.Segments, Segment{Status: statusName(status), Kind: it.stage.kindOf(status), Start: at, Assignee: it.Assignee, Reentry: seen})
+	if it.stage.terminal(status) {
+		// a finished item does not accumulate time in its final state
+		t := at
+		it.Segments[len(it.Segments)-1].End = &t
+	}
+}
+
+// trackLoops opens a loop on a backward move and closes it when the item
+// regains the position it had lost, or completes
+func (it *WorkItem) trackLoops(from, to string, at time.Time) {
+	st := it.stage
+	rf, rt := st.rankOf(from), st.rankOf(to)
+	if st.terminal(from) {
+		rf = st.rankOf(from) + 1 // leaving a finished state is always a step back
+	}
+
+	if it.openLoop >= 0 {
+		l := &it.Loops[it.openLoop]
+		l.Path = append(l.Path, statusName(to))
+		if st.rankOf(to) >= l.rank || st.terminal(to) {
+			t := at
+			l.ClosedAt = &t
+			it.openLoop = -1
+		}
+	}
+
+	if rt < rf && !st.terminal(to) {
+		if it.openLoop < 0 {
+			it.Loops = append(it.Loops, Loop{From: statusName(from), To: statusName(to), At: at, Path: []string{statusName(from), statusName(to)}, rank: st.rankOf(from)})
+			it.openLoop = len(it.Loops) - 1
+		}
+		for k := range it.Assignments {
+			if it.Assignments[k].From > 0 && it.Assignments[k].At.Before(at) {
+				it.Assignments[k].Rework = true
+			}
+		}
+	}
 }
 
 // account adds the time since the last status change to wait or work

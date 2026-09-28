@@ -31,6 +31,7 @@ type fakePlatform struct {
 	roleOf     map[uint64]CompanyRole
 	records    map[uint64][]string
 	snapshot   map[uint64][]ActivityEvent
+	lookups    map[uint64]WorkspaceLookup
 }
 
 type fakeUser struct {
@@ -262,7 +263,7 @@ func testDB(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 
-	for _, tbl := range []string{"saas_activity_events", "saas_deck_targets", "saas_deck_interventions", "saas_issue_reports", "saas_audit_log", "saas_payments", "saas_stripe_events", "saas_founder_sessions", "saas_founders", "saas_company_members", "saas_companies"} {
+	for _, tbl := range []string{"saas_deck_usage", "saas_goals", "saas_activity_events", "saas_deck_targets", "saas_deck_interventions", "saas_issue_reports", "saas_audit_log", "saas_payments", "saas_stripe_events", "saas_founder_sessions", "saas_founders", "saas_company_members", "saas_companies"} {
 		if _, err = db.Exec("DROP TABLE IF EXISTS " + tbl + " CASCADE"); err != nil {
 			t.Fatal(err)
 		}
@@ -362,5 +363,11 @@ func (p *fakePlatform) WorkspaceSnapshot(_ context.Context, c *Company) ([]Activ
 }
 
 func (p *fakePlatform) WorkspaceLookups(_ context.Context, c *Company) (WorkspaceLookup, error) {
-	return WorkspaceLookup{Departments: map[uint64]string{}, RecordPages: map[string]uint64{"Task": 7001}}, nil
+	if p.lookups != nil {
+		if lk, ok := p.lookups[c.ID]; ok {
+			return lk, nil
+		}
+	}
+	return WorkspaceLookup{Departments: map[uint64]string{}, RecordPages: map[string]uint64{"Task": 7001},
+		Teams: map[uint64]string{}, TeamDepartment: map[uint64]uint64{}, DepartmentManager: map[uint64]uint64{}}, nil
 }

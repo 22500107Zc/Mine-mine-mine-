@@ -201,6 +201,69 @@ var schema = []string{
 	companyKey("saas_deck_targets"),
 	companyKey("saas_deck_interventions"),
 	companyKey("saas_issue_reports"),
+
+	// Execution intelligence: richer event history (team, type, priority,
+	// the customer and case a record belongs to)
+	`ALTER TABLE saas_activity_events ADD COLUMN IF NOT EXISTS team_id     BIGINT NOT NULL DEFAULT 0`,
+	`ALTER TABLE saas_activity_events ADD COLUMN IF NOT EXISTS category    TEXT   NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_activity_events ADD COLUMN IF NOT EXISTS priority    TEXT   NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_activity_events ADD COLUMN IF NOT EXISTS customer_id BIGINT NOT NULL DEFAULT 0`,
+	`ALTER TABLE saas_activity_events ADD COLUMN IF NOT EXISTS case_id     BIGINT NOT NULL DEFAULT 0`,
+	`CREATE INDEX IF NOT EXISTS saas_activity_company_id_idx ON saas_activity_events (company_id, id)`,
+
+	// SLA targets per workflow ('' stage) and per stage of a workflow
+	`ALTER TABLE saas_deck_targets ADD COLUMN IF NOT EXISTS stage TEXT NOT NULL DEFAULT ''`,
+	`DO $$ BEGIN
+		IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'saas_deck_targets_pkey' AND array_length(conkey, 1) = 2) THEN
+			ALTER TABLE saas_deck_targets DROP CONSTRAINT saas_deck_targets_pkey;
+			ALTER TABLE saas_deck_targets ADD CONSTRAINT saas_deck_targets_pkey PRIMARY KEY (company_id, module, stage);
+		END IF;
+	END $$`,
+
+	// Goals measured against the company's own history
+	`CREATE TABLE IF NOT EXISTS saas_goals (
+		id          BIGSERIAL   PRIMARY KEY,
+		company_id  BIGINT      NOT NULL,
+		title       TEXT        NOT NULL,
+		metric      TEXT        NOT NULL,
+		module      TEXT        NOT NULL DEFAULT '',
+		stage       TEXT        NOT NULL DEFAULT '',
+		target      NUMERIC     NOT NULL,
+		baseline    NUMERIC     NOT NULL DEFAULT 0,
+		baseline_n  INTEGER     NOT NULL DEFAULT 0,
+		start_at    TIMESTAMPTZ NOT NULL,
+		target_at   TIMESTAMPTZ NULL,
+		status      TEXT        NOT NULL DEFAULT 'active',
+		created_by  BIGINT      NOT NULL DEFAULT 0,
+		created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		closed_at   TIMESTAMPTZ NULL
+	)`,
+	`CREATE INDEX IF NOT EXISTS saas_goals_company_idx ON saas_goals (company_id, created_at DESC)`,
+	companyKey("saas_goals"),
+
+	// Intervention tests: owner, stage, measurement windows, notes, frozen result
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS stage         TEXT    NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS owner_id      BIGINT  NOT NULL DEFAULT 0`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS baseline_days INTEGER NOT NULL DEFAULT 28`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS eval_days     INTEGER NOT NULL DEFAULT 28`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS notes         TEXT    NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS result        NUMERIC NULL`,
+	`ALTER TABLE saas_deck_interventions ADD COLUMN IF NOT EXISTS result_n      INTEGER NULL`,
+
+	// Issue inbox: review states and a resolution note
+	`ALTER TABLE saas_issue_reports ADD COLUMN IF NOT EXISTS resolution_note TEXT        NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_issue_reports ADD COLUMN IF NOT EXISTS updated_at      TIMESTAMPTZ NULL`,
+	`CREATE INDEX IF NOT EXISTS saas_issue_reports_status_idx ON saas_issue_reports (status, created_at DESC)`,
+
+	// Command Deck usage per company, user and day (for the Founder)
+	`CREATE TABLE IF NOT EXISTS saas_deck_usage (
+		company_id BIGINT NOT NULL,
+		user_id    BIGINT NOT NULL,
+		day        DATE   NOT NULL,
+		views      INTEGER NOT NULL DEFAULT 0,
+		PRIMARY KEY (company_id, day, user_id)
+	)`,
+	companyKey("saas_deck_usage"),
 }
 
 // companyKey adds a foreign key from table.company_id to saas_companies once

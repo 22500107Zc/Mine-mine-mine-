@@ -333,6 +333,7 @@ pages:
             - name: Customer
             - name: Owner
             - name: Department
+            - name: Team
             - name: Date
             - name: Details
   Cases:
@@ -380,12 +381,14 @@ pages:
           options:
             fields:
             - name: Subject
+            - name: Type
             - name: Customer
             - name: Contact
             - name: Status
             - name: Priority
             - name: AssignedTo
             - name: Department
+            - name: Team
             - name: DueDate
             - name: Description
             - name: Resolution
@@ -437,6 +440,7 @@ pages:
             - name: Priority
             - name: AssignedTo
             - name: Department
+            - name: Team
             - name: DueDate
             - name: Case
             - name: Customer
@@ -502,6 +506,7 @@ pages:
             - name: RequestedBy
             - name: Approver
             - name: Department
+            - name: Team
             - name: Amount
             - name: DueDate
             - name: Details
@@ -596,6 +601,51 @@ pages:
             fields:
             - name: Name
             - name: Manager
+            - name: Description
+  Teams:
+    handle: Teams
+    title: Teams
+    weight: 12
+    visible: true
+    blocks:
+    - title: Teams
+      kind: RecordList
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 18
+      options:
+        module: Team
+        fields:
+        - name: Name
+        - name: Department
+        - name: Lead
+        - name: Description
+        presort: createdAt DESC
+        perPage: 20
+        allowExport: true
+        showTotalCount: true
+        emptyTitle: No teams yet.
+        emptyDescription: Add teams inside your departments so the Command Deck can show how each team carries its work.
+    pages:
+      TeamRecord:
+        handle: TeamRecord
+        module: Team
+        title: Team
+        blocks:
+        - title: Team
+          kind: Record
+          xywh:
+          - 0
+          - 0
+          - 12
+          - 16
+          options:
+            fields:
+            - name: Name
+            - name: Department
+            - name: Lead
             - name: Description
   Reports:
     handle: Reports

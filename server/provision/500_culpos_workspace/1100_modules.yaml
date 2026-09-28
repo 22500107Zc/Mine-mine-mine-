@@ -119,6 +119,14 @@ modules:
           labelField: Name
           queryFields:
           - Name
+      Team:
+        label: Team
+        kind: Record
+        options:
+          module: Team
+          labelField: Name
+          queryFields:
+          - Name
       Date:
         label: Date
         kind: DateTime
@@ -163,6 +171,17 @@ modules:
           - Pending
           - Resolved
           - Closed
+      Type:
+        label: Type
+        kind: Select
+        options:
+          options:
+          - Question
+          - Problem
+          - Incident
+          - Request
+          - Complaint
+          - Other
       Priority:
         label: Priority
         kind: Select
@@ -180,6 +199,14 @@ modules:
         kind: Record
         options:
           module: Department
+          labelField: Name
+          queryFields:
+          - Name
+      Team:
+        label: Team
+        kind: Record
+        options:
+          module: Team
           labelField: Name
           queryFields:
           - Name
@@ -213,6 +240,7 @@ modules:
           - Open
           - In Progress
           - Waiting
+          - Blocked
           - Done
       Priority:
         label: Priority
@@ -231,6 +259,14 @@ modules:
         kind: Record
         options:
           module: Department
+          labelField: Name
+          queryFields:
+          - Name
+      Team:
+        label: Team
+        kind: Record
+        options:
+          module: Team
           labelField: Name
           queryFields:
           - Name
@@ -299,6 +335,14 @@ modules:
           labelField: Name
           queryFields:
           - Name
+      Team:
+        label: Team
+        kind: Record
+        options:
+          module: Team
+          labelField: Name
+          queryFields:
+          - Name
       Amount:
         label: Amount
         kind: Number
@@ -360,6 +404,29 @@ modules:
         required: true
       Manager:
         label: Manager
+        kind: User
+      Description:
+        label: Description
+        kind: String
+        options:
+          multiLine: true
+  Team:
+    name: Team
+    fields:
+      Name:
+        label: Team
+        kind: String
+        required: true
+      Department:
+        label: Department
+        kind: Record
+        options:
+          module: Department
+          labelField: Name
+          queryFields:
+          - Name
+      Lead:
+        label: Team Lead
         kind: User
       Description:
         label: Description

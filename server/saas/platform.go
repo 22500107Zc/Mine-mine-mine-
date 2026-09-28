@@ -73,6 +73,13 @@ type (
 	WorkspaceLookup struct {
 		Departments map[uint64]string
 		RecordPages map[string]uint64
+
+		// Teams resolves team names; TeamDepartment the department a team belongs to
+		Teams          map[uint64]string
+		TeamDepartment map[uint64]uint64
+
+		// DepartmentManager is the manager (user) of each department
+		DepartmentManager map[uint64]uint64
 	}
 
 	// Mailer sends transactional email

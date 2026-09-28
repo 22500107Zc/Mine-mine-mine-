@@ -34,6 +34,11 @@ type ActivityEvent struct {
 	ActorID      uint64
 	AssigneeID   uint64
 	DepartmentID uint64
+	TeamID       uint64
+	Category     string // case, approval, record or document type
+	Priority     string
+	CustomerID   uint64
+	CaseID       uint64
 	DueAt        *time.Time
 	Source       string
 }
@@ -140,17 +145,19 @@ func (svc *Service) ensureActivityBaseline(ctx context.Context, c *Company) {
 
 func (r *Repo) InsertActivity(ctx context.Context, e *ActivityEvent) error {
 	return r.db.QueryRowContext(ctx, `INSERT INTO saas_activity_events
-		(company_id, occurred_at, module, record_id, title, kind, from_status, to_status, actor_id, assignee_id, department_id, due_at, source)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
+		(company_id, occurred_at, module, record_id, title, kind, from_status, to_status, actor_id, assignee_id, department_id, due_at, source,
+		 team_id, category, priority, customer_id, case_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) RETURNING id`,
 		e.CompanyID, e.OccurredAt, e.Module, e.RecordID, e.Title, e.Kind, e.FromStatus, e.ToStatus,
 		e.ActorID, e.AssigneeID, e.DepartmentID, e.DueAt, orStr(e.Source, "live"),
+		e.TeamID, e.Category, e.Priority, e.CustomerID, e.CaseID,
 	).Scan(&e.ID)
 }
 
 // Activity returns a company's events since the given time, oldest first
 func (r *Repo) Activity(ctx context.Context, companyID uint64, since time.Time) ([]ActivityEvent, error) {
 	rows, err := r.db.QueryContext(ctx, `SELECT id, company_id, occurred_at, module, record_id, title, kind, from_status, to_status,
-			actor_id, assignee_id, department_id, due_at, source
+			actor_id, assignee_id, department_id, due_at, source, team_id, category, priority, customer_id, case_id
 		FROM saas_activity_events WHERE company_id = $1 AND occurred_at >= $2 ORDER BY occurred_at, id`, companyID, since)
 	if err != nil {
 		return nil, err
@@ -164,7 +171,7 @@ func (r *Repo) Activity(ctx context.Context, companyID uint64, since time.Time) 
 			due sql.NullTime
 		)
 		if err = rows.Scan(&e.ID, &e.CompanyID, &e.OccurredAt, &e.Module, &e.RecordID, &e.Title, &e.Kind, &e.FromStatus, &e.ToStatus,
-			&e.ActorID, &e.AssigneeID, &e.DepartmentID, &due, &e.Source); err != nil {
+			&e.ActorID, &e.AssigneeID, &e.DepartmentID, &due, &e.Source, &e.TeamID, &e.Category, &e.Priority, &e.CustomerID, &e.CaseID); err != nil {
 			return nil, err
 		}
 		e.DueAt = nullTime(due)
@@ -196,6 +203,14 @@ func (r *Repo) ActivityRecordIDs(ctx context.Context, companyID uint64) (map[uin
 func (r *Repo) ScrubActivityTitles(ctx context.Context, companyID, recordID uint64) error {
 	_, err := r.db.ExecContext(ctx, `UPDATE saas_activity_events SET title = '' WHERE company_id = $1 AND record_id = $2`, companyID, recordID)
 	return err
+}
+
+// ActivityVersion identifies the current state of a company's activity log
+// (events are only ever appended; deletions are appended events too)
+func (r *Repo) ActivityVersion(ctx context.Context, companyID uint64) (int64, error) {
+	var v int64
+	err := r.db.QueryRowContext(ctx, `SELECT COALESCE(MAX(id), 0) FROM saas_activity_events WHERE company_id = $1`, companyID).Scan(&v)
+	return v, err
 }
 
 func (r *Repo) MarkActivityBackfilled(ctx context.Context, companyID uint64, at time.Time) error {
