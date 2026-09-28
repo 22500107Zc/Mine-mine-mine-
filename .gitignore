@@ -10,3 +10,8 @@
 .run
 node_modules
 ignore
+# Local environment files (never commit secrets)
+.env
+.env.local
+__pycache__/
+server/tests/federation/var/

@@ -70,8 +70,13 @@ func TestConverter(t *testing.T) {
 				args: []any{"2022-07-21"},
 			},
 			{
-				qry:  `date('2022-07-21')`,
+				qry:  `day('2022-07-21')`,
 				sql:  `DAY(?)`,
+				args: []any{"2022-07-21"},
+			},
+			{
+				qry:  `date('2022-07-21')`,
+				sql:  `DATE(?)`,
 				args: []any{"2022-07-21"},
 			},
 		}

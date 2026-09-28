@@ -95,10 +95,13 @@ func (svc *Service) APIGate(apiBase string) func(http.Handler) http.Handler {
 
 			switch d.Level {
 			case AccessNone:
+				// lets signed-in web applications move the user to the right page
+				w.Header().Set(accessHeader, "disabled")
 				apiError(w, http.StatusForbidden, "Access to this workspace is currently unavailable.")
 				return
 			case AccessBillingOnly:
 				if !billingOnlyAllowed(r.Method, rel) {
+					w.Header().Set(accessHeader, "billing")
 					apiError(w, http.StatusPaymentRequired, "An active "+svc.cfg.Brand.ProductName+" subscription is required. Visit Billing to restore access.")
 					return
 				}
@@ -511,6 +514,9 @@ type bufferedWriter struct {
 func (b *bufferedWriter) Header() http.Header         { return b.header }
 func (b *bufferedWriter) Write(p []byte) (int, error) { return b.buf.Write(p) }
 func (b *bufferedWriter) WriteHeader(s int)           { b.status = s }
+
+// accessHeader marks API responses refused because of the company's state
+const accessHeader = "X-CulpOS-Access"
 
 func apiError(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "application/json")

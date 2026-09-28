@@ -8,6 +8,8 @@ signed webhook events to the application. Never use in production.
   POST /__fail?sub=sub_...         invoice.payment_failed (status past_due)
   POST /__delete?sub=sub_...       customer.subscription.deleted
   POST /__replay                   re-send the last event (duplicate delivery)
+  GET  /checkout/cs_...            test checkout page ("Pay $333.88 / month" submits /__pay)
+  GET  /portal/cus_...             test customer portal page (link back to CulpOS)
 """
 import hashlib, hmac, json, os, sys, time, urllib.parse, urllib.request, itertools
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -15,6 +17,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 APP = os.environ.get("APP_WEBHOOK_URL", "http://localhost:18080/stripe/webhook")
 SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "whsec_testsecret")
 PRICE = os.environ.get("STRIPE_PRICE_ID", "price_culpos")
+AMOUNT = int(os.environ.get("STRIPE_PRICE_AMOUNT", "33388"))
+PUBLIC = os.environ.get("MOCK_PUBLIC_URL", "http://localhost:18181")
 seq = itertools.count(1)
 customers, sessions, subs = {}, {}, {}
 last_event = {}
@@ -43,6 +47,11 @@ class H(BaseHTTPRequestHandler):
     def out(self, code, obj):
         b = json.dumps(obj).encode()
         self.send_response(code); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
+    def html(self, code, body):
+        b = ("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'>"
+             "<title>Test Checkout</title><body style='font-family:system-ui;max-width:420px;margin:60px auto;padding:0 16px'>"
+             + body).encode()
+        self.send_response(code); self.send_header("Content-Type", "text/html; charset=utf-8"); self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
     def form(self):
         n = int(self.headers.get("Content-Length", 0) or 0)
         return {k: v[0] for k, v in urllib.parse.parse_qs(self.rfile.read(n).decode()).items()}
@@ -51,6 +60,15 @@ class H(BaseHTTPRequestHandler):
         if p.path.startswith("/v1/subscriptions/"):
             sid = p.path.rsplit("/", 1)[1]
             return self.out(200, subs[sid]) if sid in subs else self.out(404, {"error": {"type": "invalid_request_error", "message": "No such subscription"}})
+        if p.path.startswith("/checkout/"):
+            sid = p.path.rsplit("/", 1)[1]
+            if sid not in sessions: return self.html(404, "<h1>Checkout session not found</h1>")
+            price = "$%d.%02d" % divmod(AMOUNT, 100)
+            return self.html(200, f"<p>TEST MODE</p><h1>Subscribe to CulpOS</h1><p id=amount>{price} per month</p>"
+                                  f"<form method=post action='/__pay?session={sid}&redirect=1'><button id=pay type=submit>Pay {price} / month</button></form>")
+        if p.path.startswith("/portal/"):
+            cid = p.path.rsplit("/", 1)[1]
+            return self.html(200, f"<p>TEST MODE</p><h1>Billing portal</h1><p>Customer {cid}</p><a id=back href='{urllib.parse.parse_qs(p.query).get('return', [''])[0]}'>Return to CulpOS</a>")
         if p.path == "/__state": return self.out(200, {"customers": customers, "sessions": sessions, "subs": subs})
         self.out(404, {"error": {"message": "not found"}})
     def do_POST(self):
@@ -61,9 +79,9 @@ class H(BaseHTTPRequestHandler):
             return self.out(200, customers[cid])
         if p.path == "/v1/checkout/sessions":
             sid = nid("cs_test"); sessions[sid] = {"id": sid, "customer": f["customer"], "price": f["line_items[0][price]"], "client_reference_id": f.get("client_reference_id"), "company_id": f.get("metadata[company_id]"), "success_url": f["success_url"]}
-            return self.out(200, {"id": sid, "url": f"http://localhost:18181/checkout/{sid}"})
+            return self.out(200, {"id": sid, "url": f"{PUBLIC}/checkout/{sid}"})
         if p.path == "/v1/billing_portal/sessions":
-            return self.out(200, {"url": "http://localhost:18181/portal/" + f["customer"]})
+            return self.out(200, {"url": f"{PUBLIC}/portal/{f['customer']}?return=" + urllib.parse.quote(f.get("return_url", ""))})
         if p.path.startswith("/v1/subscriptions/"):
             sid = p.path.rsplit("/", 1)[1]; s = subs[sid]
             if "cancel_at_period_end" in f: s["cancel_at_period_end"] = f["cancel_at_period_end"] == "true"
@@ -78,6 +96,8 @@ class H(BaseHTTPRequestHandler):
             r1 = send("checkout.session.completed", {"id": cs["id"], "mode": "subscription", "status": "complete", "payment_status": "paid", "client_reference_id": cs["client_reference_id"],
                                                      "customer": cs["customer"], "subscription": sid, "metadata": {"company_id": cs["company_id"]}})
             r2 = send("invoice.paid", {"id": nid("in"), "customer": cs["customer"], "subscription": sid, "amount_paid": 33388, "currency": "usd", "created": now})
+            if q.get("redirect"):
+                self.send_response(303); self.send_header("Location", cs["success_url"]); self.end_headers(); return
             return self.out(200, {"subscription": sid, "webhooks": [r1, r2], "success_url": cs["success_url"]})
         if p.path == "/__fail":
             s = subs[q["sub"]]; s["status"] = "past_due"

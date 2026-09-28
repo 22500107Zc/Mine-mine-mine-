@@ -125,8 +125,15 @@ func (sqliteDialect) JsonExtractUnquote(ident exp.Expression, pp ...any) (exp.Ex
 //
 // Unfortunately SQLite converts boolean values into 0 and 1 when decoding from
 // JSON and we need a special handler for that.
+//
+// The needle can be a plain SQL value or a JSON-encoded one (1, "foo", true),
+// so each element is compared both as a value and as its JSON representation.
 func (sqliteDialect) JsonArrayContains(needle, haystack exp.Expression) (exp.Expression, error) {
-	return exp.NewLiteralExpression("EXISTS (SELECT 1 FROM json_each(?) WHERE value = ?)", haystack, needle), nil
+	return exp.NewLiteralExpression(
+		"EXISTS (SELECT 1 FROM json_each(?) WHERE value = ? OR "+
+			"(CASE type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE json_quote(value) END) = ?)",
+		haystack, needle, needle,
+	), nil
 }
 
 func (d sqliteDialect) TableCodec(m *dal.Model) drivers.TableCodec {

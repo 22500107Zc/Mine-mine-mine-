@@ -612,12 +612,16 @@ func TestCrossCompanyIsolationAtAPIGate(t *testing.T) {
 	env.svc.cache = newAccessCache(0)
 	if rec := do("GET", fmt.Sprintf("/api/compose/namespace/%d/module/1/record/", a.NamespaceID)); rec.Code != http.StatusForbidden {
 		t.Fatalf("disabled company must be blocked: %d", rec.Code)
+	} else if rec.Header().Get("X-CulpOS-Access") != "disabled" {
+		t.Fatal("disabled response must tell the web app where to send the user")
 	}
 
 	_ = env.svc.repo.SetCompanyStatus(context.Background(), a.ID, CompanyActive)
 	_ = env.svc.repo.SetSubscriptionStatus(context.Background(), a.ID, SubUnpaid)
 	if rec := do("GET", fmt.Sprintf("/api/compose/namespace/%d/module/1/record/", a.NamespaceID)); rec.Code != http.StatusPaymentRequired {
 		t.Fatalf("unpaid company must get 402: %d", rec.Code)
+	} else if rec.Header().Get("X-CulpOS-Access") != "billing" {
+		t.Fatal("unpaid response must send the web app to billing")
 	}
 	if rec := do("GET", "/api/system/auth/check"); rec.Code != 200 {
 		t.Fatal("account recovery endpoints must stay reachable")

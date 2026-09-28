@@ -338,7 +338,9 @@ func (nn parserNodes) ToAST() (out *ASTNode) {
 			skip := 2
 			arg.Args = append(arg.Args, auxArgs[bestOpIx-1], auxArgs[bestOpIx+1])
 			if bestOpIx > -1 && len(auxArgs) > bestOpIx+2 {
-				if !isOperator(auxArgs[bestOpIx+2].Ref) {
+				// a pending operator is never an operand; consuming it here
+				// would drop the rest of the expression (e.g. "2 / 3 * 4")
+				if next := auxArgs[bestOpIx+2]; !isOperator(next.Ref) && (next.pMeta == nil || next.pMeta.opDef == nil) {
 					skip = 3
 					arg.Args = append(arg.Args, auxArgs[bestOpIx+2])
 				}
