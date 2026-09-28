@@ -59,6 +59,7 @@ func (svc *Service) customerPage(cc *customerCtx, title, section string) pageDat
 		"Decision":   cc.Decision,
 		"CanManage":  cc.Member.Role.CanManageMembers() && cc.Decision.Level == AccessFull,
 		"CanBilling": cc.Member.Role.CanViewBilling(),
+		"CanDeck":    cc.Member.Role.CanUseCommandDeck() && cc.Decision.Level == AccessFull,
 		"NoIndex":    true,
 	}
 

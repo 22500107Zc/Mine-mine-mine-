@@ -61,7 +61,7 @@ const companyColumns = `c.id, c.name, c.slug, c.status, c.owner_user_id, c.owner
 	c.subscription_status, c.billing_period_start, c.billing_period_end, c.cancel_at_period_end,
 	c.canceled_at, c.provisioning_status, c.provisioning_error, c.provisioned_at, c.last_activity_at,
 	c.payment_method_summary, c.profile_website, c.profile_phone, c.profile_address, c.profile_industry,
-	c.onboarding_completed_at, c.created_at, c.updated_at,
+	c.onboarding_completed_at, c.activity_backfilled_at, c.created_at, c.updated_at,
 	(SELECT COUNT(*) FROM saas_company_members m WHERE m.company_id = c.id)`
 
 type scanner interface {
@@ -70,9 +70,9 @@ type scanner interface {
 
 func scanCompany(s scanner) (*Company, error) {
 	var (
-		c                                                        = &Company{}
-		status, subStatus, provStatus                            string
-		periodStart, periodEnd, canceledAt, provAt, actAt, onbAt sql.NullTime
+		c                                                              = &Company{}
+		status, subStatus, provStatus                                  string
+		periodStart, periodEnd, canceledAt, provAt, actAt, onbAt, bfAt sql.NullTime
 	)
 
 	err := s.Scan(
@@ -82,7 +82,7 @@ func scanCompany(s scanner) (*Company, error) {
 		&subStatus, &periodStart, &periodEnd, &c.CancelAtPeriodEnd,
 		&canceledAt, &provStatus, &c.ProvisioningError, &provAt, &actAt,
 		&c.PaymentMethodSummary, &c.Website, &c.Phone, &c.Address, &c.Industry,
-		&onbAt, &c.CreatedAt, &c.UpdatedAt,
+		&onbAt, &bfAt, &c.CreatedAt, &c.UpdatedAt,
 		&c.UserCount,
 	)
 
@@ -103,6 +103,7 @@ func scanCompany(s scanner) (*Company, error) {
 	c.ProvisionedAt = nullTime(provAt)
 	c.LastActivityAt = nullTime(actAt)
 	c.OnboardingDoneAt = nullTime(onbAt)
+	c.ActivityBackfilledAt = nullTime(bfAt)
 	return c, nil
 }
 

@@ -59,6 +59,20 @@ type (
 
 		// Users returns display info for the given users
 		Users(ctx context.Context, ids ...uint64) (map[uint64]UserInfo, error)
+
+		// WorkspaceSnapshot returns the current workspace records as activity
+		// (used once to seed the Command Deck for existing workspaces)
+		WorkspaceSnapshot(ctx context.Context, c *Company) ([]ActivityEvent, error)
+
+		// WorkspaceLookups returns department names and the record page of
+		// each module (for links from the Command Deck)
+		WorkspaceLookups(ctx context.Context, c *Company) (WorkspaceLookup, error)
+	}
+
+	// WorkspaceLookup holds display lookups for a company workspace
+	WorkspaceLookup struct {
+		Departments map[uint64]string
+		RecordPages map[string]uint64
 	}
 
 	// Mailer sends transactional email

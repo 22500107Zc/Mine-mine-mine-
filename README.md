@@ -31,7 +31,14 @@ hand. CulpOS does this itself:
 3. The owner signs in and is guided through a short setup (company profile,
    invite team, first customer, first task). Invited team members are included
    in the company subscription.
-4. Subscription changes (payment failures, recovery, cancellation at period
+4. Every change to a workspace record is measured. Owners, administrators and
+   managers get the **Command Deck** at `/command`: activity KPIs, a 12-month
+   activity graph with day drill-down, where work waits (pipeline and
+   bottlenecks), measured findings kept separate from correlations, outcomes
+   by department, and ranked recommendations with evidence, expected effect,
+   confidence and how to test them. It uses only the company's own data and
+   shows nothing it cannot support.
+5. Subscription changes (payment failures, recovery, cancellation at period
    end, resumption, cancellation) arrive through webhooks and are enforced on
    the server for every request. Customer data is never deleted because of
    billing state.
@@ -41,6 +48,7 @@ hand. CulpOS does this itself:
 | Sign in / forgot password / accept invitation | `/auth/login` |
 | Paid signup | `/signup` |
 | Workspace | `/` |
+| Command Deck (activity graph, bottlenecks, findings, recommendations) | `/command` |
 | Company Admin (profile, users, roles, invitations) | `/company` |
 | Billing (status, next billing date, manage billing, cancel/resume) | `/billing` |
 | Support | `/support` |

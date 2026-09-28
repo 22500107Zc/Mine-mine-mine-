@@ -42,6 +42,9 @@ type (
 
 		activityMu sync.Mutex
 		activity   map[uint64]time.Time
+
+		// workspace namespace → company, for the activity hook
+		nsCompanies nsCache
 	}
 
 	SignupInput struct {

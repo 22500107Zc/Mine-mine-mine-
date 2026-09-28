@@ -1,0 +1,175 @@
+{{define "command-deck"}}{{template "head" .}}
+<div class="deck">
+  <header class="deck-head">
+    <div class="deck-title">
+      <h1>Command Deck</h1>
+      <span class="deck-badge">Live · {{.Company.Name}}</span>
+    </div>
+    <p class="deck-sub">What is happening · where · why it might be happening · what it affects · what to test next</p>
+    <nav class="deck-tabs" aria-label="Command Deck views">
+      {{range .Tabs}}<a href="{{.Path}}" {{if eq .Key $.Tab}}class="active" aria-current="page"{{end}}>{{.Label}}</a>{{end}}
+    </nav>
+  </header>
+
+{{$tab := .Tab}}
+{{with .Deck}}
+  {{if not .HasData}}
+  <section class="deck-panel deck-empty">
+    <h2>No activity yet</h2>
+    <p>The Command Deck builds itself from your company’s own work. As your team creates and updates customers, tasks, cases, approvals and records, every change is measured here — nothing is estimated or invented.</p>
+    {{if $.Workspace}}<p><a class="deck-link" href="{{$.Workspace}}">Open your workspace →</a></p>{{end}}
+  </section>
+  {{end}}
+
+  {{if eq $tab "deck"}}
+  <section class="deck-kpis" aria-label="Key figures">
+    <div class="deck-tile"><div class="k">Activity 7d</div><div class="v">{{num .KPI.Act7}}</div><div class="s">{{if .KPI.HasBaseline7}}{{change (float .KPI.Act7) (float .KPI.Prev7)}} wow{{else}}<span class="muted">no baseline</span>{{end}}</div></div>
+    <div class="deck-tile"><div class="k">Activity 30d</div><div class="v">{{num .KPI.Act30}}</div><div class="s">{{change (float .KPI.Act30) (float .KPI.Prev30)}}{{if gt .KPI.Prev30 0}} mom{{end}}</div></div>
+    <div class="deck-tile"><div class="k">Completion rate</div><div class="v">{{if .KPI.Items}}{{pct1 .KPI.CompletionRate}}{{else}}—{{end}}</div><div class="s">{{num .KPI.Completed}} completed of {{num .KPI.Items}}</div></div>
+    <div class="deck-tile"><div class="k">Current streak</div><div class="v">{{.KPI.CurrentStreak}}d</div><div class="s">longest {{.KPI.LongestStrk}}d</div></div>
+    <div class="deck-tile"><div class="k">Avg completion time</div><div class="v">{{if .KPI.HasCompletion}}{{hrs .KPI.AvgCompletionHours}}{{else}}—{{end}}</div><div class="s">created to completed</div></div>
+    <div class="deck-tile"><div class="k">Throughput</div><div class="v accent">{{printf "%.1f" .KPI.Throughput}}<small>/day</small></div><div class="s">{{change .KPI.Throughput .KPI.PrevThroughput}}</div></div>
+  </section>
+
+  {{template "deck-activity" .}}
+
+  <section class="deck-panel" aria-labelledby="where-h">
+    <div class="deck-panel-head"><div><h2 id="where-h">Where is it happening</h2><p>Work types ranked by share of cycle time, missed due dates and rework.</p></div></div>
+    {{template "deck-stages" .}}
+  </section>
+
+  <section class="deck-panel" aria-labelledby="why-h">
+    <div class="deck-panel-head"><div><h2 id="why-h">Why might it be happening</h2><p>Measured facts are separated from correlations.</p></div></div>
+    {{template "deck-findings" .}}
+  </section>
+
+  <section class="deck-panel" aria-labelledby="affect-h">
+    <div class="deck-panel-head"><div><h2 id="affect-h">What is it affecting</h2><p>{{.Impact.Dimension}} outcomes over the same window.</p></div></div>
+    {{template "deck-impact" .}}
+  </section>
+
+  <section class="deck-panel" aria-labelledby="test-h">
+    <div class="deck-panel-head"><div><h2 id="test-h">What should we test next</h2><p>Ranked recommendations with evidence, expected effect and confidence.</p></div><a class="deck-link" href="/command/goals">Goal Intelligence →</a></div>
+    {{template "deck-recs" (recsTop .Recs 3)}}
+  </section>
+  {{end}}
+
+  {{if eq $tab "activity"}}
+  {{template "deck-activity" .}}
+  <section class="deck-panel" aria-labelledby="day-h">
+    <div class="deck-panel-head"><div>
+      <h2 id="day-h">{{if $.Day.IsZero}}Recent activity{{else}}{{date $.Day}}{{end}}</h2>
+      <p>{{if $.Day.IsZero}}The latest changes across your workspace. Select a day in the graph to see its records.{{else}}Every recorded change on this day. <a class="deck-link" href="/command/activity">Show recent activity</a>{{end}}</p>
+    </div></div>
+    {{if $.DayRows}}
+    <div class="table-wrap"><table class="deck-table">
+      <thead><tr><th scope="col">Time (UTC)</th><th scope="col">Type</th><th scope="col">Record</th><th scope="col">Change</th></tr></thead>
+      <tbody>{{range $.DayRows}}<tr><td class="mono nowrap">{{.At.UTC.Format "Jan 2 15:04"}}</td><td>{{.Module}}</td><td>{{if .Link}}<a href="{{.Link}}">{{.Title}}</a>{{else}}{{.Title}}{{end}}</td><td class="mono">{{.What}}</td></tr>{{end}}</tbody>
+    </table></div>
+    {{else}}<div class="deck-note">No recorded activity{{if not $.Day.IsZero}} on this day{{end}}.</div>{{end}}
+  </section>
+  {{end}}
+
+  {{if eq $tab "pipeline"}}
+  <section class="deck-panel" aria-labelledby="pipe-h">
+    <div class="deck-panel-head"><div><h2 id="pipe-h">Pipeline &amp; bottlenecks</h2><p>Time each kind of work spends waiting versus being worked, from creation to completion.</p></div></div>
+    {{template "deck-stages" .}}
+    {{if .Stages}}
+    <div class="table-wrap"><table class="deck-table">
+      <thead><tr><th scope="col">Work type</th><th scope="col" class="r">Items</th><th scope="col" class="r">Open</th><th scope="col" class="r">Avg wait</th><th scope="col" class="r">p90 wait</th><th scope="col" class="r">Avg work</th><th scope="col" class="r">Avg cycle</th><th scope="col" class="r">Share</th><th scope="col" class="r">Missed due</th><th scope="col" class="r">Rework</th><th scope="col" class="r">People</th></tr></thead>
+      <tbody>{{range .Stages}}<tr><td>{{.Label}}</td><td class="r mono">{{num .Passes}}</td><td class="r mono">{{num .OpenNow}}</td><td class="r mono">{{hrs .AvgWaitH}}</td><td class="r mono">{{hrs .P90WaitH}}</td><td class="r mono">{{hrs .AvgWorkH}}</td><td class="r mono">{{if .Completed}}{{hrs .AvgCycleH}}{{else}}—{{end}}</td><td class="r mono">{{pct1 .Share}}</td><td class="r mono warn">{{pct1 .BreachRate}}</td><td class="r mono warn">{{pct1 .ReworkRate}}</td><td class="r mono">{{.People}}</td></tr>{{end}}</tbody>
+    </table></div>
+    {{end}}
+  </section>
+
+  <div class="deck-grid-2">
+    <section class="deck-panel" aria-labelledby="aging-h">
+      <div class="deck-panel-head"><div><h2 id="aging-h">Oldest open work</h2><p>Open items by age.</p></div></div>
+      {{if .OpenItems}}<ul class="deck-list">{{range .OpenItems}}<li><span>{{orDash .Title}}</span><span class="mono muted">{{.Module | moduleLabel}} · {{printf "%.0f" (days .AgeH)}}d · {{orDash .Status}}</span></li>{{end}}</ul>
+      {{else}}<div class="deck-note">No open work.</div>{{end}}
+    </section>
+    <section class="deck-panel" aria-labelledby="overdue-h">
+      <div class="deck-panel-head"><div><h2 id="overdue-h">Past due</h2><p>Open items beyond their due date.</p></div></div>
+      {{if .OverdueItems}}<ul class="deck-list">{{range .OverdueItems}}<li><span>{{orDash .Title}}</span><span class="mono bad">due {{date .DueAt}}</span></li>{{end}}</ul>
+      {{else}}<div class="deck-note">Nothing is past due.</div>{{end}}
+    </section>
+  </div>
+  {{end}}
+
+  {{if eq $tab "goals"}}
+  <section class="deck-panel" aria-labelledby="goals-h">
+    <div class="deck-panel-head"><div><h2 id="goals-h">Goal Intelligence</h2><p>What to test next, ranked by expected effect and confidence. Each recommendation is derived from your measured activity and says how to verify it.</p></div></div>
+    {{template "deck-recs" .Recs}}
+  </section>
+  <section class="deck-panel" aria-labelledby="why2-h">
+    <div class="deck-panel-head"><div><h2 id="why2-h">Evidence</h2><p>The findings behind these recommendations.</p></div></div>
+    {{template "deck-findings" .}}
+  </section>
+  <p class="deck-foot">Confidence reflects sample size and the strength of the measured effect. Expected effects are estimates from your own data, not guarantees; correlations do not prove cause.</p>
+  {{end}}
+{{end}}
+</div>
+{{template "foot" .}}{{end}}
+
+{{define "deck-activity"}}
+<section class="deck-panel" aria-labelledby="happen-h">
+  <div class="deck-panel-head">
+    <div><h2 id="happen-h">What is happening</h2><p>Business activity graph — every square is one day of recorded work.</p></div>
+    <span class="deck-chip">{{num .Heatmap.EventsCount}} events / 12 months</span>
+  </div>
+  <div class="heat-wrap">
+    <div class="heat" style="--weeks: {{len .Heatmap.Weeks}}">
+      <div class="heat-months">{{range .Heatmap.Months}}<span style="grid-column: {{inc .Col}}">{{.Label}}</span>{{end}}</div>
+      <div class="heat-days">{{range $i, $x := (seq 7)}}<span>{{weekday $i}}</span>{{end}}</div>
+      <div class="heat-grid">{{range .Heatmap.Weeks}}<div class="heat-col">{{range .}}{{if .Future}}<span class="heat-cell future"></span>{{else}}<a class="heat-cell l{{.Level}}" href="/command/activity?day={{isoDay .Date}}" title="{{date .Date}} · {{.Count}} events" aria-label="{{date .Date}}: {{.Count}} events"></a>{{end}}{{end}}</div>{{end}}</div>
+    </div>
+  </div>
+  <div class="heat-legend"><span class="mono">peak {{.Heatmap.Peak}} events/day</span><span class="mono">less <i class="heat-cell l0"></i><i class="heat-cell l1"></i><i class="heat-cell l2"></i><i class="heat-cell l3"></i><i class="heat-cell l4"></i> more</span></div>
+  <div class="deck-stats">
+    <div class="deck-stat"><div class="k">Best week</div><div class="v">{{if .Heatmap.HasWeeks}}{{date .Heatmap.BestWeek.Start}} · {{num .Heatmap.BestWeek.Count}}{{else}}—{{end}}</div></div>
+    <div class="deck-stat"><div class="k">Lowest week</div><div class="v">{{if .Heatmap.HasWeeks}}{{date .Heatmap.LowestWeek.Start}} · {{num .Heatmap.LowestWeek.Count}}{{else}}—{{end}}</div></div>
+    <div class="deck-stat"><div class="k">Time in active work</div><div class="v">{{printf "%.1f" .Heatmap.WorkedDays}}d</div></div>
+  </div>
+  <p class="deck-foot">Select any day to open the underlying activity records.</p>
+</section>
+{{end}}
+
+{{define "deck-stages"}}
+{{if .Enough}}
+<ul class="deck-stages">{{range .Stages}}
+  <li><div class="row"><span class="name">{{.Label}}</span><span class="mono muted">wait {{hrs .AvgWaitH}} · work {{hrs .AvgWorkH}}</span></div>
+  <div class="bar"><span style="width: {{printf "%.0f" .Bar}}%"></span></div></li>{{end}}
+</ul>
+{{else}}<div class="deck-note">Bottleneck analysis starts once at least 10 tasks, cases, approvals or records have been tracked{{if .KPI.Items}} ({{.KPI.Items}} so far){{end}}.</div>{{end}}
+{{end}}
+
+{{define "deck-findings"}}
+{{if .Findings}}<div class="deck-cards">{{range .Findings}}
+  <article class="deck-card">
+    <div class="deck-card-head"><h3>{{.Title}}</h3><span class="tag {{.Kind}}">{{if eq .Kind "measured"}}Measured{{else}}Correlation{{end}}</span></div>
+    {{if .Dates}}<p class="mono">{{range $i, $d := .Dates}}{{if $i}} · {{end}}<a href="/command/activity?day={{isoDay $d}}">{{date $d}}</a>{{end}}</p>{{end}}
+    <p>{{.Detail}}</p>
+  </article>{{end}}
+</div>{{else}}<div class="deck-note">{{if .Enough}}No significant patterns in the current data.{{else}}Findings appear once there is enough activity to measure reliably.{{end}}</div>{{end}}
+{{end}}
+
+{{define "deck-impact"}}
+{{if and .Enough .Impact.Rows}}
+<div class="table-wrap"><table class="deck-table">
+  <thead><tr><th scope="col">{{.Impact.Dimension}}</th><th scope="col" class="r">Items</th><th scope="col" class="r">Avg</th><th scope="col" class="r">Rework</th><th scope="col" class="r">Failed</th></tr></thead>
+  <tbody>{{range .Impact.Rows}}<tr><td>{{.Name}}</td><td class="r mono">{{num .Items}}</td><td class="r mono">{{if gt .AvgCycleH 0.0}}{{hrs .AvgCycleH}}{{else}}—{{end}}</td><td class="r mono warn">{{pct1 .ReworkRate}}</td><td class="r mono bad">{{.Failed}}</td></tr>{{end}}</tbody>
+</table></div>
+{{with .Impact.Slowest}}<p class="deck-foot">Slowest average cycle: {{.Name}} at {{hrs .AvgCycleH}}.</p>{{end}}
+{{else}}<div class="deck-note">Outcomes by department appear once there is enough tracked work. Assign a department on tasks, cases, approvals and records to compare teams.</div>{{end}}
+{{end}}
+
+{{define "deck-recs"}}
+{{if .}}<div class="deck-cards">{{range .}}
+  <article class="deck-card">
+    <div class="deck-card-head"><h3><span class="rank">#{{.Rank}}</span> {{.Title}}</h3><span class="tag conf">{{.Confidence}}% conf</span></div>
+    <p>{{.Expected}}</p>
+    <p class="muted small"><strong>Evidence{{if eq .Basis "correlation"}} (correlation){{end}}:</strong> {{.Evidence}}</p>
+    <p class="muted small"><strong>How to test:</strong> {{.HowToTest}}</p>
+  </article>{{end}}
+</div>{{else}}<div class="deck-note">Recommendations appear when your data shows a clear, measurable opportunity. None is strong enough yet.</div>{{end}}
+{{end}}

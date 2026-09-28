@@ -332,6 +332,7 @@ pages:
             - name: Status
             - name: Customer
             - name: Owner
+            - name: Department
             - name: Date
             - name: Details
   Cases:
@@ -384,6 +385,7 @@ pages:
             - name: Status
             - name: Priority
             - name: AssignedTo
+            - name: Department
             - name: DueDate
             - name: Description
             - name: Resolution
@@ -434,6 +436,7 @@ pages:
             - name: Status
             - name: Priority
             - name: AssignedTo
+            - name: Department
             - name: DueDate
             - name: Case
             - name: Customer
@@ -498,6 +501,7 @@ pages:
             - name: Status
             - name: RequestedBy
             - name: Approver
+            - name: Department
             - name: Amount
             - name: DueDate
             - name: Details

@@ -8,6 +8,15 @@ applications:
       logo: applications/workspace.png
       url: compose/
 
+  - name: Command Deck
+    (envoy): { skipIf: "!missing" }
+    enabled: true
+    unify:
+      listed: true
+      icon: applications/command-deck.png
+      logo: applications/command-deck.png
+      url: /command
+
   - name: Company Admin
     (envoy): { skipIf: "!missing" }
     enabled: true

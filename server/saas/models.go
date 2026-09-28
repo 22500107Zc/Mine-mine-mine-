@@ -43,6 +43,7 @@ type (
 		Address              string
 		Industry             string
 		OnboardingDoneAt     *time.Time
+		ActivityBackfilledAt *time.Time
 		CreatedAt            time.Time
 		UpdatedAt            time.Time
 

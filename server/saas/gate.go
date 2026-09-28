@@ -137,7 +137,7 @@ func (svc *Service) APIGate(apiBase string) func(http.Handler) http.Handler {
 				svc.filtered(w, r, next, "roleID", roles)
 
 			case gateFilterApps:
-				svc.filteredApps(w, r, next)
+				svc.filteredApps(w, r, next, m.Role)
 
 			case gateValidateRules:
 				if !validRulesBody(r, c.NamespaceID) {
@@ -528,9 +528,15 @@ func apiError(w http.ResponseWriter, status int, msg string) {
 
 // customerApps are the applications company users see in the launcher;
 // configuration tooling is reserved for platform staff
-var customerApps = map[string]bool{"compose/": true, "/compose/": true, "/company": true, "/billing": true}
+var customerApps = map[string]func(CompanyRole) bool{
+	"compose/":  func(CompanyRole) bool { return true },
+	"/compose/": func(CompanyRole) bool { return true },
+	"/command":  CompanyRole.CanUseCommandDeck,
+	"/company":  CompanyRole.CanManageMembers,
+	"/billing":  CompanyRole.CanViewBilling,
+}
 
-func (svc *Service) filteredApps(w http.ResponseWriter, r *http.Request, next http.Handler) {
+func (svc *Service) filteredApps(w http.ResponseWriter, r *http.Request, next http.Handler, role CompanyRole) {
 	rec := &bufferedWriter{header: http.Header{}, status: http.StatusOK}
 	next.ServeHTTP(rec, r)
 
@@ -557,7 +563,10 @@ func (svc *Service) filteredApps(w http.ResponseWriter, r *http.Request, next ht
 						URL string `json:"url"`
 					} `json:"unify"`
 				}
-				if json.Unmarshal(item, &app) == nil && customerApps[app.Unify.URL] {
+				if json.Unmarshal(item, &app) != nil {
+					continue
+				}
+				if allowed, ok := customerApps[app.Unify.URL]; ok && allowed(role) {
 					kept = append(kept, item)
 				}
 			}

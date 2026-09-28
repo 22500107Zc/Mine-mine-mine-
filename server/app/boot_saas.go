@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/cortezaproject/corteza/server/pkg/eventbus"
 	"github.com/cortezaproject/corteza/server/pkg/id"
 	"github.com/cortezaproject/corteza/server/pkg/options"
 	"github.com/cortezaproject/corteza/server/pkg/rbac"
@@ -95,6 +96,9 @@ func (app *CortezaApp) initSaaS(ctx context.Context) error {
 			app.Log.Warn("could not apply CulpOS setting", zap.String("key", k), zap.Error(err))
 		}
 	}
+
+	// Command Deck: measure every workspace record change per company
+	integration.RegisterActivityHook(eventbus.Service(), svc)
 
 	if err = svc.BootstrapFounder(ctx); err != nil {
 		return fmt.Errorf("founder bootstrap failed: %w", err)

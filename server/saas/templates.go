@@ -2,6 +2,7 @@ package saas
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"strings"
 	"time"
@@ -74,6 +75,43 @@ func parseTemplates(b Brand) (*template.Template, error) {
 			return s
 		},
 		"upper": strings.ToUpper,
+		"hrs":   func(v float64) string { return fmt.Sprintf("%.1fh", v) },
+		"pct1":  func(v float64) string { return fmt.Sprintf("%.1f%%", v) },
+		"num":   formatInt,
+		"change": func(cur, prev float64) template.HTML {
+			if prev <= 0 {
+				return template.HTML(`<span class="muted">no baseline</span>`)
+			}
+			d := (cur - prev) / prev * 100
+			if d >= 0 {
+				return template.HTML(fmt.Sprintf(`<span class="up">▲ +%.1f%%</span>`, d))
+			}
+			return template.HTML(fmt.Sprintf(`<span class="down">▼ %.1f%%</span>`, d))
+		},
+		"isoDay": func(t time.Time) string { return t.Format("2006-01-02") },
+		"float":  func(i int) float64 { return float64(i) },
+		"inc":    func(i int) int { return i + 1 },
+		"days":   func(h float64) float64 { return h / 24 },
+		"seq": func(n int) []int {
+			out := make([]int, n)
+			for i := range out {
+				out[i] = i
+			}
+			return out
+		},
+		"moduleLabel": func(m string) string {
+			if l, ok := moduleLabels[m]; ok {
+				return l
+			}
+			return m
+		},
+		"recsTop": func(rr []Recommendation, n int) []Recommendation {
+			if len(rr) > n {
+				return rr[:n]
+			}
+			return rr
+		},
+		"weekday": func(i int) string { return []string{"M", "", "W", "", "F", "", "S"}[i] },
 		"actionLabel": func(a string) string {
 			if l, ok := actionLabels[a]; ok {
 				return l
@@ -126,4 +164,22 @@ var actionLabels = map[string]string{
 	"onboarding.customer.create":   "First customer added",
 	"onboarding.task.create":       "First task created",
 	"api.permissions":              "Blocked permission change",
+}
+
+// formatInt renders 8146 as 8,146
+func formatInt(n int) string {
+	s := fmt.Sprintf("%d", n)
+	neg := strings.HasPrefix(s, "-")
+	s = strings.TrimPrefix(s, "-")
+	var b strings.Builder
+	for i, r := range s {
+		if i > 0 && (len(s)-i)%3 == 0 {
+			b.WriteByte(',')
+		}
+		b.WriteRune(r)
+	}
+	if neg {
+		return "-" + b.String()
+	}
+	return b.String()
 }

@@ -30,6 +30,7 @@ type fakePlatform struct {
 	resets     []string
 	roleOf     map[uint64]CompanyRole
 	records    map[uint64][]string
+	snapshot   map[uint64][]ActivityEvent
 }
 
 type fakeUser struct {
@@ -353,3 +354,13 @@ func (p *fakePlatform) CreateRecord(_ context.Context, c *Company, userID uint64
 }
 
 func (p *fakePlatform) RenameWorkspace(context.Context, *Company, string) error { return nil }
+
+func (p *fakePlatform) WorkspaceSnapshot(_ context.Context, c *Company) ([]ActivityEvent, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.snapshot[c.ID], nil
+}
+
+func (p *fakePlatform) WorkspaceLookups(_ context.Context, c *Company) (WorkspaceLookup, error) {
+	return WorkspaceLookup{Departments: map[uint64]string{}, RecordPages: map[string]uint64{"Task": 7001}}, nil
+}

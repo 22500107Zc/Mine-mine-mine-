@@ -133,6 +133,27 @@ var schema = []string{
 	)`,
 	`CREATE INDEX IF NOT EXISTS saas_audit_log_occurred_idx ON saas_audit_log (occurred_at DESC)`,
 	`CREATE INDEX IF NOT EXISTS saas_audit_log_company_idx ON saas_audit_log (company_id, occurred_at DESC)`,
+
+	// Command Deck: every change to a workspace record, per company
+	`CREATE TABLE IF NOT EXISTS saas_activity_events (
+		id            BIGSERIAL   PRIMARY KEY,
+		company_id    BIGINT      NOT NULL,
+		occurred_at   TIMESTAMPTZ NOT NULL,
+		module        TEXT        NOT NULL,
+		record_id     BIGINT      NOT NULL,
+		title         TEXT        NOT NULL DEFAULT '',
+		kind          TEXT        NOT NULL,
+		from_status   TEXT        NOT NULL DEFAULT '',
+		to_status     TEXT        NOT NULL DEFAULT '',
+		actor_id      BIGINT      NOT NULL DEFAULT 0,
+		assignee_id   BIGINT      NOT NULL DEFAULT 0,
+		department_id BIGINT      NOT NULL DEFAULT 0,
+		due_at        TIMESTAMPTZ NULL,
+		source        TEXT        NOT NULL DEFAULT 'live'
+	)`,
+	`CREATE INDEX IF NOT EXISTS saas_activity_company_idx ON saas_activity_events (company_id, occurred_at)`,
+	`CREATE INDEX IF NOT EXISTS saas_activity_record_idx ON saas_activity_events (company_id, record_id)`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS activity_backfilled_at TIMESTAMPTZ NULL`,
 }
 
 // Migrate applies the schema

@@ -5,3 +5,8 @@ document.addEventListener('submit', function (e) {
     e.preventDefault()
   }
 }, true)
+
+// Command Deck: open the activity graph at the most recent weeks
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.heat-wrap').forEach(function (el) { el.scrollLeft = el.scrollWidth; });
+});

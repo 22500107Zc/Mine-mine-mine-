@@ -72,6 +72,7 @@
     <a class="brand" href="/" aria-label="{{brand.ProductName}} workspace"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
     <nav aria-label="Primary">
       {{if .Workspace}}<a href="{{.Workspace}}">Dashboard</a>{{end}}
+      {{if .CanDeck}}<a href="/command" {{if eq .Section "command"}}aria-current="page"{{end}}>Command Deck</a>{{end}}
       {{if .CanManage}}<a href="/company" {{if eq .Section "company"}}aria-current="page"{{end}}>Company Admin</a>{{end}}
       {{if .CanBilling}}<a href="/billing" {{if eq .Section "billing"}}aria-current="page"{{end}}>Billing</a>{{end}}
       <a href="/support" {{if eq .Section "support"}}aria-current="page"{{end}}>Support</a>

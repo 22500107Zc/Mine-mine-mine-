@@ -160,6 +160,27 @@ async function signup(b, co, first, email, pw) {
     await page.waitForTimeout(3500);
     ok('Tasks list shows onboarding task', (await snap(page, 'tasks-list')).includes('Call Northwind'));
 
+    // Command Deck: built from the company's own recorded activity
+    await page.goto(B + '/');
+    await page.waitForTimeout(3000);
+    ok('launcher offers the Command Deck to the owner', (await page.evaluate(() => document.body.innerText)).includes('Command Deck'));
+    await page.goto(B + '/command');
+    const deck = await snap(page, 'command-deck');
+    ok('Command Deck shows all sections', ['Activity 7d', 'Completion rate', 'What is happening', 'Where is it happening',
+      'Why might it be happening', 'What is it affecting', 'What should we test next'].every(x => deck.toLowerCase().includes(x.toLowerCase())));
+    const evCount = Number(((deck.match(/([\d,]+) events \/ 12 months/i) || [])[1] || '0').replace(/,/g, ''));
+    ok('Command Deck counts the recorded activity', evCount >= 3, String(evCount));
+    ok('Command Deck shows no demo data', !/demo/i.test(deck));
+    await page.goto(B + '/command/activity?day=' + new Date().toISOString().slice(0, 10));
+    const day = await snap(page, 'command-deck-day');
+    ok('Activity Graph day lists records created in the app', ['Northwind Traders', 'Contoso Freight', 'Call Northwind about Q4 order'].every(x => day.includes(x)));
+    const recLink = await page.locator('a[href*="/record/"]').first().getAttribute('href').catch(() => null);
+    ok('day records link into the workspace', !!recLink && recLink.includes('/compose/ns/'), recLink || '');
+    for (const [p, label] of [['/command/pipeline', 'Pipeline & bottlenecks'], ['/command/goals', 'Goal Intelligence']]) {
+      await page.goto(B + p);
+      ok(`Command Deck tab ${p}`, (await snap(page, p.split('/').pop())).toLowerCase().includes(label.toLowerCase()));
+    }
+
     await page.goto(B + '/billing');
     const bill = await snap(page, 'billing-active');
     ok('/billing: active, $333.88, next billing date, Manage Billing', /Active/.test(bill) && bill.includes('$333.88') && /Next billing date/i.test(bill) && bill.includes('Manage Billing'));
@@ -185,12 +206,15 @@ async function signup(b, co, first, email, pw) {
     await page.goto(B + '/'); await page.waitForTimeout(3000);
     const home = await snap(page, 'employee-home');
     ok('employee home shows Workspace', home.includes('Workspace'));
+    ok('employee launcher hides owner-only apps', !home.includes('Command Deck') && !home.includes('Billing'));
     await page.goto(B + '/compose/'); await page.waitForURL(/\/compose\/ns\/.+\/pages/, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(4000);
     const t = await snap(page, 'employee-dashboard');
     ok('employee accepted invite and sees company workspace', ['Dashboard', 'Customers', 'Tasks'].every(x => t.includes(x)), page.url());
     await page.goto(B + '/billing');
     ok('employee cannot manage billing', !(await page.content()).includes('Cancel Subscription'));
+    const deckRsp = await page.goto(B + '/command');
+    ok('employee cannot open the Command Deck', deckRsp.status() === 403, String(deckRsp.status()));
     await page.goto(B + '/founder/dashboard');
     ok('employee cannot reach Founder dashboard', /\/founder$|\/founder\?|\/founder\/login/.test(page.url()) || !(await page.content()).includes('Monthly Recurring'), page.url());
     E = { ctx, page };

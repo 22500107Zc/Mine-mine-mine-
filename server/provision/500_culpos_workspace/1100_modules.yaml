@@ -111,6 +111,14 @@ modules:
       Owner:
         label: Owner
         kind: User
+      Department:
+        label: Department
+        kind: Record
+        options:
+          module: Department
+          labelField: Name
+          queryFields:
+          - Name
       Date:
         label: Date
         kind: DateTime
@@ -167,6 +175,14 @@ modules:
       AssignedTo:
         label: Assigned To
         kind: User
+      Department:
+        label: Department
+        kind: Record
+        options:
+          module: Department
+          labelField: Name
+          queryFields:
+          - Name
       DueDate:
         label: Due Date
         kind: DateTime
@@ -210,6 +226,14 @@ modules:
       AssignedTo:
         label: Assigned To
         kind: User
+      Department:
+        label: Department
+        kind: Record
+        options:
+          module: Department
+          labelField: Name
+          queryFields:
+          - Name
       DueDate:
         label: Due Date
         kind: DateTime
@@ -267,6 +291,14 @@ modules:
       Approver:
         label: Approver
         kind: User
+      Department:
+        label: Department
+        kind: Record
+        options:
+          module: Department
+          labelField: Name
+          queryFields:
+          - Name
       Amount:
         label: Amount
         kind: Number
