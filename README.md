@@ -7,6 +7,8 @@
 
 **Business Execution Intelligence OS** — by Culp Industries
 
+**Live:** [https://st-cloud-os.vercel.app](https://st-cloud-os.vercel.app)
+
 St.Cloud\~OS is one operating system for running a company's internal operations:
 customers, contacts, records, cases, tasks, approvals, documents, reports,
 departments and team management — in a single, isolated company workspace.
@@ -182,6 +184,22 @@ it into the image:
 ```bash
 docker build --secret id=build_ca,src=/path/to/proxy-ca.crt -t culpos .
 ```
+
+### Vercel
+
+St.Cloud\~OS also runs as a single Vercel container (Vercel Functions with a
+custom image). `Dockerfile.vercel` is the same build as the `Dockerfile`; Vercel
+detects it and routes all traffic — web applications, `/auth`, `/founder`,
+`/command`, `/billing`, `/company`, `/support`, `/health`, `/stripe/webhook` and
+static assets — to the container.
+
+The container is stateless: PostgreSQL is external (`DATABASE_URL`, use a
+direct, non-pooled connection string) and nothing is kept on the container's
+disk. In the Vercel project settings set `PORT=8080`, the variables from
+[Environment](#2-environment) (secrets as *Sensitive*), and `APP_URL` /
+`PUBLIC_APP_URL` to the production domain. Point the Stripe webhook at
+`<APP_URL>/stripe/webhook`. Keep Vercel Authentication limited to preview
+deployments so customers and Stripe can reach production.
 
 ### Founder access
 

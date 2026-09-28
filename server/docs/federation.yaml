@@ -4,7 +4,8 @@ info:
   description: St.Cloud~OS federation REST API reference
   version: '2022.9'
   contact:
-    email: info@cortezaproject.org
+    name: Culp Industries
+    url: https://st-cloud-os.vercel.app/support
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
