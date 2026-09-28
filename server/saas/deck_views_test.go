@@ -157,7 +157,7 @@ func TestCommandDeckTabsAndActions(t *testing.T) {
 	}
 
 	code, body := get("/command/pipeline?period=90&workflow=Task")
-	if code != http.StatusOK || !strings.Contains(body, "Avg end-to-end cycle") || !strings.Contains(body, "Stages breaching SLA") || !strings.Contains(body, "no targets set") {
+	if code != http.StatusOK || !strings.Contains(body, "Avg end-to-end cycle") || !strings.Contains(body, "SLA breaches") || !strings.Contains(body, "no targets set") {
 		t.Fatalf("pipeline scope: %d", code)
 	}
 
@@ -169,9 +169,9 @@ func TestCommandDeckTabsAndActions(t *testing.T) {
 	if tg, _ := env.svc.repo.DeckTargets(ctx, a.ID); tg["Task"] != 24 {
 		t.Fatalf("target not stored: %v", tg)
 	}
-	_, body = get("/command/pipeline")
-	if !strings.Contains(body, "over their target cycle") {
-		t.Fatal("a 71h average against a 24h target must breach")
+	_, body = get("/command/sla")
+	if !strings.Contains(body, "Tasks · whole workflow") || !strings.Contains(body, "0.0%") {
+		t.Fatal("a 71h cycle against a 24h target must breach every task")
 	}
 	if rsp := post("/command/actions/targets", url.Values{"target_Task": {"-3"}}); rsp.StatusCode != http.StatusSeeOther {
 		t.Fatal("invalid target must be refused with a message")

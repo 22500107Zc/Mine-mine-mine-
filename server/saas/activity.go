@@ -77,6 +77,7 @@ func (svc *Service) RecordActivity(ctx context.Context, namespaceID uint64, ev A
 	if ev.Kind == ActivityDeleted {
 		_ = svc.repo.ScrubActivityTitles(ctx, companyID, ev.RecordID)
 	}
+	svc.intelCache.invalidate(companyID)
 }
 
 func (svc *Service) companyForNamespace(ctx context.Context, nsID uint64) (uint64, bool) {

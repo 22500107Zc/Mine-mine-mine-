@@ -486,6 +486,7 @@ type intelCacheEntry struct {
 	built   time.Time
 	events  []ActivityEvent
 	items   []*WorkItem
+	names   map[uint64]string
 }
 
 type intelCache struct {

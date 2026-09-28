@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"math"
 	"mime"
 	"strings"
 	"time"
@@ -166,7 +167,129 @@ func parseTemplates(b Brand) (*template.Template, error) {
 			}
 			return m
 		},
-		"sub": func(a, b int) int { return a - b },
+		"sub":         func(a, b int) int { return a - b },
+		"spark":       sparkline,
+		"hr":          fmtHours,
+		"pmap":        processMap,
+		"bars":        barChart,
+		"line":        lineChart,
+		"fmetric":     fmtMetric,
+		"pct0":        func(v float64) string { return fmt.Sprintf("%.0f%%", v) },
+		"f1":          func(v float64) string { return fmt.Sprintf("%.1f", v) },
+		"def":         func(key string) string { return metricDef(key).Definition },
+		"defLabel":    func(key string) string { return metricDef(key).Label },
+		"scopeHidden": scopeHidden,
+		"band":        bandClass,
+		"statusClass": func(s string) string {
+			switch s {
+			case "good", "Achieved", "On track", "Associated improvement", "High", "met", "on time", "resolved":
+				return "ok"
+			case "warn", "At risk", "Moderate", "Rising", "Elevated", "in_review", "reopened", "Collecting data", "Measuring":
+				return "warn"
+			case "bad", "Off track", "Associated worsening", "Past target", "breached", "open breach", "open":
+				return "bad"
+			}
+			return "neutral"
+		},
+		"issueLabel": func(s string) string {
+			return map[string]string{"open": "Open", "in_review": "In review", "resolved": "Resolved", "reopened": "Reopened"}[s]
+		},
+		"barPct": func(v, max float64) string {
+			if max <= 0 {
+				return "0"
+			}
+			return fmt.Sprintf("%.1f", v/max*100)
+		},
+		"barPctI": func(v, max int) string {
+			if max <= 0 {
+				return "0"
+			}
+			return fmt.Sprintf("%.1f", float64(v)/float64(max)*100)
+		},
+		"absH": func(v float64) string {
+			if v < 0 {
+				return "−" + fmtHours(-v)
+			}
+			return "+" + fmtHours(v)
+		},
+		"signed": func(v float64, unit string) string {
+			s := "+"
+			if v < 0 {
+				s, v = "−", -v
+			}
+			return s + fmtMetric(v, unit)
+		},
+		"heatLevel": func(c, mx int) int {
+			if c == 0 || mx == 0 {
+				return 0
+			}
+			r := float64(c) / float64(mx)
+			switch {
+			case r <= .25:
+				return 1
+			case r <= .5:
+				return 2
+			case r <= .75:
+				return 3
+			}
+			return 4
+		},
+		"hourRange": func() []int {
+			out := make([]int, 24)
+			for i := range out {
+				out[i] = i
+			}
+			return out
+		},
+		"wdName":        func(i int) string { return []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}[i] },
+		"u64":           func(v uint64) string { return fmt.Sprint(v) },
+		"join":          strings.Join,
+		"issueStatuses": func() []string { return issueStatuses },
+		"list":          func(ss ...string) []string { return ss },
+		"mod":           func(a, b int) int { return a % b },
+		"subf":          func(a, b float64) float64 { return a - b },
+		"absf":          math.Abs,
+		"deref": func(p *float64) float64 {
+			if p == nil {
+				return 0
+			}
+			return *p
+		},
+		"waitShare": func(wait, work float64) float64 {
+			if wait+work <= 0 {
+				return 0
+			}
+			return wait / (wait + work) * 100
+		},
+		"maxAbs": func(dd []Driver) float64 {
+			m := 0.0
+			for _, d := range dd {
+				m = math.Max(m, math.Abs(d.DeltaH))
+			}
+			return m
+		},
+		"topRow": func(ps ProcessStages) *StageRow {
+			var best *StageRow
+			for i := range ps.Rows {
+				r := &ps.Rows[i]
+				if r.Enough && (best == nil || r.Severity > best.Severity) {
+					best = r
+				}
+			}
+			return best
+		},
+		"testMetricFor": func(m string) string {
+			if _, ok := goalMetric(m); ok {
+				return m
+			}
+			return "cycle_median"
+		},
+		"actLink": func(a ActivityHistory, view string) string {
+			return activityURL(a, view, a.Filter)
+		},
+		"actFilter": func(a ActivityHistory, filter string) string {
+			return activityURL(a, a.View, filter)
+		},
 	}).ParseFS(templateFS, "assets/templates/*.html")
 }
 

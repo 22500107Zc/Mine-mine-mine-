@@ -2,280 +2,524 @@
 <div class="deck">
   <header class="deck-head">
     <div class="deck-title">
-      <h1>{{.TabInfo.Title}}</h1>
+      <h1>{{.Title}}</h1>
       <span class="deck-badge">Live · {{.Company.Name}}</span>
     </div>
-    <p class="deck-sub" title="{{.TabInfo.Question}}">{{.TabInfo.Question}}</p>
+    <p class="deck-sub">{{.TabInfo.Question}}</p>
     <nav class="deck-tabs" aria-label="Command Deck views" data-keep-active>
-      {{range .Tabs}}<a href="{{.Path}}" {{if eq .Key $.Tab}}class="active" aria-current="page"{{end}}>{{.Label}}</a>{{end}}
+      {{range .Tabs}}<a href="{{$.Scope.URL .Path}}" {{if or (eq .Key $.Tab) (and .Group (eq .Group $.TabInfo.Group))}}class="active" aria-current="page"{{end}}>{{.Label}}</a>{{end}}
     </nav>
+    {{if .SubTabs}}<nav class="deck-subtabs" aria-label="Section views">
+      {{range .SubTabs}}<a href="{{$.Scope.URL .Path}}" {{if eq .Key $.Tab}}class="active" aria-current="page"{{end}}>{{.Sub}}</a>{{end}}
+    </nav>{{end}}
   </header>
 
-{{$tab := .Tab}}
-{{if and (not .Deck.HasData) (ne $tab "report") (ne $tab "access") (ne $tab "tests")}}
+{{$v := .View}}
+{{if and (ne $v "access") (ne $v "report") (ne $v "defs") (ne $v "record")}}{{template "scope-bar" .}}{{end}}
+
+{{if and (not .In.HasData) (ne $v "access") (ne $v "report") (ne $v "defs") (ne $v "tests") (ne $v "goals") (ne $v "record") (ne $v "activity")}}
   <section class="deck-panel deck-empty">
-    <h2>No activity yet</h2>
-    <p>The Command Deck builds itself from your company’s own work. As your team creates and updates customers, tasks, cases, approvals and records, every change is measured here — nothing is estimated or invented.</p>
+    <h2>Not enough operational history yet</h2>
+    <p>{{if .Scope.Filtered}}No tracked work matches this scope. Widen the date range or clear a filter above.{{else}}The Command Deck is built only from your company’s own recorded work — nothing is estimated or invented. As your team creates and moves tasks, cases, approvals and records, every change is measured here: cycle times appear after work is completed, bottlenecks after at least five items pass through a stage, and comparisons once there is a previous period to compare with.{{end}}</p>
     {{if .Workspace}}<p><a class="deck-link" href="{{.Workspace}}">Open your workspace →</a></p>{{end}}
   </section>
-{{end}}
+{{else}}
 
-{{/* ------------------------------------------------------------ Command Deck */}}
-{{if eq $tab "deck"}}{{with .Deck}}
-  <section class="deck-kpis" aria-label="Key figures">
-    <div class="deck-tile"><div class="k">Activity 7d</div><div class="v">{{num .KPI.Act7}}</div><div class="s mono">{{if .KPI.HasBaseline7}}{{change (float .KPI.Act7) (float .KPI.Prev7)}} wow{{else}}no baseline{{end}}</div></div>
-    <div class="deck-tile"><div class="k">Activity 30d</div><div class="v">{{num .KPI.Act30}}</div><div class="s mono">{{change (float .KPI.Act30) (float .KPI.Prev30)}}{{if gt .KPI.Prev30 0}} mom{{end}}</div></div>
-    <div class="deck-tile"><div class="k">Completion rate</div><div class="v">{{if .KPI.Items}}{{pct1 .KPI.CompletionRate}}{{else}}—{{end}}</div><div class="s">{{num .KPI.Completed}} completed</div></div>
-    <div class="deck-tile"><div class="k">Current streak</div><div class="v">{{.KPI.CurrentStreak}}d</div><div class="s">longest {{.KPI.LongestStrk}}d</div></div>
-    <div class="deck-tile"><div class="k">Avg completion time</div><div class="v">{{if .KPI.HasCompletion}}{{dur .KPI.AvgCompletionHours}}{{else}}—{{end}}</div><div class="s">created to completed</div></div>
-    <div class="deck-tile"><div class="k">Throughput</div><div class="v accent">{{printf "%.1f" .KPI.Throughput}}<small>/day</small></div><div class="s mono">{{change .KPI.Throughput .KPI.PrevThroughput}}</div></div>
-  </section>
-
-  {{template "deck-activity" .}}
-
-  <section class="deck-panel" aria-labelledby="where-h">
-    <div class="deck-panel-head"><div><h2 id="where-h">Where is it happening</h2><p>Stage severity ranked by share of cycle time, target breach and rework.</p></div></div>
-    {{template "deck-stages" .}}
-  </section>
-
-  <section class="deck-panel" aria-labelledby="why-h">
-    <div class="deck-panel-head"><div><h2 id="why-h">Why might it be happening</h2><p>Measured facts are separated from inferred hypotheses.</p></div></div>
-    {{template "deck-findings" .}}
-  </section>
-
-  <section class="deck-panel" aria-labelledby="affect-h">
-    <div class="deck-panel-head"><div><h2 id="affect-h">What is it affecting</h2><p>{{.Impact.Dimension}} outcomes over the same window.</p></div><a class="deck-link" href="/command/outcomes">Outcomes →</a></div>
-    {{template "deck-impact" .}}
-  </section>
-
-  <section class="deck-panel" aria-labelledby="test-h">
-    <div class="deck-panel-head"><div><h2 id="test-h">What should we test next</h2><p>Ranked recommendations with evidence, expected effect and confidence.</p></div><a class="deck-link" href="/command/goals">Goal Intelligence →</a></div>
-    {{template "deck-recs" (recsTop .Recs 3)}}
-  </section>
-{{end}}{{end}}
-
-{{/* ---------------------------------------------------------- Activity Graph */}}
-{{if eq $tab "activity"}}
-  {{template "deck-activity" .Deck}}
-  <section class="deck-panel" aria-labelledby="day-h">
-    <div class="deck-panel-head"><div>
-      <h2 id="day-h">{{if .Day.IsZero}}Recent activity{{else}}{{date .Day}}{{end}}</h2>
-      <p>{{if .Day.IsZero}}The latest changes across your workspace. Select a day in the graph to see its records.{{else}}Every recorded change on this day. <a href="/command/activity">Show recent activity</a>{{end}}</p>
-    </div></div>
-    {{if .DayRows}}
-    <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Time (UTC)</th><th scope="col">Type</th><th scope="col">Record</th><th scope="col">Change</th></tr></thead>
-      <tbody>{{range .DayRows}}<tr><td>{{.At.UTC.Format "Jan 2 15:04"}}</td><td class="t">{{.Module}}</td><td class="t">{{if .Link}}<a href="{{.Link}}">{{.Title}}</a>{{else}}{{.Title}}{{end}}</td><td>{{.What}}</td></tr>{{end}}</tbody>
-    </table></div>
-    {{else}}<div class="deck-note">No recorded activity{{if not .Day.IsZero}} on this day{{end}}.</div>{{end}}
-  </section>
-{{end}}
-
-{{/* ---------------------------------------------------- Pipeline & Bottlenecks */}}
-{{if eq $tab "pipeline"}}
-  {{template "deck-scope" .}}
-  {{with .Pipeline}}
-  <section class="deck-kpis four" aria-label="Pipeline figures">
-    <div class="deck-tile"><div class="k">Avg end-to-end cycle</div><div class="v">{{if .HasCycle}}{{dur .AvgCycleH}}{{else}}—{{end}}</div><div class="s">created to completed</div></div>
-    <div class="deck-tile"><div class="k">Waiting share of cycle</div><div class="v amber">{{if .HasTime}}{{printf "%.0f" .WaitShare}}%{{else}}—{{end}}</div><div class="s">queue time, not work time</div></div>
-    <div class="deck-tile"><div class="k">Stages breaching SLA</div>
-      {{if .TargetsSet}}<div class="v {{if .Breaching}}amber{{else}}green{{end}}">{{.Breaching}}</div><div class="s">{{if .Breaching}}over their target cycle{{else}}all within target{{end}}</div>
-      {{else}}<div class="v">—</div><div class="s">no targets set · <a href="/command/goals">set targets</a></div>{{end}}</div>
-    <div class="deck-tile"><div class="k">Items still in stage</div><div class="v">{{num .OpenNow}}</div><div class="s">open work in progress</div></div>
+{{/* ============================================================ Overview */}}
+{{if eq $v "deck"}}
+  {{if .Summary}}
+  <section class="deck-panel summary" aria-labelledby="sum-h">
+    <div class="deck-panel-head"><div><h2 id="sum-h">Operations summary — {{.Scope.Label}}</h2><p>Written from calculated metrics only. Every statement links to its evidence.</p></div>
+      <span class="deck-chip">{{.ActiveTests}} interventions measuring</span></div>
+    <ul class="summary-list">{{range .Summary}}<li><a href="{{.Link}}">{{.Text}}</a></li>{{end}}</ul>
   </section>
   {{end}}
 
-  {{if .Statuses}}
-  <section class="deck-panel" aria-labelledby="status-h">
-    <div class="deck-panel-head"><div><h2 id="status-h">Stages</h2><p>Where items of this workflow spend their time, status by status.</p></div></div>
-    <ul class="deck-stages">{{range .Statuses}}
-      <li><div class="row"><span class="name">{{.Status}} <span class="ns">· {{.Kind}}</span></span><span class="mono">avg {{dur .AvgH}} · {{pct1 .Share}} · {{.Now}} now</span></div>
-      <div class="bar"><span style="width: {{printf "%.0f" .Bar}}%"></span></div></li>{{end}}
-    </ul>
-  </section>
-  {{end}}
-
-  {{with .Scoped}}
-  <section class="deck-panel" aria-labelledby="pipe-h">
-    <div class="deck-panel-head"><div><h2 id="pipe-h">Where is it happening</h2><p>Time each workflow spends waiting versus being worked.</p></div></div>
-    {{template "deck-stages" .}}
-    {{if .Stages}}
-    <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Workflow</th><th scope="col" class="r">Items</th><th scope="col" class="r">Open</th><th scope="col" class="r">Avg wait</th><th scope="col" class="r">p90 wait</th><th scope="col" class="r">Avg work</th><th scope="col" class="r">Avg cycle</th><th scope="col" class="r">Target</th><th scope="col" class="r">Missed due</th><th scope="col" class="r">Rework</th></tr></thead>
-      <tbody>{{range .Stages}}<tr><td class="t">{{.Label}}</td><td class="r">{{num .Passes}}</td><td class="r">{{num .OpenNow}}</td><td class="r">{{dur .AvgWaitH}}</td><td class="r">{{dur .P90WaitH}}</td><td class="r">{{dur .AvgWorkH}}</td><td class="r {{if index $.Pipeline.OverTarget .Module}}warn{{end}}">{{if .Completed}}{{dur .AvgCycleH}}{{else}}—{{end}}</td><td class="r muted">{{with index $.Targets .Module}}{{dur .}}{{else}}—{{end}}</td><td class="r warn">{{pct1 .BreachRate}}</td><td class="r warn">{{pct1 .ReworkRate}}</td></tr>{{end}}</tbody>
-    </table></div>
-    {{end}}
+  <section class="kpi-grid" aria-label="Execution figures">
+    {{range .KPIs}}{{template "kpi" .}}{{end}}
   </section>
 
   <div class="deck-grid-2">
-    <section class="deck-panel" aria-labelledby="aging-h">
-      <div class="deck-panel-head"><div><h2 id="aging-h">Oldest open work</h2><p>Open items by age.</p></div></div>
-      {{if .OpenItems}}<ul class="deck-list">{{range .OpenItems}}<li><span>{{orDash .Title}}</span><span class="mono muted">{{.Module | moduleLabel}} · {{printf "%.0f" (days .AgeH)}}d · {{orDash .Status}}</span></li>{{end}}</ul>
-      {{else}}<div class="deck-note">No open work in this scope.</div>{{end}}
+    <section class="deck-panel" aria-labelledby="bn-h">
+      <div class="deck-panel-head"><div><h2 id="bn-h">Where work is stuck</h2><p>Stages ranked by severity, built from measured components.</p></div><a class="deck-link" href="{{.Scope.URL "/command/map"}}">Bottleneck map →</a></div>
+      {{template "severity-list" (dict "Stages" .Stages "Scope" .Scope "Limit" 6)}}
     </section>
-    <section class="deck-panel" aria-labelledby="overdue-h">
-      <div class="deck-panel-head"><div><h2 id="overdue-h">Past due</h2><p>Open items beyond their due date.</p></div></div>
-      {{if .OverdueItems}}<ul class="deck-list">{{range .OverdueItems}}<li><span>{{orDash .Title}}</span><span class="mono bad">due {{date .DueAt}}</span></li>{{end}}</ul>
-      {{else}}<div class="deck-note">Nothing is past due.</div>{{end}}
+    <section class="deck-panel" aria-labelledby="wc-h">
+      <div class="deck-panel-head"><div><h2 id="wc-h">What changed</h2><p>Meaningful movements versus the previous {{.Scope.Label | lower}}.</p></div><a class="deck-link" href="{{.Scope.URL "/command/changes"}}">All changes →</a></div>
+      {{template "change-list" .Changes}}
     </section>
   </div>
-  {{end}}
+
+  <section class="deck-panel" aria-labelledby="act-h">
+    <div class="deck-panel-head"><div><h2 id="act-h">Activity history</h2><p>Every square is one day of recorded execution. Hover or tap for the breakdown; select a day to open it.</p></div>
+      <a class="deck-link" href="{{.Scope.URL "/command/activity"}}">Open activity history →</a></div>
+    {{template "heat-year" .Heat}}
+  </section>
+
+  <section class="deck-panel" aria-labelledby="rec-h">
+    <div class="deck-panel-head"><div><h2 id="rec-h">What management should investigate</h2><p>Specific actions derived from the evidence above, ranked by impact and evidence strength.</p></div><a class="deck-link" href="{{.Scope.URL "/command/recommendations"}}">All recommendations →</a></div>
+    {{if .Recs}}<div class="deck-cards">{{range .Recs}}{{template "rec-card" (dict "R" . "Scope" $.Scope)}}{{end}}</div>
+    {{else}}<div class="deck-note">No recommendation meets the evidence threshold for this scope yet. Recommendations appear when a stage, loop, handoff or backlog pattern is backed by at least five measured occurrences.</div>{{end}}
+  </section>
 {{end}}
 
-{{/* ------------------------------------------------------ Outcomes & Effects */}}
-{{if eq $tab "outcomes"}}
-  {{template "deck-scope" .}}
-  {{with .Outcomes}}
-  <section class="deck-panel" aria-labelledby="trend-h">
-    <div class="deck-panel-head"><div><h2 id="trend-h">Completed per month</h2><p>Work finished each month over the last 12 months.</p></div></div>
-    <div class="deck-bars" aria-hidden="true">{{range .Months}}<div class="b" title="{{.Label}}: {{.Completed}} completed"><span class="{{if eq .Completed $.Outcomes.MaxDone}}hi{{end}}" style="height: {{printf "%.0f" .Bar}}%"></span><em>{{.Label}}</em></div>{{end}}</div>
+{{/* ============================================================ Activity */}}
+{{if eq $v "activity"}}{{template "activity-view" .}}{{end}}
+
+{{/* ============================================================ Pipeline */}}
+{{if eq $v "pipeline"}}
+  {{with .M}}
+  <section class="kpi-grid five" aria-label="Pipeline figures">
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "wip"}}">Items still in stage</div><div class="v">{{num .WIP}}</div><div class="s">open work in progress</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "wip"}}">View records →</a></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "cycle"}}">Avg end-to-end cycle</div><div class="v">{{if .Cycle.N}}{{hr .Cycle.Avg}}{{else}}—{{end}}</div><div class="s">median {{if .Cycle.N}}{{hr .Cycle.Median}}{{else}}—{{end}} · P95 {{if .Cycle.N}}{{hr .Cycle.P95}}{{else}}—{{end}}</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "completed"}}">{{num .Cycle.N}} completed →</a></div>
+    <div class="kpi {{if gt .WaitH .WorkH}}warn{{end}}"><div class="k" tabindex="0" data-tip="{{def "wait_share"}}">Waiting share of cycle</div><div class="v amber">{{printf "%.0f" (waitShare .WaitH .WorkH)}}%</div><div class="s">queue time, not work time</div></div>
+    <div class="kpi {{if gt (add .SLABreaches .OpenBreaching) 0}}bad{{else}}good{{end}}"><div class="k" tabindex="0" data-tip="{{def "breaches"}}">SLA breaches</div><div class="v">{{num (add .SLABreaches .OpenBreaching)}}</div><div class="s">{{if .SLAApplicable}}{{pct1 .SLACompliance}} compliance{{else}}no targets set · <a href="{{$.Scope.URL "/command/sla"}}">set targets</a>{{end}}</div><a class="more" href="{{$.Scope.URL "/command/sla"}}">SLA intelligence →</a></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "blocked"}}">Blocked · aging</div><div class="v">{{num .Blocked}} · {{num .Aging}}</div><div class="s">blocked now · open over 7 days</div><a class="more" href="{{$.Scope.URL "/command/aging"}}">Aging intelligence →</a></div>
+  </section>
+  {{end}}
+  {{range .Stages}}
+  <section class="deck-panel" aria-label="{{.Label}} stages">
+    <div class="deck-panel-head"><div><h2>{{.Label}} · stages</h2><p>{{num .Items}} records active in scope. Time statistics use stage visits that ended in the period; WIP and aging are measured at the end of the period.</p></div>
+      <a class="deck-link" href="{{$.Scope.URL "/command/map" "map" .Module}}">Map →</a></div>
+    {{template "stage-table" (dict "PS" . "Scope" $.Scope)}}
+    {{with topRow .}}<p class="deck-foot">Most severe: <a href="{{$.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Status}}</a> — score {{printf "%.0f" .Severity}} ({{.Band}}) from {{range $i, $c := .Components}}{{if $i}}, {{end}}{{$c.Name}} {{$c.Value}}{{end}}.</p>{{end}}
+  </section>
+  {{end}}
+  <p class="deck-foot"><span tabindex="0" data-tip="{{def "severity"}}">How severity is scored ⓘ</span></p>
+{{end}}
+
+{{/* ============================================================ Map */}}
+{{if eq $v "map"}}
+  <nav class="deck-pills" aria-label="Workflow">{{range .Workflows}}<a href="{{$.Scope.URL "/command/map" "map" .Module "workflow" ""}}" {{if eq .Module $.MapModule}}class="active"{{end}}>{{.Label}}</a>{{end}}</nav>
+  <section class="deck-panel" aria-labelledby="map-h">
+    <div class="deck-panel-head"><div><h2 id="map-h">{{.Map.Label}} · process flow</h2><p>Stages in process order. Arrows above are forward moves; amber arcs below are rework loops. Line width is volume; labels show moves · median time before the move. Select a stage or a connection to open it.</p></div></div>
+    {{if .Map.Rows}}<div class="map-wrap">{{pmap .Map .Scope}}</div>
+    <div class="map-legend"><span><i class="lg bad"></i>Critical</span><span><i class="lg warn"></i>High</span><span><i class="lg elev"></i>Elevated</span><span><i class="lg ok"></i>Normal</span><span><i class="lg none"></i>Too little data</span><span><i class="lg loopl"></i>Rework loop</span></div>
+    {{else}}<div class="deck-note">No {{.Map.Label | lower}} activity in this scope.</div>{{end}}
+  </section>
+  {{if .Map.Edges}}
+  <section class="deck-panel" aria-labelledby="edges-h">
+    <div class="deck-panel-head"><div><h2 id="edges-h">Connections</h2><p>Every movement between stages in the period.</p></div></div>
     <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Month</th><th scope="col" class="r">Created</th><th scope="col" class="r">Completed</th><th scope="col" class="r">Failed</th><th scope="col" class="r">Avg cycle</th><th scope="col" class="r">Rework</th></tr></thead>
-      <tbody>{{range .Months}}<tr><td>{{.Label}}</td><td class="r">{{num .Created}}</td><td class="r">{{num .Completed}}</td><td class="r bad">{{.Failed}}</td><td class="r">{{if .HasCycle}}{{dur .AvgCycleH}}{{else}}—{{end}}</td><td class="r warn">{{pct1 .ReworkRate}}</td></tr>{{end}}</tbody>
+      <thead><tr><th>From</th><th>To</th><th class="r">Moves</th><th class="r">Median before move</th><th class="r">P90</th><th>Kind</th><th></th></tr></thead>
+      <tbody>{{range .Map.Edges}}<tr><td class="t">{{.From}}</td><td class="t">{{.To}}</td><td class="r">{{num .Count}}</td><td class="r">{{hr .Delay.Median}}</td><td class="r">{{hr .Delay.P90}}</td>
+        <td>{{if .Backward}}<span class="tag warn">rework loop</span>{{else if .Fallout}}<span class="tag bad">fallout</span>{{else if .Skip}}<span class="tag neutral">skips a stage</span>{{else}}<span class="tag ok">forward</span>{{end}}</td>
+        <td class="r"><a href="{{$.Scope.URL "/command/handoffs" "workflow" $.MapModule "tfrom" .From "tto" .To}}">Analyze →</a></td></tr>{{end}}</tbody>
     </table></div>
   </section>
-
-  <section class="deck-panel" aria-labelledby="effects-h">
-    <div class="deck-panel-head"><div><h2 id="effects-h">Effects on completion time</h2><p>How waiting, missed due dates and rework change the time it takes to finish work. Measured, not inferred.</p></div></div>
-    {{if or .WaitEffect .DueEffect .ReworkEffct}}<div class="deck-cards">
-      {{range (effects .WaitEffect .DueEffect .ReworkEffct)}}
-      <article class="deck-card">
-        <div class="deck-card-head"><h3>{{.Label}}</h3><span class="tag {{if gt .DeltaPct 0.0}}warn{{else}}ok{{end}}">{{if gt .DeltaPct 0.0}}+{{end}}{{printf "%.0f" .DeltaPct}}% time</span></div>
-        <p>Items {{.DescWith}} took <span class="mono">{{dur .WithH}}</span> on average ({{.WithN}} items), against <span class="mono">{{dur .WithoutH}}</span> for items {{.DescWithO}} ({{.WithoutN}} items).</p>
-      </article>{{end}}
-    </div>{{else}}<div class="deck-note">Effects appear once at least five finished items fall on each side of a comparison.</div>{{end}}
-  </section>
-  {{end}}
-
-  {{with .Scoped}}
-  <section class="deck-panel" aria-labelledby="affect2-h">
-    <div class="deck-panel-head"><div><h2 id="affect2-h">What is it affecting</h2><p>{{.Impact.Dimension}} outcomes in this scope.</p></div></div>
-    {{template "deck-impact" .}}
-  </section>
   {{end}}
 {{end}}
 
-{{/* ---------------------------------------------------------- Process Review */}}
-{{if eq $tab "process"}}
-  {{template "deck-scope" .}}
-  {{with .Process}}
+{{/* ============================================================ Stage detail */}}
+{{if eq $v "stage"}}{{with .Row}}
+  <p class="crumbs"><a href="{{$.Scope.URL "/command/pipeline"}}">Pipeline</a> / <a href="{{$.Scope.URL "/command/map" "map" .Module}}">{{.Label}}</a> / {{.Status}}</p>
+  <section class="kpi-grid" aria-label="Stage figures">
+    <div class="kpi"><div class="k">Current WIP</div><div class="v">{{num .WIP}}</div><div class="s">{{num .Blocked}} blocked · {{num .Aging}} aging</div></div>
+    <div class="kpi"><div class="k">Entered · exited</div><div class="v">{{num .Entered}} · {{num .Exited}}</div><div class="s">net {{if ge .NetWIP 0}}+{{end}}{{.NetWIP}} · {{f1 .InRate}}/day in · {{f1 .OutRate}}/day out</div></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "stage_time"}}">Median time in stage</div><div class="v">{{if .Time.N}}{{hr .Time.Median}}{{else}}—{{end}}</div><div class="s">avg {{hr .Time.Avg}} · P75 {{hr .Time.P75}}</div></div>
+    <div class="kpi"><div class="k">P90 · P95</div><div class="v">{{if .Time.N}}{{hr .Time.P90}}{{else}}—{{end}}</div><div class="s">P95 {{hr .Time.P95}} · fastest {{hr .Time.Min}} · slowest {{hr .Time.Max}}</div></div>
+    <div class="kpi {{if .HasTarget}}{{if lt .Compliance 90.0}}bad{{else}}good{{end}}{{end}}"><div class="k" tabindex="0" data-tip="{{def "stage_sla"}}">SLA compliance</div><div class="v">{{if .HasTarget}}{{pct1 .Compliance}}{{else}}—{{end}}</div><div class="s">{{if .HasTarget}}target {{hr .Target}} · {{.Breaches}} breaches{{else}}no stage target{{end}}</div></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "rework"}}">Rework · fallout</div><div class="v">{{pct1 .ReworkRate}}</div><div class="s">{{.Reentries}} re-entries · {{pct1 .DropRate}} fallout</div></div>
+    <div class="kpi"><div class="k">Handoff delay here</div><div class="v">{{if .HandoffWait.N}}{{hr .HandoffWait.Median}}{{else}}—{{end}}</div><div class="s">{{.HandoffWait.N}} handoffs in this stage</div></div>
+    <div class="kpi {{band .Band}}"><div class="k" tabindex="0" data-tip="{{def "severity"}}">Severity</div><div class="v">{{if .Enough}}{{printf "%.0f" .Severity}}{{else}}—{{end}}</div><div class="s">{{.Band}}{{if .Owner}} · owner {{.Owner}} ({{pct0 .OwnerShare}}){{end}}</div></div>
+  </section>
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Severity components</h2><p>What drives the score — measured, never guessed.</p></div></div>
+      {{if .Components}}<ul class="comp-list">{{range .Components}}<li><span>{{.Name}}</span><span class="mono">{{.Value}}</span><span class="bar"><i style="width:{{barPct .Points 30.0}}%"></i></span><span class="mono muted">{{printf "%.1f" .Points}} pts</span></li>{{end}}</ul>
+      {{else}}<div class="deck-note">Fewer than five items passed through this stage in the period.</div>{{end}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Trend</h2><p>Weekly median time in stage, last 8 weeks — {{.TrendDir}}.</p></div></div>
+      <div class="deck-panel-body">{{line .Trend .Target .HasTarget 0 "h"}}</div></section>
+  </div>
+{{end}}
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Arrives from</h2><p>What happened immediately before.</p></div></div>
+      {{template "edge-table" (dict "Edges" .Into "Side" "From" "Scope" .Scope "Module" .PS.Module)}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Leaves to</h2><p>What happened immediately after.</p></div></div>
+      {{template "edge-table" (dict "Edges" .Out "Side" "To" "Scope" .Scope "Module" .PS.Module)}}</section>
+  </div>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Records in this stage</h2><p>Visits that ended in the period or are still open.</p></div></div>
+    {{template "record-table" .StageRecords}}</section>
+{{end}}
+
+{{/* ============================================================ SLA */}}
+{{if eq $v "sla"}}
+  {{with .M}}<section class="kpi-grid four" aria-label="SLA figures">
+    <div class="kpi {{if .SLAApplicable}}{{if lt .SLACompliance 90.0}}bad{{else}}good{{end}}{{end}}"><div class="k" tabindex="0" data-tip="{{def "sla"}}">SLA compliance</div><div class="v">{{if .SLAApplicable}}{{pct1 .SLACompliance}}{{else}}—{{end}}</div><div class="s">{{.SLAMet}} of {{.SLAApplicable}} records within every target</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "sla"}}">View records →</a></div>
+    <div class="kpi {{if .SLABreaches}}bad{{end}}"><div class="k">Completed late</div><div class="v">{{num .SLABreaches}}</div><div class="s">finished after exceeding a target</div></div>
+    <div class="kpi {{if .OpenBreaching}}warn{{end}}"><div class="k">Open past target</div><div class="v">{{num .OpenBreaching}}</div><div class="s">still open, already over</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "sla_breached"}}">All breaches →</a></div>
+    <div class="kpi"><div class="k">Targets configured</div><div class="v">{{len $.Targets}}</div><div class="s">workflow and stage targets</div></div>
+  </section>{{end}}
+  {{if .SLARows}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Every SLA</h2><p>Per configured target: actual performance, compliance, overage and who is affected.</p></div></div>
+    <div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>SLA</th><th class="r">Target</th><th class="r">Actual avg</th><th class="r">Median</th><th class="r">P90</th><th class="r">P95</th><th class="r">Compliance</th><th class="r">Breaches</th><th class="r">Items</th><th class="r">Breach rate</th><th class="r">Avg overage</th><th class="r">Max breach</th><th>Trend (8 wk)</th><th>Teams</th><th>People</th><th></th></tr></thead>
+      <tbody>{{range .SLARows}}<tr><td class="t">{{.Label}} · {{if .Stage}}{{.Stage}}{{else}}whole workflow{{end}}</td><td class="r">{{hr .Target}}</td><td class="r">{{if .Actual.N}}{{hr .Actual.Avg}}{{else}}—{{end}}</td><td class="r">{{if .Actual.N}}{{hr .Actual.Median}}{{else}}—{{end}}</td><td class="r">{{if .Actual.N}}{{hr .Actual.P90}}{{else}}—{{end}}</td><td class="r">{{if .Actual.N}}{{hr .Actual.P95}}{{else}}—{{end}}</td>
+        <td class="r {{if and .Items (lt .Compliance 90.0)}}bad{{else}}good{{end}}">{{if .Items}}{{pct1 .Compliance}}{{else}}—{{end}}</td><td class="r">{{num .Breaches}}</td><td class="r">{{num .Items}}</td><td class="r">{{pct1 .BreachRate}}</td><td class="r">{{if .Breaches}}{{hr .AvgOver}}{{else}}—{{end}}</td><td class="r">{{if .Breaches}}{{hr .MaxOver}}{{else}}—{{end}}</td>
+        <td>{{spark .Trend "neutral"}} <span class="muted mono">{{.TrendDir}}</span></td>
+        <td class="t">{{range $i, $x := .Teams}}{{if $i}}, {{end}}{{$x.Name}} ({{$x.Count}}){{else}}—{{end}}</td>
+        <td class="t">{{range $i, $x := .People}}{{if $i}}, {{end}}{{if $x.Link}}<a href="{{$x.Link}}">{{$x.Name}}</a>{{else}}{{$x.Name}}{{end}} ({{$x.Count}}){{else}}—{{end}}</td>
+        <td class="r"><a href="{{.Link}}">Records →</a></td></tr>{{end}}</tbody>
+    </table></div></section>
+  {{end}}
+  {{if .Breaches}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Breached records</h2><p>Largest overage first. Select a record for its full timeline.</p></div></div>
+    <div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>Record</th><th>Customer</th><th>Stage</th><th>Entered</th><th>Target deadline</th><th>Finished</th><th class="r">Overage</th><th>Assignee</th><th>Current status</th></tr></thead>
+      <tbody>{{range .Breaches}}<tr><td class="t"><a href="/command/record/{{.Item.ID}}" data-drawer>{{orDash .Item.Title}}</a></td><td class="t">{{orDash .Customer}}</td><td class="t">{{.Stage}}</td><td>{{.Entered.UTC.Format "Jan 2 15:04"}}</td><td>{{.Deadline.UTC.Format "Jan 2 15:04"}}</td><td>{{if .Finished}}{{.Finished.UTC.Format "Jan 2 15:04"}}{{else}}<span class="tag warn">still open</span>{{end}}</td><td class="r bad">+{{hr .OverH}}</td><td class="t">{{.Assignee}}</td><td>{{.Status}}</td></tr>{{end}}</tbody>
+    </table></div></section>
+  {{end}}
+  {{if .CanSetTargets}}{{template "sla-form" (dict "Groups" .SLAForm "CSRF" .CSRF "Back" (.Scope.URL "/command/sla"))}}{{else}}<p class="deck-foot">SLA targets are set by company owners and administrators.</p>{{end}}
+{{end}}
+
+{{/* ============================================================ Aging */}}
+{{if eq $v "aging"}}{{with .Aging}}
+  <nav class="deck-pills" aria-label="Aging basis">
+    <a href="{{$.Scope.URL "/command/aging" "basis" "age" "dim" .Dim}}" {{if eq .Basis "age"}}class="active"{{end}}>Age since created</a>
+    <a href="{{$.Scope.URL "/command/aging" "basis" "stage" "dim" .Dim}}" {{if eq .Basis "stage"}}class="active"{{end}}>Time in current stage</a>
+    <span class="sep"></span>
+    {{range $d := (list "stage" "department" "team" "assignee" "process" "type")}}<a href="{{$.Scope.URL "/command/aging" "basis" $.Aging.Basis "dim" $d}}" {{if eq $d $.Aging.Dim}}class="active"{{end}}>by {{$d}}</a>{{end}}
+  </nav>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>{{num .Total}} open items by {{.Dim}}</h2><p>Select any cell to see the exact items.</p></div></div>
+    {{if .Rows}}<div class="table-wrap"><table class="deck-table matrix">
+      <thead><tr><th>{{.Dim}}</th>{{range .Buckets}}<th class="r">{{.}}</th>{{end}}<th class="r">Total</th></tr></thead>
+      <tbody>{{range $row := .Rows}}<tr><td class="t">{{$row.Name}}</td>{{range $i, $c := $row.Counts}}<td class="r cell l{{heatLevel $c $.AgingMax}}">{{if $c}}<a href="{{index $row.Links $i}}">{{$c}}</a>{{else}}<span class="muted">·</span>{{end}}</td>{{end}}<td class="r mono">{{$row.Total}}</td></tr>{{end}}
+      <tr class="tot"><td class="t">Total</td>{{range .Totals}}<td class="r">{{.}}</td>{{end}}<td class="r">{{.Total}}</td></tr></tbody>
+    </table></div>{{else}}<div class="deck-note">No open work in this scope.</div>{{end}}
+  </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>At risk of missing SLA</h2><p>Open work already older than most completed work of the same kind. “Older than 92%” means 92% of completed items of that workflow finished faster. This is a comparison with history, not a prediction.</p></div></div>
+    {{if .AtRisk}}<div class="table-wrap"><table class="deck-table"><thead><tr><th>Record</th><th>Type</th><th>Stage</th><th>Assignee</th><th class="r">Age</th><th class="r">Older than</th><th class="r">Target</th><th>Risk</th></tr></thead>
+    <tbody>{{range .AtRisk}}<tr><td class="t"><a href="/command/record/{{.Item.ID}}" data-drawer>{{orDash .Item.Title}}</a></td><td>{{moduleLabel .Item.Module}}</td><td>{{.Stage}}</td><td class="t">{{.Assignee}}</td><td class="r">{{hr .AgeH}}</td><td class="r">{{pct0 .Percentile}} of {{.Samples}}</td><td class="r">{{if .TargetH}}{{hr .TargetH}}{{else}}—{{end}}</td><td><span class="tag {{statusClass .Level}}">{{.Level}}</span></td></tr>{{end}}</tbody></table></div>
+    {{else}}<div class="deck-note">No open item is unusually old compared with completed work (needs at least 10 completed items per workflow).</div>{{end}}</section>
+{{end}}{{end}}
+
+{{/* ============================================================ Throughput */}}
+{{if eq $v "throughput"}}{{with .TP}}
+  <nav class="deck-pills" aria-label="Interval">{{range $u := (list "day" "week" "month")}}<a href="{{$.Scope.URL "/command/throughput" "unit" $u}}" {{if eq $u $.TP.Unit}}class="active"{{end}}>{{$u}}ly</a>{{end}}</nav>
+  <section class="kpi-grid four" aria-label="Throughput totals">
+    <div class="kpi"><div class="k">Started</div><div class="v">{{num .Totals.Started}}</div><div class="s">new work in period</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "started"}}">View →</a></div>
+    <div class="kpi good"><div class="k">Completed</div><div class="v">{{num .Totals.Completed}}</div><div class="s">finished in period</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "completed"}}">View →</a></div>
+    <div class="kpi {{if gt .Totals.Net 0}}warn{{else}}good{{end}}"><div class="k">Net change</div><div class="v">{{if gt .Totals.Net 0}}+{{end}}{{.Totals.Net}}</div><div class="s">started minus completed</div></div>
+    <div class="kpi"><div class="k">Completion ratio</div><div class="v">{{pct1 .Totals.CompletionRatio}}</div><div class="s">completed ÷ started</div></div>
+  </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Started, completed and backlog</h2><p><span class="lk st"></span>started <span class="lk co"></span>completed <span class="lk wip"></span>backlog at end of interval. Select a bar for its records.</p></div></div>
+    <div class="chart-wrap">{{bars .}}</div></section>
+  <div class="deck-grid-2">
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Per {{.Unit}}</h2></div></div>
+    <div class="table-wrap tall"><table class="deck-table">
+      <thead><tr><th>{{.Unit}}</th><th class="r">Started</th><th class="r">Completed</th><th class="r">Net</th><th class="r">Backlog</th><th class="r">Ratio</th><th class="r">Moving avg</th><th class="r">vs prior</th></tr></thead>
+      <tbody>{{range .Rows}}<tr><td><a href="{{.Link}}">{{.Label}}</a></td><td class="r">{{.Started}}</td><td class="r">{{.Completed}}</td><td class="r">{{if gt .Net 0}}+{{end}}{{.Net}}</td><td class="r">{{.Backlog}}</td><td class="r">{{if .Started}}{{pct0 .CompletionRatio}}{{else}}—{{end}}</td><td class="r">{{f1 .MovingAvg}}</td><td class="r">{{orDash .Change}}</td></tr>{{end}}</tbody>
+    </table></div></section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Completed by {{lower .DimName}}</h2><p>This period versus the previous one.</p></div>
+      <nav class="mini-pills">{{range $d := (list "workflow" "department" "team" "assignee" "type")}}<a href="{{$.Scope.URL "/command/throughput" "unit" $.TP.Unit "dim" $d}}">{{$d}}</a>{{end}}</nav></div>
+    {{template "dim-table" .ByDim}}</section>
+  </div>
+{{end}}{{end}}
+
+{{/* ============================================================ Outcomes */}}
+{{if eq $v "outcomes"}}{{with .Month}}
+  <form class="deck-inline" method="get" action="/command/outcomes" data-autosubmit>{{scopeHidden $.Scope}}
+    <label for="month">Month</label><select id="month" name="month">{{range .Months}}<option value="{{.Key}}" {{if .Selected}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+    <button class="btn secondary small" data-apply>Show</button></form>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>{{.Label}} — management report</h2><p>Compared with the previous month, the 3-month average and 12 months of history.</p></div></div>
+    <div class="counts"><span><b>{{.CasesOpen}}</b> cases opened</span><span><b>{{.CasesDone}}</b> cases closed</span><span><b>{{.TasksDone}}</b> tasks completed</span><span><b>{{.Approvals}}</b> approvals decided</span><span><b>{{.Documents}}</b> documents added</span></div>
+    <div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>Metric</th><th class="r">{{.Month.Format "Jan"}}</th><th class="r">Previous</th><th class="r">3-mo avg</th><th class="r">Change</th><th>12 months</th></tr></thead>
+      <tbody>{{range .Rows}}<tr><td class="t">{{.Label}}</td><td class="r">{{.Cur}}</td><td class="r muted">{{.Prev}}</td><td class="r muted">{{.Avg3}}</td><td class="r {{statusClass .Status}}">{{orDash .Delta}}</td><td>{{spark .Series .Status}}</td></tr>{{end}}</tbody>
+    </table></div></section>
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Major bottlenecks</h2><p>Most severe stages this month.</p></div></div>
+      {{if .Stages}}<ul class="sev-list">{{range .Stages}}<li><a href="{{$.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Label}} · {{.Status}}</a><span class="tag {{band .Band}}">{{.Band}} {{printf "%.0f" .Severity}}</span></li>{{end}}</ul>{{else}}<div class="deck-note">No stage above the normal range.</div>{{end}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Improvements & regressions</h2><p>Versus the previous month.</p></div></div>
+      {{template "change-list" .Changes}}</section>
+  </div>
+{{end}}
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Interventions</h2><p>Tests running during the month.</p></div><a class="deck-link" href="/command/tests">All tests →</a></div>
+      {{if .MonthTests}}<ul class="sev-list">{{range .MonthTests}}<li><a href="{{.Link}}">{{.Title}}</a><span class="tag {{statusClass .Verdict}}">{{.Verdict}}</span></li>{{end}}</ul>{{else}}<div class="deck-note">No intervention tests overlapped this month.</div>{{end}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Goals</h2><p>Progress of active goals.</p></div><a class="deck-link" href="/command/goals">All goals →</a></div>
+      {{if .MonthGoals}}<ul class="sev-list">{{range .MonthGoals}}<li><a href="{{.Link}}">{{.Title}}</a><span class="mono">{{fmetric .Current .M.Unit}} → {{fmetric .Target .M.Unit}}</span><span class="tag {{statusClass .Status}}">{{.Status}}</span></li>{{end}}</ul>{{else}}<div class="deck-note">No goals yet.</div>{{end}}</section>
+  </div>
+  {{if .Recs}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>Recommendations</h2></div></div><div class="deck-cards">{{range .Recs}}{{template "rec-card" (dict "R" . "Scope" $.Scope)}}{{end}}</div></section>{{end}}
+{{end}}
+
+{{/* ============================================================ Process review */}}
+{{if eq $v "process"}}{{with .PR}}
+  <nav class="deck-pills" aria-label="Workflow">{{range $.Workflows}}<a href="{{$.Scope.URL "/command/process" "map" .Module "workflow" ""}}" {{if eq .Module $.MapModule}}class="active"{{end}}>{{.Label}}</a>{{end}}</nav>
   {{if .Items}}
-  <section class="deck-kpis four" aria-label="Process figures">
-    <div class="deck-tile"><div class="k">{{.Label}} reviewed</div><div class="v">{{num .Items}}</div><div class="s">items in scope</div></div>
-    <div class="deck-tile"><div class="k">Avg status changes</div><div class="v">{{printf "%.1f" .AvgSteps}}</div><div class="s">per item</div></div>
-    <div class="deck-tile"><div class="k">Reopened</div><div class="v {{if ge .ReopenShare 10.0}}amber{{end}}">{{printf "%.0f" .ReopenShare}}%</div><div class="s">{{.Reopened}} went back after finishing</div></div>
-    <div class="deck-tile"><div class="k">Skipped work step</div><div class="v">{{printf "%.0f" .SkipShare}}%</div><div class="s">{{.Skipped}} closed without active work</div></div>
+  <section class="kpi-grid" aria-label="Process figures">
+    <div class="kpi"><div class="k">{{.Label}} reviewed</div><div class="v">{{num .Items}}</div><div class="s">created, open or completed in scope</div></div>
+    <div class="kpi"><div class="k">Completion rate</div><div class="v">{{pct1 .CompletionRate}}</div><div class="s">{{num .Completed}} completed</div></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "loop"}}">Loop frequency</div><div class="v">{{printf "%.2f" .LoopsPerItem}}</div><div class="s">rework loops per item</div></div>
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "handoff"}}">Handoff frequency</div><div class="v">{{printf "%.2f" .HandoffsPerItem}}</div><div class="s">owner changes per item</div></div>
+    <div class="kpi {{if .Stalled}}warn{{end}}"><div class="k">Stalled</div><div class="v">{{num .Stalled}}</div><div class="s">open, no activity for 30+ days</div><a class="more" href="{{.StalledLink}}">View →</a></div>
+    <div class="kpi"><div class="k">Skipped work stage</div><div class="v">{{num .Skipped}}</div><div class="s">finished without a working state</div><a class="more" href="{{.SkippedLink}}">View →</a></div>
   </section>
-
-  <section class="deck-panel" aria-labelledby="flow-h">
-    <div class="deck-panel-head"><div><h2 id="flow-h">How {{.Label}} move</h2><p>Every status change, and its share of all exits from that status. Loops back from a finished state are marked.</p></div></div>
-    <div class="deck-flow">{{range .Transitions}}
-      <div class="step"><span>{{.From}} → {{.To}}{{if .Loop}} <span class="warn">↺</span>{{end}}</span><div class="bar"><span class="{{if .Loop}}loop{{end}}" style="width: {{printf "%.0f" .Bar}}%"></span></div><span class="r muted">{{num .Count}} · {{printf "%.0f" .Share}}%</span></div>{{end}}
-    </div>
-  </section>
-
-  <section class="deck-panel" aria-labelledby="paths-h">
-    <div class="deck-panel-head"><div><h2 id="paths-h">Most common paths</h2><p>The full sequence of statuses items went through.</p></div></div>
+  <div class="path-callouts">
+    {{with .Fastest}}<div class="callout good"><div class="k">Fastest common path</div><div class="p">{{.Path}}</div><div class="s">{{pct1 .Share}} of items · median {{hr .Cycle.Median}}</div></div>{{end}}
+    {{with .Slowest}}<div class="callout bad"><div class="k">Slowest common path</div><div class="p">{{.Path}}</div><div class="s">{{pct1 .Share}} of items · median {{hr .Cycle.Median}}</div></div>{{end}}
+    {{with .ReworkPaths}}{{with index . 0}}<div class="callout warn"><div class="k">Most common rework path</div><div class="p">{{.Path}}</div><div class="s">{{pct1 .Share}} of items{{if .Cycle.N}} · median {{hr .Cycle.Median}}{{end}}</div></div>{{end}}{{end}}
+  </div>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Execution paths</h2><p>The full sequence of statuses items went through, most common first.</p></div></div>
     <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Path</th><th scope="col" class="r">Items</th><th scope="col" class="r">Share</th><th scope="col" class="r">Avg cycle</th></tr></thead>
-      <tbody>{{range .Paths}}<tr><td class="t">{{.Path}}</td><td class="r">{{num .Count}}</td><td class="r">{{pct1 .Share}}</td><td class="r">{{if .HasCycle}}{{dur .AvgCycleH}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
-    </table></div>
+      <thead><tr><th>Path</th><th class="r">Items</th><th class="r">Share</th><th class="r">Median</th><th class="r">Avg</th><th class="r">P90</th><th class="r">Open</th><th></th></tr></thead>
+      <tbody>{{range .Paths}}<tr><td class="t">{{.Path}} {{if .Rework}}<span class="tag warn">rework</span>{{end}}</td><td class="r">{{num .Count}}</td><td class="r">{{pct1 .Share}}</td><td class="r">{{if .Cycle.N}}{{hr .Cycle.Median}}{{else}}—{{end}}</td><td class="r">{{if .Cycle.N}}{{hr .Cycle.Avg}}{{else}}—{{end}}</td><td class="r">{{if .Cycle.N}}{{hr .Cycle.P90}}{{else}}—{{end}}</td><td class="r">{{.Open}}</td><td class="r"><a href="{{.Link}}">Records →</a></td></tr>{{end}}</tbody>
+    </table></div></section>
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Cycle-time distribution</h2><p>Completed items by total cycle time.</p></div></div>
+      <div class="hist">{{range .Histogram}}<a class="hb" href="{{.Link}}" title="{{.Label}}: {{.Count}}"><span style="height:{{barPctI .Count $.PR.HistMax}}%"></span><em>{{.Count}}</em><b>{{.Label}}</b></a>{{end}}</div></section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Bottleneck contribution</h2><p>Share of completed items' time spent in each stage.</p></div></div>
+      <ul class="comp-list">{{range .Contribution}}<li><span>{{.Name}}</span><span class="mono">{{pct1 .Share}}</span><span class="bar"><i style="width:{{printf "%.0f" .Share}}%"></i></span><span class="mono muted">{{hr .Hours}}</span></li>{{end}}</ul></section>
+  </div>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Stage variance</h2><p>How predictable each stage is. A high coefficient of variation means similar work takes very different times.</p></div></div>
+    <div class="table-wrap"><table class="deck-table"><thead><tr><th>Stage</th><th class="r">Visits</th><th class="r">Mean</th><th class="r">Std dev</th><th class="r">Coef. of variation</th></tr></thead>
+      <tbody>{{range .Variance}}<tr><td class="t">{{.Status}}</td><td class="r">{{.N}}</td><td class="r">{{hr .Mean}}</td><td class="r">{{hr .SD}}</td><td class="r {{if gt .CV 1.0}}warn{{end}}">{{printf "%.2f" .CV}}</td></tr>{{end}}</tbody></table></div></section>
+  {{else}}<section class="deck-panel deck-empty"><h2>No {{.Label | lower}} in this scope</h2><p>Process review appears once {{.Label | lower}} are created and moved through their stages.</p></section>{{end}}
+{{end}}{{end}}
+
+{{/* ============================================================ Handoffs */}}
+{{if eq $v "handoffs"}}{{with .HO}}
+  <nav class="deck-pills" aria-label="Group handoffs by">{{range $b := (list "person" "team" "department")}}<a href="{{$.Scope.URL "/command/handoffs" "by" $b}}" {{if eq $b $.HO.By}}class="active"{{end}}>by {{$b}}</a>{{end}}</nav>
+  <section class="kpi-grid four">
+    <div class="kpi"><div class="k" tabindex="0" data-tip="{{def "handoff"}}">Handoffs</div><div class="v">{{num .Total}}</div><div class="s">changes of owner in period</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "handoffs"}}">Records →</a></div>
+    <div class="kpi"><div class="k">Median wait</div><div class="v">{{if .Wait.N}}{{hr .Wait.Median}}{{else}}—{{end}}</div><div class="s">avg {{hr .Wait.Avg}}</div></div>
+    <div class="kpi"><div class="k">P90 wait</div><div class="v">{{if .Wait.N}}{{hr .Wait.P90}}{{else}}—{{end}}</div><div class="s">P95 {{hr .Wait.P95}}</div></div>
+    <div class="kpi warn"><div class="k" tabindex="0" data-tip="{{def "handoff_share"}}">Share of process delay</div><div class="v">{{pct1 .Share}}</div><div class="s">handoff waiting ÷ cycle time</div></div>
   </section>
-  {{else}}<section class="deck-panel"><div class="deck-note">No {{.Label}} in this scope yet.</div></section>{{end}}
-  {{end}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Ownership handoffs</h2><p>From → to, ranked by total waiting caused.</p></div></div>
+    {{if .Rows}}<div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>From</th><th>To</th><th class="r">Handoffs</th><th class="r">Avg wait</th><th class="r">Median</th><th class="r">P90</th><th class="r">Share of delay</th><th class="r">SLA breached</th><th class="r">Rework after</th><th></th></tr></thead>
+      <tbody>{{range .Rows}}<tr><td class="t">{{.From}}</td><td class="t">{{.To}}</td><td class="r">{{num .Count}}</td><td class="r">{{hr .Wait.Avg}}</td><td class="r">{{hr .Wait.Median}}</td><td class="r">{{hr .Wait.P90}}</td><td class="r">{{pct1 .ShareOfDelay}}</td><td class="r {{if gt .BreachRate .BaseBreachRate}}warn{{end}}">{{pct0 .BreachRate}} <span class="muted">vs {{pct0 .BaseBreachRate}}</span></td><td class="r">{{pct0 .ReworkAfter}}</td><td class="r"><a href="{{.Link}}">Records →</a></td></tr>{{end}}</tbody>
+    </table></div>{{else}}<div class="deck-note">No changes of owner in this scope.</div>{{end}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Stage handoffs</h2><p>Queue time in the next stage after each transition.</p></div></div>
+    {{if .Stages}}<div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>Workflow</th><th>From → To</th><th class="r">Moves</th><th class="r">Median queue</th><th class="r">P90</th><th></th></tr></thead>
+      <tbody>{{range .Stages}}<tr><td class="t">{{.Label}}</td><td class="t">{{.From}} → {{.To}}</td><td class="r">{{num .Count}}</td><td class="r">{{hr .Queue.Median}}</td><td class="r">{{hr .Queue.P90}}</td><td class="r"><a href="{{.Link}}">Records →</a></td></tr>{{end}}</tbody>
+    </table></div>{{else}}<div class="deck-note">No stage transitions in this scope.</div>{{end}}</section>
+{{end}}
+  {{with .Transition}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>{{$.TFrom}} → {{$.TTo}}</h2><p>Every record that made this move in the period.</p></div></div>{{template "record-table" .}}</section>{{end}}
 {{end}}
 
-{{/* ------------------------------------------------------ Organization Frame */}}
-{{if eq $tab "organization"}}
-  {{template "deck-scope" .}}
-  {{with .Org}}
-  <section class="deck-panel" aria-labelledby="people-h">
-    <div class="deck-panel-head"><div><h2 id="people-h">Workload by person</h2><p>Work assigned to each person in this scope.</p></div>{{if .Concentration}}<span class="tag warn">Concentrated</span>{{end}}</div>
-    {{if .Concentration}}<div class="deck-note">The busiest {{.TopCount}} {{if eq .TopCount 1}}person carries{{else}}people carry{{end}} <span class="mono">{{printf "%.0f" .TopShare}}%</span> of assigned work. Measured from assignments; it does not account for part-time schedules.</div>{{end}}
-    {{if .People}}<div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Person</th><th scope="col" class="r">Items</th><th scope="col" class="r">Share</th><th scope="col" class="r">Open now</th><th scope="col" class="r">Done 30d</th><th scope="col" class="r">Avg cycle</th></tr></thead>
-      <tbody>{{range .People}}<tr><td class="t">{{.Name}}</td><td class="r">{{num .Items}}</td><td class="r">{{pct1 .Share}}</td><td class="r">{{num .Open}}</td><td class="r">{{num .Completed30}}</td><td class="r">{{if .HasCycle}}{{dur .AvgCycleH}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
-    </table></div>{{else}}<div class="deck-note">No assigned work in this scope. Assign people on tasks, cases, approvals and records to see workload.</div>{{end}}
-    {{if .Unassigned}}<p class="deck-foot">{{num .Unassigned}} items have nobody assigned.</p>{{end}}
+{{/* ============================================================ Rework */}}
+{{if eq $v "rework"}}{{with .RW}}
+  <section class="kpi-grid" aria-label="Rework figures">
+    <div class="kpi {{if gt .Rate 10.0}}warn{{end}}"><div class="k" tabindex="0" data-tip="{{def "rework"}}">Rework rate</div><div class="v">{{pct1 .Rate}}</div><div class="s">{{.ReworkItems}} of {{.Completed}} completed</div><a class="more" href="{{$.Scope.URL "/command/records" "set" "rework"}}">Records →</a></div>
+    <div class="kpi"><div class="k">Backward moves</div><div class="v">{{num .Backward}}</div><div class="s">{{.Reopened}} reopened after finishing</div></div>
+    <div class="kpi"><div class="k">Repeat approvals</div><div class="v">{{num .RepeatApprovals}}</div><div class="s">approved, then pending again</div></div>
+    <div class="kpi"><div class="k">Repeat reviews</div><div class="v">{{num .RepeatReviews}}</div><div class="s">records sent back from review</div></div>
+    <div class="kpi"><div class="k">Repeat corrections</div><div class="v">{{num .RepeatCorrections}}</div><div class="s">cases reopened or sent back</div></div>
+    <div class="kpi bad"><div class="k" tabindex="0" data-tip="{{def "loop"}}">Time lost to rework</div><div class="v">{{hr .LostH}}</div><div class="s">median {{hr .Extra.Median}} per loop</div></div>
   </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Top rework paths</h2><p>Each loop's cost is the time until the record regained the position it lost.</p></div></div>
+    {{if .Paths}}<div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>Workflow</th><th>Loop</th><th class="r">Occurrences</th><th class="r">Records</th><th class="r">Median additional time</th><th class="r">P90</th><th class="r">Share of process delay</th><th></th></tr></thead>
+      <tbody>{{range .Paths}}<tr><td class="t">{{.Label}}</td><td class="t">{{.Path}}</td><td class="r">{{num .Count}}</td><td class="r">{{.Items}}</td><td class="r">{{hr .Extra.Median}}</td><td class="r">{{hr .Extra.P90}}</td><td class="r">{{pct1 .ShareOfDelay}}</td><td class="r"><a href="{{.Link}}">Records →</a></td></tr>{{end}}</tbody>
+    </table></div>{{else}}<div class="deck-note">No backward moves in this scope.</div>{{end}}</section>
+  <div class="deck-grid-3">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>By process</h2></div></div>{{template "name-counts" .ByProcess}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>By team</h2></div></div>{{template "name-counts" .ByTeam}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>By owner at the time</h2></div></div>{{template "name-counts" .ByPerson}}</section>
+  </div>
+{{end}}{{end}}
 
-  <section class="deck-panel" aria-labelledby="depts-h">
-    <div class="deck-panel-head"><div><h2 id="depts-h">Departments</h2><p>Work, open items and people per department.</p></div></div>
-    {{if .Departments}}<div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Department</th><th scope="col" class="r">Items</th><th scope="col" class="r">Open</th><th scope="col" class="r">People</th><th scope="col" class="r">Avg cycle</th></tr></thead>
-      <tbody>{{range .Departments}}<tr><td class="t">{{.Name}}</td><td class="r">{{num .Items}}</td><td class="r">{{num .Open}}</td><td class="r">{{.People}}</td><td class="r">{{if .HasCycle}}{{dur .AvgCycleH}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
-    </table></div>{{else}}<div class="deck-note">No work in this scope.</div>{{end}}
-  </section>
-  {{end}}
+{{/* ============================================================ Organization */}}
+{{if eq $v "organization"}}{{with .Cap}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Departments</h2><p>How each department executes. Select one for its full detail.</p></div></div>
+    {{template "load-table" (dict "Rows" .Departments "Kind" "Department")}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Teams</h2></div></div>
+    {{template "load-table" (dict "Rows" .Teams "Kind" "Team")}}</section>
+{{end}}
+  {{if .Ownership}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>Process ownership</h2><p>Who holds the open work of each workflow.</p></div></div>
+    <div class="table-wrap"><table class="deck-table"><thead><tr><th>Workflow</th><th class="r">Open</th><th>Main department</th><th class="r">Share</th><th>Main team</th><th class="r">Share</th></tr></thead>
+    <tbody>{{range .Ownership}}<tr><td class="t">{{.Workflow}}</td><td class="r">{{.Open}}</td><td class="t">{{.Department}}</td><td class="r">{{pct0 .DeptShare}}</td><td class="t">{{.Team}}</td><td class="r">{{pct0 .TeamShare}}</td></tr>{{end}}</tbody></table></div></section>{{end}}
+  <p class="deck-foot">People and their workload: <a href="{{.Scope.URL "/command/capacity"}}">Capacity & Load →</a></p>
 {{end}}
 
-{{/* ------------------------------------------------------- Goal Intelligence */}}
-{{if eq $tab "goals"}}
-  <section class="deck-panel" aria-labelledby="targets-h">
-    <div class="deck-panel-head"><div><h2 id="targets-h">Targets</h2><p>Target completion time for each workflow. Pipeline &amp; Bottlenecks counts a workflow as breaching when its average cycle is over target.</p></div></div>
-    <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">Workflow</th><th scope="col" class="r">Avg cycle now</th><th scope="col" class="r">Target</th><th scope="col" class="r">Status</th></tr></thead>
-      <tbody>{{range .Workflows}}{{$st := stageStat $.Deck .Module}}<tr>
-        <td class="t">{{.Label}}</td>
-        <td class="r">{{if and $st $st.Completed}}{{dur $st.AvgCycleH}}{{else}}—{{end}}</td>
-        <td class="r">{{with index $.Targets .Module}}{{dur .}}{{else}}—{{end}}</td>
-        <td class="r">{{if not (index $.Targets .Module)}}<span class="tag neutral">No target</span>{{else if index $.Pipeline.OverTarget .Module}}<span class="tag warn">Over target</span>{{else}}<span class="tag ok">On target</span>{{end}}</td>
-      </tr>{{end}}</tbody>
-    </table></div>
-    {{if .CanSetGoals}}
-    <form class="deck-form" method="post" action="/command/actions/targets">
-      <input type="hidden" name="csrf" value="{{.CSRF}}">
-      <div class="grid-4">{{range .Workflows}}
-        <div class="field"><label for="t-{{.Module}}">{{.Label}} target (hours)</label>
-        <input id="t-{{.Module}}" type="number" name="target_{{.Module}}" min="0" max="10000" step="0.5" value="{{with index $.Targets .Module}}{{.}}{{end}}" placeholder="none"></div>{{end}}
-      </div>
-      <button class="btn" type="submit">Save Targets</button>
-    </form>
-    {{else}}<p class="deck-foot">Company Owners and Administrators set targets.</p>{{end}}
+{{/* ============================================================ Capacity */}}
+{{if eq $v "capacity"}}{{with .Cap}}
+  <section class="kpi-grid four">
+    <div class="kpi"><div class="k">Active work</div><div class="v">{{num .TotalActive}}</div><div class="s">open at end of period</div></div>
+    <div class="kpi {{if .Unassigned}}warn{{end}}"><div class="k">Unassigned</div><div class="v">{{num .Unassigned}}</div><div class="s">open without an owner</div></div>
+    <div class="kpi"><div class="k">People carrying work</div><div class="v">{{len .People}}</div><div class="s">assignees in scope</div></div>
+    <div class="kpi {{if ge .TopShare 50.0}}warn{{end}}"><div class="k">Concentration</div><div class="v">{{if .TopCount}}{{pct0 .TopShare}}{{else}}—{{end}}</div><div class="s">{{if .TopCount}}held by the busiest {{.TopCount}}{{else}}needs 5+ assignees{{end}}</div></div>
   </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>People</h2><p>Workload and execution information — not a performance ranking. It does not account for roles, schedules or part-time work.</p></div></div>
+    {{template "load-table" (dict "Rows" .People "Kind" "Person")}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Teams</h2></div></div>{{template "load-table" (dict "Rows" .Teams "Kind" "Team")}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Departments</h2></div></div>{{template "load-table" (dict "Rows" .Departments "Kind" "Department")}}</section>
+{{end}}{{end}}
 
-  <section class="deck-panel" aria-labelledby="goals-h">
-    <div class="deck-panel-head"><div><h2 id="goals-h">What should we test next</h2><p>Ranked by expected effect and confidence. Each one is derived from your measured activity and can be started as an intervention test.</p></div></div>
-    {{template "deck-recs-actions" .}}
-  </section>
-  <section class="deck-panel" aria-labelledby="why2-h">
-    <div class="deck-panel-head"><div><h2 id="why2-h">Evidence</h2><p>The findings behind these recommendations.</p></div></div>
-    {{template "deck-findings" .Deck}}
-  </section>
-  <p class="deck-foot" style="padding:0">Confidence reflects sample size and the strength of the measured effect. Expected effects are estimates from your own data, not guarantees; correlations do not prove cause.</p>
+{{/* ============================================================ Department / team / person */}}
+{{if or (eq $v "department") (eq $v "team") (eq $v "person")}}
+  <p class="crumbs"><a href="{{.Scope.URL "/command/organization"}}">Organization</a> / {{.SubLabel}}</p>
+  {{if eq $v "person"}}<p class="deck-note warn-note">Workload and execution information only. CulpOS does not rate people: these figures do not account for roles, complexity, schedules or absences.</p>{{end}}
+  {{with .SubM}}<section class="kpi-grid" aria-label="Detail figures">
+    <div class="kpi"><div class="k">{{if eq $v "person"}}Assigned now{{else}}Active work{{end}}</div><div class="v">{{num .WIP}}</div><div class="s">{{.Blocked}} blocked · {{.Aging}} aging · {{.Overdue}} overdue</div><a class="more" href="{{$.Sub.Scope.URL "/command/records" "set" "wip"}}">Records →</a></div>
+    <div class="kpi"><div class="k">Completed</div><div class="v">{{num .Completed}}</div><div class="s">{{f1 .Throughput}}/day throughput</div><a class="more" href="{{$.Sub.Scope.URL "/command/records" "set" "completed"}}">Records →</a></div>
+    <div class="kpi"><div class="k">Cycle time</div><div class="v">{{if .Cycle.N}}{{hr .Cycle.Median}}{{else}}—{{end}}</div><div class="s">median · avg {{if .Cycle.N}}{{hr .Cycle.Avg}}{{else}}—{{end}}</div></div>
+    <div class="kpi"><div class="k">SLA compliance</div><div class="v">{{if .SLAApplicable}}{{pct1 .SLACompliance}}{{else}}—{{end}}</div><div class="s">{{.SLABreaches}} completed late · {{.OpenBreaching}} open late</div></div>
+    <div class="kpi"><div class="k">Rework</div><div class="v">{{pct1 .ReworkRate}}</div><div class="s">{{.ReworkItems}} reworked items</div></div>
+    <div class="kpi"><div class="k">Handoffs</div><div class="v">{{num .Handoffs}}</div><div class="s">median wait {{if .HandoffWait.N}}{{hr .HandoffWait.Median}}{{else}}—{{end}}</div></div>
+    {{if eq $v "department"}}<div class="kpi"><div class="k">Team size</div><div class="v">{{len $.SubCap.People}}</div><div class="s">{{if $.HasManager}}manager {{$.Manager}}{{else}}no manager set{{end}}</div></div>{{end}}
+    <div class="kpi"><div class="k">Backlog</div><div class="v">{{num .Started}} in · {{num .Completed}} out</div><div class="s">new versus completed</div></div>
+  </section>{{end}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Activity history</h2></div></div>{{template "heat-year" .SubHeat}}</section>
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Monthly trend</h2><p>Completed per month (bars) and median cycle time.</p></div></div>
+      <div class="deck-bars">{{range .SubMonths}}<div class="b"><em>{{.Completed}}</em><span style="height:{{printf "%.0f" .Bar}}%"></span><em>{{.Label}}</em><em class="muted">{{if .HasCycle}}{{hr .Cycle}}{{else}}—{{end}}</em></div>{{end}}</div></section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Top bottlenecks</h2></div></div>
+      {{if .SubStages}}<ul class="sev-list">{{range .SubStages}}<li><a href="{{$.Sub.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Label}} · {{.Status}}</a><span class="mono muted">{{hr .Time.Median}} median · WIP {{.WIP}}</span><span class="tag {{band .Band}}">{{.Band}}</span></li>{{end}}</ul>{{else}}<div class="deck-note">Not enough stage visits.</div>{{end}}</section>
+  </div>
+  <div class="deck-grid-2">
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Top processes</h2></div></div>{{template "name-counts" .SubProcesses}}</section>
+    <section class="deck-panel"><div class="deck-panel-head"><div><h2>Handoffs in & out</h2></div></div>
+      {{if .SubHO.Rows}}<div class="table-wrap"><table class="deck-table"><thead><tr><th>From</th><th>To</th><th class="r">Count</th><th class="r">Median wait</th></tr></thead>
+      <tbody>{{range .SubHO.Rows}}<tr><td class="t">{{.From}}</td><td class="t">{{.To}}</td><td class="r">{{.Count}}</td><td class="r">{{hr .Wait.Median}}</td></tr>{{end}}</tbody></table></div>{{else}}<div class="deck-note">No handoffs in scope.</div>{{end}}</section>
+  </div>
+  {{if ne $v "person"}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>People</h2><p>Workload, not a ranking.</p></div></div>{{template "load-table" (dict "Rows" .SubCap.People "Kind" "Person")}}</section>{{end}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Recent changes</h2></div></div>{{template "change-list" .SubChanges}}</section>
+  {{if .SubRecs}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>Recommendations</h2></div></div><div class="deck-cards">{{range .SubRecs}}{{template "rec-card" (dict "R" . "Scope" $.Sub.Scope)}}{{end}}</div></section>{{end}}
 {{end}}
 
-{{/* ------------------------------------------------------ Intervention Tests */}}
-{{if eq $tab "tests"}}
-  <section class="deck-panel" aria-labelledby="tests-h">
-    <div class="deck-panel-head"><div><h2 id="tests-h">Tests</h2><p>Each test compares a metric after the change with the 28 days before it started. Results appear after two weeks and five finished items.</p></div></div>
-    {{if .Tests}}<div class="deck-cards">{{range .Tests}}
-      <article class="deck-card">
-        <div class="deck-card-head"><h3>{{.Title}}</h3>
-          <span class="tag {{if eq .Verdict "improved"}}ok{{else if eq .Verdict "worse"}}bad{{else if eq .Verdict "collecting"}}neutral{{else}}warn{{end}}">{{if eq .Verdict "improved"}}Improved{{else if eq .Verdict "worse"}}Worse{{else if eq .Verdict "collecting"}}Collecting data{{else}}No clear change{{end}}</span></div>
-        <p class="mono">{{.MetricLabel}} · {{.WorkflowName}} · {{if .EndedAt}}ran {{.Days}}d, ended {{date .EndedAt}}{{else}}day {{.Days}}, started {{date .StartedAt}}{{end}}</p>
-        <p>Before: <span class="mono">{{metricValue .Baseline .Unit}}</span> ({{.BaselineN}} items) · Since start: <span class="mono">{{metricValue .Current .Unit}}</span> ({{.CurrentN}} items){{if and (ne .Verdict "collecting") (ne .Baseline 0.0)}} · change <span class="mono {{if eq .Verdict "improved"}}up{{else if eq .Verdict "worse"}}down{{end}}">{{if gt .ChangePct 0.0}}+{{end}}{{printf "%.1f" .ChangePct}}%</span>{{end}}</p>
-        {{if not .EndedAt}}<div class="actions"><form method="post" action="/command/actions/end-test"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="id" value="{{.ID}}"><button class="btn small secondary" type="submit">End Test</button></form></div>{{end}}
-      </article>{{end}}
-    </div>{{else}}<div class="deck-note">No tests yet. Start one from a recommendation in <a href="/command/goals">Goal Intelligence</a>, or below.</div>{{end}}
-  </section>
-
-  <section class="deck-panel" aria-labelledby="newtest-h">
-    <div class="deck-panel-head"><div><h2 id="newtest-h">Start a test</h2><p>Describe the change you are making and what should improve.</p></div></div>
-    <form class="deck-form" method="post" action="/command/actions/tests">
-      <input type="hidden" name="csrf" value="{{.CSRF}}">
-      <div class="field"><label for="nt-title">Change being tested</label><input id="nt-title" type="text" name="title" required minlength="3" maxlength="200" placeholder="e.g. Second approver on Mondays and Tuesdays"></div>
-      <div class="row-2">
-        <div class="field"><label for="nt-metric">Measure</label><select id="nt-metric" name="metric">{{range .Metrics}}<option value="{{.Module}}">{{.Label}}</option>{{end}}</select></div>
-        <div class="field"><label for="nt-mod">Workflow</label><select id="nt-mod" name="module"><option value="">All workflows</option>{{range .Workflows}}<option value="{{.Module}}">{{.Label}}</option>{{end}}</select></div>
-      </div>
-      <button class="btn" type="submit">Start Test</button>
-    </form>
-  </section>
+{{/* ============================================================ What changed */}}
+{{if eq $v "changes"}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>What changed — {{.Scope.Label}} vs the previous period</h2><p>Only changes of at least 15% (or 5 points) backed by at least five records on each side.</p></div></div>
+    {{template "change-list" .Changes}}</section>
+  {{with .Why}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>Why did cycle time change?</h2><p>Observed drivers — contributing factors, not proof of cause.</p></div></div>
+    {{if .Enough}}<div class="why-head"><span class="mono">{{hr .Prev}} → {{hr .Cur}}</span> <span class="{{if gt .Cur .Prev}}bad{{else}}good{{end}} mono">{{absH (subf .Cur .Prev)}}</span> <span class="muted">average per completed item · {{.N}} items now vs {{.PrevN}} before</span></div>
+    <ul class="drivers">{{range .Drivers}}<li><span class="n">{{.Name}}</span><span class="bar {{if gt .DeltaH 0.0}}neg{{else}}pos{{end}}"><i style="width:{{barPct (absf .DeltaH) (maxAbs $.Why.Drivers)}}%"></i></span><span class="mono">{{absH .DeltaH}}</span></li>{{end}}</ul>
+    {{if .Lenses}}<p class="deck-foot">Overlapping views (already included above): {{range $i, $l := .Lenses}}{{if $i}} · {{end}}{{$l.Name}} {{absH $l.DeltaH}}{{end}}.</p>{{end}}
+    {{else}}<div class="deck-note">Needs at least five completed items in both periods.</div>{{end}}</section>{{end}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Period comparison</h2><p>{{.CmpCur.From.Format "Jan 2"}} – {{.CmpCur.To.Format "Jan 2"}} versus {{.CmpPrev.From.Format "Jan 2"}} – {{.CmpPrev.To.Format "Jan 2"}}.</p></div>
+      <nav class="mini-pills">{{range .CompareOpts}}<a href="{{$.Scope.URL "/command/changes" "compare" .Key}}" {{if eq .Key $.Compare}}class="active"{{end}}>{{.Label}}</a>{{end}}</nav></div>
+    <div class="table-wrap"><table class="deck-table"><thead><tr><th>Metric</th><th class="r">Current</th><th class="r">Previous</th><th class="r">Change</th><th>Last 8 periods</th></tr></thead>
+    <tbody>{{range .CompareRows}}<tr><td class="t">{{.Label}}</td><td class="r">{{.Cur}}</td><td class="r muted">{{.Prev}}</td><td class="r {{statusClass .Status}}">{{orDash .Delta}}</td><td>{{spark .Series .Status}}</td></tr>{{end}}</tbody></table></div></section>
 {{end}}
 
-{{/* ------------------------------------------------------------ Org & Access */}}
-{{if eq $tab "access"}}
+{{/* ============================================================ Goals */}}
+{{if eq $v "goals"}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Goals</h2><p>Each goal is measured over a rolling 30 days against the baseline recorded when it was set.</p></div></div>
+    {{if .Goals}}<div class="goal-grid">{{range .Goals}}{{template "goal-card" .}}{{end}}</div>
+    {{else}}<div class="deck-note">No goals yet. Set one below — for example “median cycle time under 48h” or “SLA compliance at 95%”.</div>{{end}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>New goal</h2><p>The baseline is taken from the last 30 days when you save.</p></div></div>
+    <form class="deck-form grid-form" method="post" action="/command/actions/goals"><input type="hidden" name="csrf" value="{{.CSRF}}">
+      <div class="field wide"><label for="g-title">Goal</label><input id="g-title" name="title" required minlength="3" maxlength="200" placeholder="e.g. Reduce approval delay to 4 hours"></div>
+      <div class="field"><label for="g-metric">Metric</label><select id="g-metric" name="metric">{{range .Metrics}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select></div>
+      <div class="field"><label for="g-module">Workflow</label><select id="g-module" name="module"><option value="">All workflows</option>{{range .Workflows}}<option value="{{.Module}}">{{.Label}}</option>{{end}}</select></div>
+      <div class="field"><label for="g-stage">Stage (stage metric only)</label><input id="g-stage" name="stage" list="stage-list" placeholder="e.g. Pending"></div>
+      <div class="field"><label for="g-target">Target</label><input id="g-target" name="target" required inputmode="decimal" placeholder="hours, % or count"></div>
+      <div class="field"><label for="g-date">Target date</label><input id="g-date" name="target_date" type="date"></div>
+      <div class="actions"><button class="btn">Create goal</button></div>
+    </form></section>
+  {{if .CanSetTargets}}{{template "sla-form" (dict "Groups" .SLAForm "CSRF" .CSRF "Back" "/command/goals")}}{{end}}
+  {{template "stage-datalist" .}}
+{{end}}
+
+{{if eq $v "goal"}}{{with .Goal}}
+  <p class="crumbs"><a href="/command/goals">Goals</a> / {{.Title}}</p>
+  <section class="kpi-grid">
+    <div class="kpi"><div class="k">Metric</div><div class="v small">{{.M.Label}}</div><div class="s">{{.Workflow}}{{if .Stage}} · {{.Stage}}{{end}}</div></div>
+    <div class="kpi"><div class="k">Target</div><div class="v">{{fmetric .Target .M.Unit}}</div><div class="s">{{if .TargetAt}}by {{date .TargetAt}}{{else}}no date{{end}}</div></div>
+    <div class="kpi {{statusClass .Status}}"><div class="k">Current (30 days)</div><div class="v">{{fmetric .Current .M.Unit}}</div><div class="s">{{.CurrentN}} records · gap {{.Gap}}</div></div>
+    <div class="kpi"><div class="k">Baseline</div><div class="v">{{fmetric .Baseline .M.Unit}}</div><div class="s">set {{date .StartAt}} · {{orDash .Delta}} since</div></div>
+    <div class="kpi"><div class="k">Projected</div><div class="v">{{if .HasProject}}{{fmetric .Projected .M.Unit}}{{else}}—{{end}}</div><div class="s">{{if .HasProject}}at the target date, on the current trend{{else}}needs 3+ weekly measurements and a date{{end}}</div></div>
+    <div class="kpi {{statusClass .Status}}"><div class="k">Status</div><div class="v small">{{.Status}}</div><div class="s">trend {{.Trend}} · progress {{pct0 .Progress}}</div></div>
+  </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Trend</h2><p>Trailing 30-day value, measured weekly, from eight weeks before the goal was set.</p></div>{{template "evidence" .Confidence}}</div>
+    <div class="deck-panel-body">{{line .Series .Target true 8 .M.Unit}}</div>
+    <p class="deck-foot">Confidence in the projection: {{.Confidence.Level}} — {{join .Confidence.Reasons "; "}}.</p></section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Goal drivers</h2><p>{{orDash .DriverNote}} Observed drivers — contributing factors, not proven causes.</p></div></div>
+    {{if .Drivers}}<ul class="drivers">{{range .Drivers}}<li><span class="n">{{.Name}}</span><span class="bar {{if gt .DeltaH 0.0}}neg{{else}}pos{{end}}"><i style="width:{{barPct (absf .DeltaH) (maxAbs $.Goal.Drivers)}}%"></i></span><span class="mono">{{signed .DeltaH $.Goal.M.Unit}}</span></li>{{end}}</ul>
+    {{if .Lenses}}<p class="deck-foot">Overlapping views: {{range $i, $l := .Lenses}}{{if $i}} · {{end}}{{$l.Name}} {{absH $l.DeltaH}}{{end}}.</p>{{end}}
+    {{else}}<div class="deck-note">Drivers appear once both the baseline and the current window hold enough records.</div>{{end}}</section>
+  <form class="deck-inline" method="post" action="/command/actions/goal-status"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="id" value="{{.ID}}">
+    {{if eq .Goal.Status "active"}}<button class="btn secondary small" name="status" value="achieved">Mark achieved</button><button class="btn secondary small" name="status" value="closed">Close goal</button>{{else}}<button class="btn secondary small" name="status" value="active">Reopen goal</button>{{end}}</form>
+{{end}}{{end}}
+
+{{/* ============================================================ Interventions */}}
+{{if eq $v "tests"}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Intervention history</h2><p>What management changed, and what was measured before and after. Observed changes are associations, not proof of cause.</p></div></div>
+    {{if .Tests}}<div class="table-wrap"><table class="deck-table">
+      <thead><tr><th>Intervention</th><th>Owner</th><th>Started</th><th>Process</th><th>Metric</th><th class="r">Before</th><th class="r">After</th><th class="r">Change</th><th class="r">n before / after</th><th>Status</th><th>Result</th><th>Evidence</th></tr></thead>
+      <tbody>{{range .Tests}}<tr><td class="t"><a href="{{.Link}}">{{.Title}}</a></td><td class="t">{{.Owner}}</td><td>{{date .StartedAt}}</td><td class="t">{{.Workflow}}{{if .Stage}} · {{.Stage}}{{end}}</td><td class="t">{{.M.Label}}</td>
+        <td class="r">{{fmetric .Before .M.Unit}}</td><td class="r">{{fmetric .After .M.Unit}}</td><td class="r {{statusClass .Verdict}}">{{.Delta}}</td><td class="r">{{.BeforeN}} / {{.AfterN}}</td><td>{{.Status}}</td><td><span class="tag {{statusClass .Verdict}}">{{.Verdict}}</span></td><td><span class="tag {{statusClass .Strength.Level}}">{{.Strength.Level}}</span></td></tr>{{end}}</tbody>
+    </table></div>{{else}}<div class="deck-note">No interventions yet. Record a change below to measure its effect.</div>{{end}}</section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>New intervention</h2><p>Describe the change, pick what to measure and the windows. The baseline window ends when the change starts.</p></div></div>
+    <form class="deck-form grid-form" method="post" action="/command/actions/tests"><input type="hidden" name="csrf" value="{{.CSRF}}">
+      <div class="field wide"><label for="t-title">Intervention</label><input id="t-title" name="title" required minlength="3" maxlength="200" placeholder="e.g. Route approvals directly to available managers"></div>
+      <div class="field"><label for="t-metric">Metric</label><select id="t-metric" name="metric">{{range .Metrics}}<option value="{{.Key}}">{{.Label}}</option>{{end}}</select></div>
+      <div class="field"><label for="t-module">Workflow</label><select id="t-module" name="module"><option value="">All workflows</option>{{range .Workflows}}<option value="{{.Module}}">{{.Label}}</option>{{end}}</select></div>
+      <div class="field"><label for="t-stage">Stage (stage metric only)</label><input id="t-stage" name="stage" list="stage-list"></div>
+      <div class="field"><label for="t-start">Started on</label><input id="t-start" name="start" type="date"></div>
+      <div class="field"><label for="t-bd">Baseline window (days)</label><input id="t-bd" name="baseline_days" type="number" min="7" max="180" value="30"></div>
+      <div class="field"><label for="t-ed">Evaluation window (days)</label><input id="t-ed" name="eval_days" type="number" min="7" max="180" value="30"></div>
+      <div class="field"><label for="t-owner">Owner</label><select id="t-owner" name="owner"><option value="0">Me</option>{{range .Owners}}<option value="{{.Module}}">{{.Label}}</option>{{end}}</select></div>
+      <div class="field wide"><label for="t-notes">Notes</label><textarea id="t-notes" name="notes" maxlength="2000" rows="2"></textarea></div>
+      <div class="actions"><button class="btn">Start measuring</button></div>
+    </form></section>
+  {{template "stage-datalist" .}}
+{{end}}
+
+{{if eq $v "test"}}{{with .Test}}
+  <p class="crumbs"><a href="/command/tests">Interventions</a> / {{.Title}}</p>
+  <section class="compare">
+    <div class="side"><div class="k">Before</div><div class="v">{{fmetric .Before .M.Unit}}</div><div class="s">{{.BeforeN}} records · {{date .BaselineFrom}} – {{date .StartedAt}}</div>{{if .HasMedian}}<div class="s">median {{fmetric .BeforeMed .M.Unit}}</div>{{end}}</div>
+    <div class="arrow {{statusClass .Verdict}}">{{.Delta}}</div>
+    <div class="side"><div class="k">After</div><div class="v">{{fmetric .After .M.Unit}}</div><div class="s">{{.AfterN}} records · {{.Days}} of {{.EvalDays}} days measured</div>{{if .HasMedian}}<div class="s">median {{fmetric .AfterMed .M.Unit}}</div>{{end}}</div>
+  </section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>{{.M.Label}} · {{.Workflow}}{{if .Stage}} · {{.Stage}}{{end}}</h2><p>Owner {{.Owner}} · {{.Status}}</p></div><span class="tag {{statusClass .Verdict}}">{{.Verdict}}</span></div>
+    <div class="deck-panel-body"><p>{{.VerdictNote}}</p>
+      <p class="muted">Evidence strength: <b>{{.Strength.Level}}</b> — {{join .Strength.Reasons "; "}}.</p>
+      {{line .Series 0.0 false .StartIndex .M.Unit}}</div></section>
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>Notes</h2><p>Institutional memory: what was done, and what was learned.</p></div></div>
+    <form class="deck-form" method="post" action="/command/actions/test-notes"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="id" value="{{.ID}}">
+      <textarea name="notes" rows="4" maxlength="2000">{{.Notes}}</textarea><div class="actions"><button class="btn secondary small">Save notes</button></div></form></section>
+  {{if not .EndedAt}}<form class="deck-inline" method="post" action="/command/actions/end-test" data-confirm="End this test and freeze its result?"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="id" value="{{.ID}}"><input type="hidden" name="back" value="{{.Link}}"><button class="btn secondary small">End test</button></form>
+  {{else}}<p class="deck-foot">Ended {{date .EndedAt}}{{if .Result}} · frozen result {{fmetric (deref .Result) .M.Unit}}{{end}}.</p>{{end}}
+{{end}}{{end}}
+
+{{/* ============================================================ Recommendations */}}
+{{if eq $v "recommendations"}}
+  {{if .Recs}}<div class="deck-cards flush">{{range .Recs}}{{template "rec-card" (dict "R" . "Scope" $.Scope)}}{{end}}</div>
+  {{else}}<section class="deck-panel deck-empty"><h2>No recommendation meets the evidence threshold</h2><p>CulpOS only recommends an action when a pattern is backed by at least five measured occurrences in this scope. Widen the date range to include more history.</p></section>{{end}}
+{{end}}
+
+{{if eq $v "rec"}}{{with .Rec}}
+  <p class="crumbs"><a href="{{$.Scope.URL "/command/recommendations"}}">Recommendations</a> / {{.Issue}}</p>
+  <section class="deck-panel rec-detail"><div class="deck-panel-head"><div><h2>{{.Issue}}</h2><p>{{.Window}}{{if .Process}} · {{.Process}}{{end}}{{if .Stage}} · {{.Stage}}{{end}}</p></div><span class="tag {{if eq .Priority "High"}}bad{{else if eq .Priority "Medium"}}warn{{else}}neutral{{end}}">{{.Priority}} priority</span></div>
+    <dl class="rec-grid">
+      <dt>Issue</dt><dd>{{.Issue}}</dd>
+      <dt>Severity</dt><dd>{{.Priority}} priority</dd>
+      <dt>Evidence</dt><dd><ul>{{range .Evidence}}<li>{{if .Link}}<a href="{{.Link}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}</li>{{end}}</ul></dd>
+      <dt>Affected metrics</dt><dd>{{join .Metrics ", "}}</dd>
+      <dt>Affected process</dt><dd>{{orDash .Process}}{{if .Stage}} · {{.Stage}}{{end}}</dd>
+      <dt>Affected records</dt><dd><a href="{{.Records}}">{{num .RecordsN}} records →</a></dd>
+      <dt>Time window</dt><dd>{{.Window}}</dd>
+      <dt>Potential action</dt><dd>{{.Action}}</dd>
+      <dt>Expected direction</dt><dd>{{.Expected}}</dd>
+      <dt>Confidence</dt><dd>{{template "evidence" .Strength}} {{join .Strength.Reasons "; "}}</dd>
+      <dt>Why CulpOS thinks this</dt><dd>{{.Why}}</dd>
+      <dt>Raw data</dt><dd><a href="{{.Records}}">View evidence →</a></dd>
+    </dl>
+    <form class="deck-inline" method="post" action="/command/actions/tests"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="title" value="{{.Action}}"><input type="hidden" name="module" value="{{.Module}}"><input type="hidden" name="stage" value="{{.Stage}}"><input type="hidden" name="metric" value="{{testMetricFor .Metric}}"><button class="btn small">Start an intervention test</button></form>
+  </section>
+{{end}}{{end}}
+
+{{/* ============================================================ Evidence and record */}}
+{{if eq $v "records"}}{{with .RS}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>{{.Title}}</h2><p>{{.Definition}}</p></div><span class="deck-chip">{{num .Total}} records</span></div>
+    {{template "record-table" .}}</section>
+{{end}}{{end}}
+
+{{end}}{{/* has data */}}
+
+{{if eq $v "record"}}{{template "record-intel" .RI}}{{end}}
+
+{{if eq $v "defs"}}
+  <section class="deck-panel"><div class="deck-panel-head"><div><h2>How every number is calculated</h2><p>Every figure in the Command Deck comes from your company's recorded activity using these definitions.</p></div></div>
+    <dl class="defs">{{range .Defs}}<dt id="def-{{.Key}}">{{.Label}}</dt><dd>{{.Definition}}</dd>{{end}}</dl></section>
+{{end}}
+
+{{if eq $v "access"}}
   <section class="deck-panel" aria-labelledby="members-h">
     <div class="deck-panel-head"><div><h2 id="members-h">People</h2><p>Everyone in {{.Company.Name}}, their role and when they last changed a record.</p></div>{{if .CanManage}}<a class="deck-link" href="/company">Manage in Company Admin →</a>{{end}}</div>
     <div class="table-wrap"><table class="deck-table">
@@ -283,19 +527,17 @@
       <tbody>{{range .Members}}<tr><td class="t">{{orDash .Name}}</td><td class="t">{{.Email}}</td><td>{{.Role.Label}}</td><td>{{if .Suspended}}<span class="tag neutral">Invited / inactive</span>{{else}}<span class="tag ok">Active</span>{{end}}</td><td class="r">{{with index $.LastActive .UserID}}{{date .}}{{else}}—{{end}}</td></tr>{{end}}</tbody>
     </table></div>
   </section>
-
   <section class="deck-panel" aria-labelledby="matrix-h">
     <div class="deck-panel-head"><div><h2 id="matrix-h">Access by role</h2><p>What each company role can see and change. Enforced on the server for every request.</p></div></div>
     <div class="table-wrap"><table class="deck-table deck-matrix">
       <thead><tr><th scope="col">Capability</th><th scope="col">Owner</th><th scope="col">Admin</th><th scope="col">Manager</th><th scope="col">Employee</th></tr></thead>
       <tbody>{{range .Matrix}}<tr><td class="t">{{.Capability}}</td><td>{{if .Owner}}<span class="up">●</span>{{else}}<span class="muted">—</span>{{end}}</td><td>{{if .Admin}}<span class="up">●</span>{{else}}<span class="muted">—</span>{{end}}</td><td>{{if .Manager}}<span class="up">●</span>{{else}}<span class="muted">—</span>{{end}}</td><td>{{if .Employee}}<span class="up">●</span>{{else}}<span class="muted">—</span>{{end}}</td></tr>{{end}}</tbody>
     </table></div>
-    <p class="deck-foot">Companies are fully isolated: nobody outside {{.Company.Name}} can see its workspace, and {{brand.CompanyName}} staff access is audited.</p>
+    <p class="deck-foot">Companies are fully isolated: nobody outside {{.Company.Name}} can see its workspace or analytics, and {{brand.CompanyName}} staff access is audited.</p>
   </section>
 {{end}}
 
-{{/* --------------------------------------------------------- Report an Issue */}}
-{{if eq $tab "report"}}
+{{if eq $v "report"}}
   <section class="deck-panel" aria-labelledby="rep-h">
     <div class="deck-panel-head"><div><h2 id="rep-h">Report an issue</h2><p>Tell us what went wrong or what is missing. It goes straight to {{brand.CompanyName}} support with your company attached{{if brand.ContactEmail}}, and we reply by email{{end}}.</p></div></div>
     <div class="deck-form">{{template "issue-form" .}}</div>
@@ -304,101 +546,206 @@
   <section class="deck-panel" aria-labelledby="myrep-h">
     <div class="deck-panel-head"><div><h2 id="myrep-h">Recent reports from {{.Company.Name}}</h2></div></div>
     <div class="table-wrap"><table class="deck-table">
-      <thead><tr><th scope="col">#</th><th scope="col">Reported</th><th scope="col">Category</th><th scope="col">Summary</th><th scope="col">Status</th></tr></thead>
-      <tbody>{{range .Reports}}<tr><td>{{.ID}}</td><td>{{date .CreatedAt}}</td><td class="t">{{.Category}}</td><td class="t">{{.Summary}}</td><td><span class="tag {{if eq .Status "open"}}warn{{else}}ok{{end}}">{{.Status}}</span></td></tr>{{end}}</tbody>
+      <thead><tr><th scope="col">#</th><th scope="col">Reported</th><th scope="col">Category</th><th scope="col">Summary</th><th scope="col">Status</th><th scope="col">Resolution</th></tr></thead>
+      <tbody>{{range .Reports}}<tr><td>{{.ID}}</td><td>{{date .CreatedAt}}</td><td class="t">{{.Category}}</td><td class="t">{{.Summary}}</td><td><span class="tag {{statusClass .Status}}">{{issueLabel .Status}}</span></td><td class="t">{{orDash .ResolutionNote}}</td></tr>{{end}}</tbody>
     </table></div>
   </section>
   {{end}}
 {{end}}
+
+{{if and (ne $v "access") (ne $v "report") (ne $v "defs") (ne $v "record")}}{{template "coverage" .}}{{end}}
 </div>
+<aside class="drawer" id="drawer" hidden aria-label="Record intelligence"><div class="drawer-bar"><button type="button" class="btn secondary small" data-close>Close</button><a class="deck-link" data-full href="#">Open full page →</a></div><div class="drawer-body"></div></aside>
 {{template "foot" .}}{{end}}
 
-{{define "deck-scope"}}
-<section class="deck-panel" aria-labelledby="scope-h">
-  <div class="deck-panel-head"><div><h2 id="scope-h" style="margin:0">Scope</h2></div></div>
-  <form class="deck-scope" method="get" action="{{.Path}}" data-autosubmit>
-    <label class="skip-link" for="sc-period">Period</label>
-    <select id="sc-period" name="period">{{range .Periods}}<option value="{{.Days}}" {{if eq .Days $.Scope.Days}}selected{{end}}>{{.Label}}</option>{{end}}</select>
-    <label class="skip-link" for="sc-wf">Workflow</label>
-    <select id="sc-wf" name="workflow">{{if ne .Tab "process"}}<option value="">all workflows</option>{{end}}{{range .Workflows}}<option value="{{.Module}}" {{if eq .Module $.Scope.Module}}selected{{end}}>{{lower .Label}}</option>{{end}}</select>
-    <label class="skip-link" for="sc-dept">Department</label>
-    <select id="sc-dept" name="department"><option value="">all departments</option>{{range .Departments}}<option value="{{.Module}}" {{if eq .Module (printf "%d" $.Scope.Department)}}selected{{end}}>{{.Label}}</option>{{end}}</select>
-    <button class="btn secondary" type="submit" data-apply>Apply</button>
-  </form>
-</section>
+{{/* ================================================================ parts */}}
+
+{{define "scope-bar"}}
+<form class="scope-bar" method="get" action="{{.Path}}" data-autosubmit aria-label="Analysis scope">
+  {{range $k, $vv := .ExtraQuery}}{{range $vv}}<input type="hidden" name="{{$k}}" value="{{.}}">{{end}}{{end}}
+  <div class="sf"><label for="s-range">Range</label><select id="s-range" name="range">{{range .ScopeOpts.Presets}}<option value="{{.Key}}" {{if eq .Key $.Scope.Preset}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <div class="sf dates {{if ne .Scope.Preset "custom"}}off{{end}}"><label for="s-from">From</label><input id="s-from" type="date" name="from" value="{{.Scope.FromDay}}"><label for="s-to">To</label><input id="s-to" type="date" name="to" value="{{.Scope.ToDay}}"></div>
+  <div class="sf"><label for="s-wf">Process</label><select id="s-wf" name="workflow"><option value="">All workflows</option>{{range .ScopeOpts.Workflows}}<option value="{{.Module}}" {{if eq .Module $.Scope.Module}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-st">Status</label><select id="s-st" name="status"><option value="">All statuses</option>{{range .ScopeOpts.Statuses}}<option {{if eq .Module $.Scope.Status}}selected{{end}}>{{.Module}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-ty">Type</label><select id="s-ty" name="type"><option value="">All types</option>{{range .ScopeOpts.Categories}}<option {{if eq . $.Scope.Category}}selected{{end}}>{{.}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-pr">Priority</label><select id="s-pr" name="priority"><option value="">All priorities</option>{{range .ScopeOpts.Priorities}}<option {{if eq . $.Scope.Priority}}selected{{end}}>{{.}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-dp">Department</label><select id="s-dp" name="department"><option value="">All departments</option>{{range .ScopeOpts.Departments}}<option value="{{.Module}}" {{if eq .Module (u64 $.Scope.Department)}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-tm">Team</label><select id="s-tm" name="team"><option value="">All teams</option>{{range .ScopeOpts.Teams}}<option value="{{.Module}}" {{if eq .Module (u64 $.Scope.Team)}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <div class="sf"><label for="s-as">Assignee</label><select id="s-as" name="assignee"><option value="">Everyone</option>{{range .ScopeOpts.People}}<option value="{{.Module}}" {{if eq .Module (u64 $.Scope.Assignee)}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+  <button class="btn small" data-apply>Apply</button>
+</form>
+<div class="scope-line"><span class="mono">SCOPE</span> <b>{{.Company.Name}}</b> · {{.Scope.Label}} <span class="muted">({{.Scope.From.Format "Jan 2, 2006"}} – {{.Scope.To.Format "Jan 2, 2006"}}; compared with the previous {{printf "%.0f" .In.W.Days}} days)</span>
+  {{range .Chips}}<a class="chip" href="{{.Clear}}" title="Remove filter">{{.Label}} ×</a>{{end}}
+  {{if .Scope.Filtered}}<a class="chip clear" href="{{.Path}}?range={{.Scope.Preset}}">Clear filters</a>{{end}}
+</div>
 {{end}}
 
-{{define "deck-activity"}}
-<section class="deck-panel" aria-labelledby="happen-h">
-  <div class="deck-panel-head">
-    <div><h2 id="happen-h">What is happening</h2><p>Business activity contribution graph — every square is one day of recorded execution.</p></div>
-    <span class="deck-chip">{{num .Heatmap.EventsCount}} events / 12 months</span>
-  </div>
-  <div class="heat-wrap">
-    <div class="heat" style="--weeks: {{len .Heatmap.Weeks}}">
-      <div class="heat-months">{{range .Heatmap.Months}}<span style="grid-column: {{inc .Col}}">{{.Label}}</span>{{end}}</div>
-      <div class="heat-days">{{range $i, $x := (seq 7)}}<span>{{weekday $i}}</span>{{end}}</div>
-      <div class="heat-grid">{{range .Heatmap.Weeks}}<div class="heat-col">{{range .}}{{if .Future}}<span class="heat-cell future"></span>{{else}}<a class="heat-cell l{{.Level}}" href="/command/activity?day={{isoDay .Date}}" title="{{date .Date}} · {{.Count}} events" aria-label="{{date .Date}}: {{.Count}} events"></a>{{end}}{{end}}</div>{{end}}</div>
-    </div>
-  </div>
-  <div class="heat-legend"><span>peak {{.Heatmap.Peak}} events/day</span><span>less <i class="heat-cell l0"></i><i class="heat-cell l1"></i><i class="heat-cell l2"></i><i class="heat-cell l3"></i><i class="heat-cell l4"></i> more</span></div>
-  <div class="deck-stats">
-    <div class="deck-stat"><div class="k">Best week</div><div class="v">{{if .Heatmap.HasWeeks}}{{date .Heatmap.BestWeek.Start}} · {{num .Heatmap.BestWeek.Count}}{{else}}—{{end}}</div></div>
-    <div class="deck-stat"><div class="k">Lowest week</div><div class="v">{{if .Heatmap.HasWeeks}}{{date .Heatmap.LowestWeek.Start}} · {{num .Heatmap.LowestWeek.Count}}{{else}}—{{end}}</div></div>
-    <div class="deck-stat"><div class="k">Time worked</div><div class="v">{{printf "%.1f" .Heatmap.WorkedDays}}d</div></div>
-  </div>
-  <p class="deck-foot">Click any day to open the underlying activity records.</p>
-</section>
+{{define "kpi"}}
+<div class="kpi {{.Status}}">
+  <div class="k" tabindex="0" data-tip="{{def .Def}}">{{.Label}}</div>
+  <div class="row"><div class="v">{{.Value}}</div>{{spark .Series .Status}}</div>
+  <div class="d">{{if .Delta}}<span class="dir {{.Dir}} {{.Status}}">{{if eq .Dir "up"}}▲{{else if eq .Dir "down"}}▼{{else}}■{{end}} {{.Delta}}</span> <span class="muted">vs {{.Prev}}</span>{{else}}<span class="muted">no previous period</span>{{end}}</div>
+  {{if .Note}}<div class="s">{{.Note}}</div>{{end}}
+  {{if .Link}}<a class="more" href="{{.Link}}">Drill down →</a>{{end}}
+</div>
 {{end}}
 
-{{define "deck-stages"}}
-{{if .Enough}}
-<ul class="deck-stages">{{range .Stages}}
-  <li><div class="row"><span class="name">{{.Label}}</span><span class="mono">wait {{hrs .AvgWaitH}} · work {{hrs .AvgWorkH}}</span></div>
-  <div class="bar"><span style="width: {{printf "%.0f" .Bar}}%"></span></div></li>{{end}}
-</ul>
-{{else}}<div class="deck-note">Bottleneck analysis starts once at least 10 tasks, cases, approvals or records have been tracked{{if .KPI.Items}} ({{.KPI.Items}} so far){{end}}.</div>{{end}}
+{{define "severity-list"}}
+{{$n := 0}}<ul class="sev-list">{{range .Stages}}{{range .Rows}}{{if .Enough}}<li>
+  <a href="{{$.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Label}} · {{.Status}}</a>
+  <span class="mono muted">WIP {{.WIP}} · med {{hr .Time.Median}}{{if .HasTarget}} · SLA {{pct0 .Compliance}}{{end}}</span>
+  <span class="tag {{band .Band}}">{{.Band}} {{printf "%.0f" .Severity}}</span></li>{{end}}{{end}}{{end}}</ul>
 {{end}}
 
-{{define "deck-findings"}}
-{{if .Findings}}<div class="deck-cards">{{range .Findings}}
-  <article class="deck-card">
-    <div class="deck-card-head"><h3>{{.Title}}</h3><span class="tag {{.Kind}}">{{if eq .Kind "measured"}}Measured{{else}}Correlation{{end}}</span></div>
-    {{if .Dates}}<p class="mono">{{range $i, $d := .Dates}}{{if $i}} · {{end}}<a href="/command/activity?day={{isoDay $d}}">{{date $d}}</a>{{end}}</p>{{end}}
-    <p>{{.Detail}}</p>
-  </article>{{end}}
-</div>{{else}}<div class="deck-note">{{if .Enough}}No significant patterns in the current data.{{else}}Findings appear once there is enough activity to measure reliably.{{end}}</div>{{end}}
+{{define "change-list"}}
+{{if .}}<ul class="change-list">{{range .}}<li><a href="{{.Link}}"><span class="n">{{.Label}}</span><span class="mono muted">{{.Prev}} → {{.Cur}}</span><span class="mono {{if .Good}}good{{else}}bad{{end}}">{{if eq .Dir "up"}}▲{{else}}▼{{end}} {{.Delta}}</span></a></li>{{end}}</ul>
+{{else}}<div class="deck-note">No meaningful change versus the previous period (or not enough records on both sides).</div>{{end}}
 {{end}}
 
-{{define "deck-impact"}}
-{{if and .Enough .Impact.Rows}}
-<div class="table-wrap"><table class="deck-table">
-  <thead><tr><th scope="col">{{.Impact.Dimension}}</th><th scope="col" class="r">Items</th><th scope="col" class="r">Avg</th><th scope="col" class="r">Rework</th><th scope="col" class="r">Failed</th></tr></thead>
-  <tbody>{{range .Impact.Rows}}<tr><td>{{.Name}}</td><td class="r">{{num .Items}}</td><td class="r">{{if gt .AvgCycleH 0.0}}{{hrs .AvgCycleH}}{{else}}—{{end}}</td><td class="r warn">{{pct1 .ReworkRate}}</td><td class="r bad">{{.Failed}}</td></tr>{{end}}</tbody>
+{{define "rec-card"}}{{with .R}}
+<article class="deck-card rec">
+  <div class="deck-card-head"><h3><span class="tag {{if eq .Priority "High"}}bad{{else if eq .Priority "Medium"}}warn{{else}}neutral{{end}}">{{.Priority}}</span> {{.Issue}}</h3>{{template "evidence" .Strength}}</div>
+  <ul class="ev">{{range .Evidence}}<li>{{if .Link}}<a href="{{.Link}}">{{.Text}}</a>{{else}}{{.Text}}{{end}}</li>{{end}}</ul>
+  <p class="act"><b>Recommendation:</b> {{.Action}}</p>
+  <p class="muted small">Why: {{.Why}}</p>
+  <div class="actions"><a class="btn secondary small" href="/command/recommendations/{{.Key}}?{{$.Scope.Query}}">View evidence</a><a class="btn secondary small" href="{{.Records}}">{{num .RecordsN}} records</a></div>
+</article>
+{{end}}{{end}}
+
+{{define "evidence"}}<span class="tag ev-{{lower .Level}}" tabindex="0" data-tip="{{def "evidence"}}&#10;&#10;{{join .Reasons "\n"}}">{{.Level}} evidence</span>{{end}}
+
+{{define "stage-table"}}
+<div class="table-wrap"><table class="deck-table stage-table">
+  <thead><tr><th>Stage</th><th class="r">WIP</th><th class="r">Entered</th><th class="r">Exited</th><th class="r">Avg</th><th class="r">Median</th><th class="r">P75</th><th class="r">P90</th><th class="r">P95</th><th class="r">Fastest</th><th class="r">Slowest</th>
+    <th class="r">Target</th><th class="r">SLA</th><th class="r">Breaches</th><th class="r">Aging</th><th class="r">Blocked</th><th class="r">Rework</th><th class="r">Drop</th><th class="r">In/day</th><th class="r">Out/day</th><th class="r">Net WIP</th><th class="r">Handoff delay</th><th>Owner · team</th><th>Trend</th><th>Severity</th></tr></thead>
+  <tbody>{{range .PS.Rows}}<tr class="{{if .Terminal}}term{{end}}">
+    <td class="t"><a href="{{$.Scope.URL "/command/stage" "workflow" .Module "stage" .Status}}">{{.Status}}</a> <span class="kind {{.Kind}}">{{.Kind}}</span></td>
+    {{if .Terminal}}<td class="r">—</td><td class="r">{{num .Entered}}</td><td colspan="22" class="muted t">finished state · {{num .Completed}} reached in period</td>
+    {{else}}<td class="r">{{num .WIP}}</td><td class="r">{{num .Entered}}</td><td class="r">{{num .Exited}}</td>
+    {{if .Time.N}}<td class="r">{{hr .Time.Avg}}</td><td class="r">{{hr .Time.Median}}</td><td class="r">{{hr .Time.P75}}</td><td class="r">{{hr .Time.P90}}</td><td class="r">{{hr .Time.P95}}</td><td class="r">{{hr .Time.Min}}</td><td class="r">{{hr .Time.Max}}</td>{{else}}<td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td><td class="r">—</td>{{end}}
+    <td class="r muted">{{if .HasTarget}}{{hr .Target}}{{else}}—{{end}}</td><td class="r {{if .HasTarget}}{{if lt .Compliance 90.0}}bad{{else}}good{{end}}{{end}}">{{if .HasTarget}}{{pct0 .Compliance}}{{else}}—{{end}}</td>
+    <td class="r {{if .Breaches}}bad{{end}}">{{if .HasTarget}}{{.Breaches}}{{else}}—{{end}}</td><td class="r {{if .Aging}}warn{{end}}">{{.Aging}}</td><td class="r">{{.Blocked}}</td>
+    <td class="r">{{.Reentries}} · {{pct0 .ReworkRate}}</td><td class="r">{{pct0 .DropRate}}</td><td class="r">{{f1 .InRate}}</td><td class="r">{{f1 .OutRate}}</td><td class="r {{if gt .NetWIP 0}}warn{{end}}">{{if gt .NetWIP 0}}+{{end}}{{.NetWIP}}</td>
+    <td class="r">{{if .HandoffWait.N}}{{hr .HandoffWait.Median}}{{else}}—{{end}}</td><td class="t small">{{orDash .Owner}}{{if .Team}} · {{.Team}}{{end}}</td><td>{{spark .Trend "neutral"}}</td>
+    <td>{{if .Enough}}<span class="tag {{band .Band}}" tabindex="0" data-tip="{{range .Components}}{{.Name}}: {{.Value}} ({{printf "%.1f" .Points}} pts)&#10;{{end}}">{{.Band}} {{printf "%.0f" .Severity}}</span>{{else}}<span class="muted">too few</span>{{end}}</td>{{end}}
+  </tr>{{end}}</tbody>
 </table></div>
-{{with .Impact.Slowest}}<p class="deck-foot" style="padding-top:16px">Slowest average cycle: {{.Name}} at {{hrs .AvgCycleH}}.</p>{{end}}
-{{else}}<div class="deck-note">Outcomes by department appear once there is enough tracked work. Assign a department on tasks, cases, approvals and records to compare teams.</div>{{end}}
 {{end}}
 
-{{define "deck-recs"}}
-{{if .}}<div class="deck-cards">{{range .}}
-  <article class="deck-card">
-    <div class="deck-card-head"><h3><span class="rank">#{{.Rank}}</span> {{.Title}}</h3><span class="tag conf">{{.Confidence}}% conf</span></div>
-    <p>{{.Expected}}</p>
-  </article>{{end}}
-</div>{{else}}<div class="deck-note">Recommendations appear when your data shows a clear, measurable opportunity. None is strong enough yet.</div>{{end}}
+{{define "edge-table"}}
+{{if .Edges}}<div class="table-wrap"><table class="deck-table"><thead><tr><th>{{.Side}}</th><th class="r">Moves</th><th class="r">Median before move</th><th>Kind</th></tr></thead>
+<tbody>{{range .Edges}}<tr><td class="t"><a href="{{$.Scope.URL "/command/handoffs" "workflow" $.Module "tfrom" .From "tto" .To}}">{{if eq $.Side "From"}}{{.From}}{{else}}{{.To}}{{end}}</a></td><td class="r">{{.Count}}</td><td class="r">{{hr .Delay.Median}}</td><td>{{if .Backward}}<span class="tag warn">rework loop</span>{{else if .Fallout}}<span class="tag bad">fallout</span>{{else}}<span class="tag ok">forward</span>{{end}}</td></tr>{{end}}</tbody></table></div>
+{{else}}<div class="deck-note">No movements in this period.</div>{{end}}
 {{end}}
 
-{{define "deck-recs-actions"}}
-{{if .Deck.Recs}}<div class="deck-cards">{{range .Deck.Recs}}
-  <article class="deck-card">
-    <div class="deck-card-head"><h3><span class="rank">#{{.Rank}}</span> {{.Title}}</h3><span class="tag conf">{{.Confidence}}% conf</span></div>
-    <p>{{.Expected}}</p>
-    <p class="small"><span class="mono muted">Evidence{{if eq .Basis "correlation"}} · correlation{{end}}</span><br>{{.Evidence}}</p>
-    <p class="small"><span class="mono muted">How to test</span><br>{{.HowToTest}}</p>
-    <div class="actions"><form method="post" action="/command/actions/tests">
-      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="title" value="{{.Title}}"><input type="hidden" name="module" value="{{.Module}}"><input type="hidden" name="metric" value="{{.Metric}}">
-      <button class="btn small" type="submit">Start Test</button></form></div>
-  </article>{{end}}
-</div>{{else}}<div class="deck-note">Recommendations appear when your data shows a clear, measurable opportunity. None is strong enough yet.</div>{{end}}
+{{define "record-table"}}
+{{if .Rows}}<div class="table-wrap tall"><table class="deck-table">
+  <thead><tr><th>Record</th><th>Type</th><th>Status</th><th>Department</th><th>Team</th><th>Assignee</th><th>Customer</th><th>Created</th><th class="r">Cycle</th><th class="r">Age</th><th>SLA</th><th class="r">Loops</th><th class="r">Handoffs</th><th>Detail</th></tr></thead>
+  <tbody>{{range .Rows}}<tr><td class="t"><a href="{{.Link}}" data-drawer>{{orDash .Item.Title}}</a></td><td>{{.Module}}</td><td>{{.Status}}</td><td class="t">{{.Department}}</td><td class="t">{{.Team}}</td><td class="t">{{.Assignee}}</td><td class="t">{{orDash .Customer}}</td><td>{{.Item.CreatedAt.UTC.Format "Jan 2 15:04"}}</td><td class="r">{{.Cycle}}</td><td class="r">{{orDash .Age}}</td><td><span class="tag {{statusClass .SLA}}">{{.SLA}}</span></td><td class="r">{{.Loops}}</td><td class="r">{{.Handoffs}}</td><td class="t small">{{orDash .Detail}}</td></tr>{{end}}</tbody>
+</table></div>{{if .Truncated}}<p class="deck-foot">Showing the newest 500 of {{num .Total}} records. Narrow the scope to see the rest.</p>{{end}}
+{{else}}<div class="deck-note">No records match.</div>{{end}}
 {{end}}
+
+{{define "load-table"}}
+{{if .Rows}}<div class="table-wrap"><table class="deck-table">
+  <thead><tr><th>{{.Kind}}</th><th class="r">Assigned</th><th class="r">Active</th><th class="r">WIP share</th><th class="r">Overdue</th><th class="r">Blocked</th><th class="r">Aging</th><th class="r">Completed</th><th class="r">Avg cycle</th><th class="r">Median cycle</th><th class="r">SLA</th><th class="r">Incoming 7d</th><th class="r">Completed 7d</th></tr></thead>
+  <tbody>{{range .Rows}}<tr><td class="t"><a href="{{.Link}}">{{.Name}}</a></td><td class="r">{{.Assigned}}</td><td class="r">{{.Active}}</td><td class="r">{{pct0 .WIPShare}}</td><td class="r {{if .Overdue}}warn{{end}}">{{.Overdue}}</td><td class="r">{{.Blocked}}</td><td class="r">{{.Aging}}</td><td class="r">{{.Completed}}</td><td class="r">{{if .Cycle.N}}{{hr .Cycle.Avg}}{{else}}—{{end}}</td><td class="r">{{if .Cycle.N}}{{hr .Cycle.Median}}{{else}}—{{end}}</td><td class="r">{{if .HasSLA}}{{pct0 .SLA}}{{else}}—{{end}}</td><td class="r">{{.Incoming7}}</td><td class="r">{{.Done7}}</td></tr>{{end}}</tbody>
+</table></div>{{else}}<div class="deck-note">No assigned work in this scope.</div>{{end}}
+{{end}}
+
+{{define "dim-table"}}
+{{if .}}<div class="table-wrap"><table class="deck-table"><thead><tr><th>Group</th><th class="r">This period</th><th class="r">Previous</th><th class="r">Change</th></tr></thead>
+<tbody>{{range .}}<tr><td class="t"><a href="{{.Link}}">{{.Name}}</a></td><td class="r">{{.Cur}}</td><td class="r muted">{{.Prev}}</td><td class="r">{{.Delta}}</td></tr>{{end}}</tbody></table></div>
+{{else}}<div class="deck-note">Nothing completed in either period.</div>{{end}}
+{{end}}
+
+{{define "name-counts"}}
+{{if .}}<ul class="sev-list">{{range .}}<li>{{if .Link}}<a href="{{.Link}}">{{.Name}}</a>{{else}}<span>{{.Name}}</span>{{end}}<span class="mono">{{.Count}}</span></li>{{end}}</ul>{{else}}<div class="deck-note">None in scope.</div>{{end}}
+{{end}}
+
+{{define "goal-card"}}
+<a class="goal {{statusClass .Status}}" href="{{.Link}}">
+  <div class="gh"><b>{{.Title}}</b><span class="tag {{statusClass .Status}}">{{.Status}}</span></div>
+  <div class="gm">{{.M.Label}} · {{.Workflow}}{{if .Stage}} · {{.Stage}}{{end}}</div>
+  <div class="gv"><span class="v">{{fmetric .Current .M.Unit}}</span><span class="muted">target {{fmetric .Target .M.Unit}} · baseline {{fmetric .Baseline .M.Unit}}</span></div>
+  <div class="gp"><i style="width:{{printf "%.0f" .Progress}}%"></i></div>
+  <div class="gf">{{spark .Series (statusClass .Status)}}<span class="muted small">{{.Confidence.Level}} confidence · trend {{.Trend}}{{if .TargetAt}} · by {{date .TargetAt}}{{end}}</span></div>
+</a>
+{{end}}
+
+{{define "sla-form"}}
+<section class="deck-panel"><div class="deck-panel-head"><div><h2>SLA targets</h2><p>Hours allowed for a whole workflow (created → finished) and for each stage. Leave empty for no target. Targets drive SLA compliance, breaches and bottleneck severity.</p></div></div>
+  <form class="deck-form sla-form" method="post" action="/command/actions/targets"><input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="back" value="{{.Back}}">
+    {{range .Groups}}<fieldset><legend>{{.Label}}</legend>{{range .Fields}}<div class="field {{if .Stage}}stage{{end}}"><label for="{{.Name}}">{{.Label}}</label><input id="{{.Name}}" name="{{.Name}}" value="{{.Value}}" inputmode="decimal" placeholder="none"></div>{{end}}</fieldset>{{end}}
+    <div class="actions"><button class="btn">Save targets</button></div>
+  </form></section>
+{{end}}
+
+{{define "stage-datalist"}}<datalist id="stage-list">{{range .ScopeOpts.Statuses}}<option value="{{.Module}}">{{end}}</datalist>{{end}}
+
+{{define "coverage"}}{{with .Coverage}}
+<section class="coverage" aria-label="Data coverage">
+  <span class="mono" tabindex="0" data-tip="{{def "coverage"}}">DATA COVERAGE</span>
+  <span><b>{{num .Records}}</b> records in scope</span><span><b>{{num .Events}}</b> events in period</span>
+  <span><b>{{pct0 .FullHistory}}</b> complete status histories</span><span><b>{{pct0 .Assignment}}</b> with assignment history</span>
+  <span><b>{{pct0 .Department}}</b> with department</span><span><b>{{pct0 .Team}}</b> with team</span><span><b>{{pct0 .DueDates}}</b> with due date</span>
+  {{if not .Earliest.IsZero}}<span>history since <b>{{date .Earliest}}</b></span>{{end}}
+  {{if .Partial}}<span class="warn">{{num .Partial}} records predate tracking — their stage history is partial</span>{{end}}
+  <a href="/command/definitions">Metric definitions →</a>
+</section>
+{{end}}{{end}}
+
+{{define "heat-year"}}
+<div class="heat-wrap"><div class="heat" style="--weeks: {{len .Weeks}}">
+  <div class="heat-months">{{range .Months}}<span style="grid-column: {{inc .Col}}">{{.Label}}</span>{{end}}</div>
+  <div class="heat-days">{{range $i := seq 7}}<span>{{weekday $i}}</span>{{end}}</div>
+  <div class="heat-grid">{{range .Weeks}}<div class="heat-col">{{range .}}{{if .Future}}<span class="heat-cell future"></span>{{else}}<a class="heat-cell l{{.Level}}" href="{{.Link}}" data-tip="{{.Tip}}" aria-label="{{.Tip}}"></a>{{end}}{{end}}</div>{{end}}</div>
+</div></div>
+<div class="heat-legend"><span>{{num .Total}} events · {{.ActiveDays}} active days · peak {{.Peak}}/day</span><span>less <i class="heat-cell"></i><i class="heat-cell l1"></i><i class="heat-cell l2"></i><i class="heat-cell l3"></i><i class="heat-cell l4"></i> more</span></div>
+{{end}}
+
+{{define "activity-view"}}{{with .Act}}
+<nav class="deck-pills" aria-label="Zoom">{{range $z := (list "year" "month" "week" "day")}}<a href="{{actLink $.Act $z}}" {{if eq $z $.Act.View}}class="active"{{end}}>{{$z}}</a>{{end}}
+  <span class="sep"></span>{{range .Filters}}<a href="{{actFilter $.Act .Module}}" {{if eq .Module $.Act.Filter}}class="active"{{end}}>{{.Label}}</a>{{end}}</nav>
+<section class="deck-panel">
+  <div class="deck-panel-head"><div><h2>{{.Title}}</h2><p>Year → month → week → day → event. Intensity is the number of recorded events.</p></div>
+    <div class="pager">{{if .UpLink}}<a class="btn secondary small" href="{{.UpLink}}">↑ {{.UpLabel}}</a>{{end}}<a class="btn secondary small" href="{{.PrevLink}}">← Previous</a>{{if .NextLink}}<a class="btn secondary small" href="{{.NextLink}}">Next →</a>{{end}}</div></div>
+  {{if eq .View "year"}}{{template "heat-year" .}}{{end}}
+  {{if eq .View "month"}}<div class="cal"><div class="cal-h">{{range $i := seq 7}}<span>{{wdName $i}}</span>{{end}}</div>
+    {{range .Weeks}}<div class="cal-row">{{range .}}<a class="cal-d l{{.Level}} {{if .Out}}out{{end}} {{if .Future}}future{{end}}" href="{{.Link}}" data-tip="{{.Tip}}"><b>{{.Date.Day}}</b><span>{{if .Count}}{{.Count}}{{end}}</span></a>{{end}}</div>{{end}}
+    <p class="deck-foot"><a href="{{actLink $.Act "week"}}">Week view →</a></p></div>{{end}}
+  {{if eq .View "week"}}<div class="table-wrap"><table class="hours"><thead><tr><th></th>{{range $h := hourRange}}<th>{{if eq (mod $h 3) 0}}{{$h}}{{end}}</th>{{end}}<th class="r">Total</th></tr></thead>
+    <tbody>{{range $i, $d := .Days}}<tr><th><a href="{{$d.Link}}">{{$d.Date.Format "Mon Jan 2"}}</a></th>{{range $h := hourRange}}{{$c := index (index $.Act.Hours $i) $h}}<td class="hc l{{heatLevel $c $.Act.HourMx}}" title="{{$d.Date.Format "Jan 2"}} {{$h}}:00 — {{$c}} events"></td>{{end}}<td class="r mono">{{$d.Count}}</td></tr>{{end}}</tbody></table></div>{{end}}
+  {{if eq .View "day"}}<div class="daybars">{{range .Bars}}<div class="db" title="{{.Hour}}:00 — {{.Count}} events"><span style="height:{{printf "%.0f" .Pct}}%"></span><em>{{if eq (mod .Hour 3) 0}}{{.Hour}}{{end}}</em></div>{{end}}</div>{{end}}
+  <div class="counts">{{range .Totals}}<span><b>{{num .Count}}</b> {{.Label}}</span>{{end}}</div>
+</section>
+{{if eq .View "day"}}<section class="deck-panel"><div class="deck-panel-head"><div><h2>Events</h2><p>Every recorded change on this day (UTC). Select a record to open its intelligence.</p></div></div>
+  {{if .Events}}<div class="table-wrap tall"><table class="deck-table"><thead><tr><th>Time</th><th>Type</th><th>Record</th><th>Change</th><th>By</th></tr></thead>
+  <tbody>{{range .Events}}<tr><td>{{.At.UTC.Format "15:04"}}</td><td>{{.Module}}</td><td class="t">{{if .Link}}<a href="{{.Link}}" data-drawer>{{.Title}}</a>{{else}}{{.Title}}{{end}}</td><td>{{.What}}</td><td class="t">{{.Actor}}</td></tr>{{end}}</tbody></table></div>
+  {{else}}<div class="deck-note">No recorded activity on this day.</div>{{end}}</section>{{end}}
+{{end}}{{end}}
+
+{{define "record-intel"}}{{with .}}
+<div class="ri">
+  <p class="crumbs">Record intelligence · {{.Module}}</p>
+  <div class="ri-head"><h2>{{orDash .Item.Title}}</h2><span class="tag {{if eq .Kind "done"}}ok{{else if eq .Kind "failed"}}bad{{else if eq .Kind "blocked"}}warn{{else}}neutral{{end}}">{{.Status}}</span><span class="tag {{statusClass .SLA}}">SLA: {{.SLA}}</span></div>
+  {{if .Partial}}<p class="deck-note warn-note">This record existed before activity tracking started; its earlier stage history is not available.</p>{{end}}
+  <dl class="ri-facts"><dt>Owner</dt><dd>{{.Owner}}</dd><dt>Department</dt><dd>{{.Department}}</dd><dt>Team</dt><dd>{{.Team}}</dd>{{if .Customer}}<dt>Customer</dt><dd>{{.Customer}}</dd>{{end}}{{if .CaseTitle}}<dt>Case</dt><dd>{{.CaseTitle}}</dd>{{end}}
+    <dt>Created</dt><dd>{{datetime .Created}}</dd>{{if .Item.Priority}}<dt>Priority</dt><dd>{{.Item.Priority}}</dd>{{end}}{{if .Item.Category}}<dt>Type</dt><dd>{{.Item.Category}}</dd>{{end}}{{if .Item.DueAt}}<dt>Due</dt><dd>{{date .Item.DueAt}}</dd>{{end}}</dl>
+  <div class="ri-stats">
+    <div><span>{{if .Cycle}}Total cycle{{else}}Age{{end}}</span><b>{{if .Cycle}}{{.Cycle}}{{else}}{{.Age}}{{end}}</b></div>
+    <div><span>Active time</span><b>{{.Active}}</b></div><div><span>Wait time</span><b>{{.Wait}}</b></div><div><span>Blocked</span><b>{{.Blocked}}</b></div>
+    <div><span>Handoff time</span><b>{{.Handoff}}</b></div><div><span>Rework time</span><b>{{.Rework}}</b></div>
+    <div><span>Handoffs</span><b>{{.Handoffs}}</b></div><div><span>Rework loops</span><b>{{.Loops}}</b></div>
+  </div>
+  <p class="muted small">{{.SLADetail}}</p>
+  <h3 class="ri-h">Path</h3>
+  <ol class="ri-path">{{range .Path}}<li class="{{.Kind}} {{if .Breached}}breach{{end}} {{if .Reentry}}reentry{{end}}"><span class="st">{{.Status}}</span>{{if .Dur}}<span class="bar"><i style="width:{{barPct .Hours $.MaxHours}}%"></i></span><span class="mono">{{.Dur}}{{if .Open}} · now{{end}}</span>{{end}}<span class="muted small">{{.Assignee}}{{if .Target}} · target {{.Target}}{{end}}{{if .Reentry}} · returned{{end}}</span></li>{{end}}</ol>
+  <h3 class="ri-h">Timeline</h3>
+  <ol class="ri-time">{{range .Timeline}}<li class="{{.Kind}} {{if .Alert}}alert{{end}}"><time>{{.At.UTC.Format "Jan 02 15:04"}}</time><span>{{.Text}}</span>{{if .Who}}<em>{{.Who}}</em>{{end}}</li>{{end}}</ol>
+  {{if .Related}}<h3 class="ri-h">Related records</h3><ul class="sev-list">{{range .Related}}<li><a href="{{.Link}}" data-drawer>{{.Title}}</a><span class="mono muted">{{.Module}} · {{.Status}}</span></li>{{end}}</ul>{{end}}
+  {{if .Workspace}}<p><a class="btn secondary small" href="{{.Workspace}}">Open in workspace</a></p>{{end}}
+</div>
+{{end}}{{end}}
+
+{{define "record-intel-partial"}}{{template "record-intel" .RI}}{{end}}

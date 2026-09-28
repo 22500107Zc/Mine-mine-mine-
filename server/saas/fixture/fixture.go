@@ -10,8 +10,34 @@ import (
 	"math/rand"
 	"sort"
 	"time"
+)
 
-	"github.com/cortezaproject/corteza/server/saas"
+// Event mirrors a CulpOS activity event (kept separate so tests inside the
+// saas package can use the generator without an import cycle)
+type Event struct {
+	OccurredAt   time.Time
+	Module       string
+	RecordID     uint64
+	Title        string
+	Kind         string // created | status | updated
+	FromStatus   string
+	ToStatus     string
+	ActorID      uint64
+	AssigneeID   uint64
+	DepartmentID uint64
+	TeamID       uint64
+	Category     string
+	Priority     string
+	CustomerID   uint64
+	CaseID       uint64
+	DueAt        *time.Time
+	Source       string
+}
+
+const (
+	created = "created"
+	status  = "status"
+	updated = "updated"
 )
 
 // Org describes the organization the history is generated for
@@ -57,11 +83,11 @@ type gen struct {
 	o      Options
 	r      *rand.Rand
 	next   uint64
-	events []saas.ActivityEvent
+	events []Event
 }
 
 // Generate returns events oldest first
-func Generate(o Options) []saas.ActivityEvent {
+func Generate(o Options) []Event {
 	if o.Volume == 0 {
 		o.Volume = 1
 	}
@@ -79,7 +105,7 @@ func Generate(o Options) []saas.ActivityEvent {
 		id := g.id()
 		customers = append(customers, id)
 		at := start.Add(time.Duration(g.r.Intn(72)) * time.Hour).Add(-96 * time.Hour)
-		g.emit(saas.ActivityEvent{OccurredAt: at, Module: "Customer", RecordID: id, Title: customerNames[i%len(customerNames)] + suffix(i), Kind: saas.ActivityCreated,
+		g.emit(Event{OccurredAt: at, Module: "Customer", RecordID: id, Title: customerNames[i%len(customerNames)] + suffix(i), Kind: created,
 			ToStatus: "Active", CustomerID: id, AssigneeID: g.member(9104), ActorID: g.member(9101)})
 	}
 
@@ -110,13 +136,13 @@ func Generate(o Options) []saas.ActivityEvent {
 		}
 		for i := 0; i < g.poisson(1.5*scale); i++ {
 			id := g.id()
-			g.emit(saas.ActivityEvent{OccurredAt: g.workTime(day), Module: "Document", RecordID: id, Title: fmt.Sprintf("%s %d", docNames[g.r.Intn(len(docNames))], id%10000),
-				Kind: saas.ActivityCreated, Category: docNames[g.r.Intn(len(docNames))], CustomerID: customers[g.r.Intn(len(customers))], ActorID: g.anyone()})
+			g.emit(Event{OccurredAt: g.workTime(day), Module: "Document", RecordID: id, Title: fmt.Sprintf("%s %d", docNames[g.r.Intn(len(docNames))], id%10000),
+				Kind: created, Category: docNames[g.r.Intn(len(docNames))], CustomerID: customers[g.r.Intn(len(customers))], ActorID: g.anyone()})
 		}
 	}
 
 	// nothing can happen after "now"
-	var out []saas.ActivityEvent
+	var out []Event
 	for _, e := range g.events {
 		if !e.OccurredAt.After(o.Now) {
 			out = append(out, e)
@@ -140,7 +166,7 @@ func suffix(i int) string {
 
 func (g *gen) id() uint64 { g.next++; return g.next }
 
-func (g *gen) emit(e saas.ActivityEvent) {
+func (g *gen) emit(e Event) {
 	if e.Source == "" {
 		e.Source = "live"
 	}
@@ -195,20 +221,20 @@ func (g *gen) anyone() uint64 {
 
 type rec struct {
 	g    *gen
-	base saas.ActivityEvent
+	base Event
 	at   time.Time
 	st   string
 	who  uint64
 }
 
-func (g *gen) start(module, title string, at time.Time, status string, team uint64, extra func(*saas.ActivityEvent)) *rec {
+func (g *gen) start(module, title string, at time.Time, status string, team uint64, extra func(*Event)) *rec {
 	id := g.id()
-	e := saas.ActivityEvent{Module: module, RecordID: id, Title: title, TeamID: team, DepartmentID: g.o.Org.TeamDept[team], AssigneeID: g.member(team)}
+	e := Event{Module: module, RecordID: id, Title: title, TeamID: team, DepartmentID: g.o.Org.TeamDept[team], AssigneeID: g.member(team)}
 	if extra != nil {
 		extra(&e)
 	}
 	c := e
-	c.OccurredAt, c.Kind, c.ToStatus, c.ActorID = at, saas.ActivityCreated, status, g.member(9101)
+	c.OccurredAt, c.Kind, c.ToStatus, c.ActorID = at, created, status, g.member(9101)
 	g.emit(c)
 	return &rec{g: g, base: e, at: at, st: status, who: e.AssigneeID}
 }
@@ -217,7 +243,7 @@ func (r *rec) move(after time.Duration, to string) {
 	r.at = r.at.Add(after)
 	e := r.base
 	e.Title = ""
-	e.OccurredAt, e.Kind, e.FromStatus, e.ToStatus, e.ActorID, e.AssigneeID = r.at, saas.ActivityStatus, r.st, to, r.who, r.who
+	e.OccurredAt, e.Kind, e.FromStatus, e.ToStatus, e.ActorID, e.AssigneeID = r.at, status, r.st, to, r.who, r.who
 	r.g.emit(e)
 	r.st = to
 }
@@ -228,7 +254,7 @@ func (r *rec) handoff(after time.Duration, team uint64) {
 	to := r.g.member(team)
 	e := r.base
 	e.Title = ""
-	e.OccurredAt, e.Kind, e.ToStatus, e.ActorID, e.AssigneeID, e.TeamID = r.at, saas.ActivityUpdated, r.st, r.who, to, team
+	e.OccurredAt, e.Kind, e.ToStatus, e.ActorID, e.AssigneeID, e.TeamID = r.at, updated, r.st, r.who, to, team
 	e.DepartmentID = r.g.o.Org.TeamDept[team]
 	r.g.emit(e)
 	r.who = to
@@ -238,7 +264,7 @@ func (r *rec) handoff(after time.Duration, team uint64) {
 func (g *gen) task(day time.Time, customers []uint64, improved bool) {
 	prio := []string{"Low", "Normal", "Normal", "High", "Urgent"}[g.r.Intn(5)]
 	due := day.AddDate(0, 0, 2+g.r.Intn(6))
-	r := g.start("Task", fmt.Sprintf("%s #%d", taskNames[g.r.Intn(len(taskNames))], g.next%100000), g.workTime(day), "Open", 9101, func(e *saas.ActivityEvent) {
+	r := g.start("Task", fmt.Sprintf("%s #%d", taskNames[g.r.Intn(len(taskNames))], g.next%100000), g.workTime(day), "Open", 9101, func(e *Event) {
 		e.Priority, e.DueAt, e.CustomerID = prio, &due, customers[g.r.Intn(len(customers))]
 	})
 	r.move(g.hours(5, 0.9), "In Progress")
@@ -266,7 +292,7 @@ func (g *gen) task(day time.Time, customers []uint64, improved bool) {
 func (g *gen) caseFlow(day time.Time, customers []uint64) {
 	cust := customers[g.r.Intn(len(customers))]
 	due := day.AddDate(0, 0, 3+g.r.Intn(5))
-	r := g.start("Case", fmt.Sprintf("%s — %s", caseNames[g.r.Intn(len(caseNames))], customerNames[int(cust)%len(customerNames)]), g.workTime(day), "New", 9104, func(e *saas.ActivityEvent) {
+	r := g.start("Case", fmt.Sprintf("%s — %s", caseNames[g.r.Intn(len(caseNames))], customerNames[int(cust)%len(customerNames)]), g.workTime(day), "New", 9104, func(e *Event) {
 		e.Category = []string{"Question", "Problem", "Incident", "Request", "Complaint"}[g.r.Intn(5)]
 		e.Priority, e.DueAt, e.CustomerID = []string{"Low", "Normal", "High", "Urgent"}[g.r.Intn(4)], &due, cust
 	})
@@ -285,7 +311,7 @@ func (g *gen) caseFlow(day time.Time, customers []uint64) {
 	// follow-up task linked to the case
 	if g.r.Float64() < 0.4 {
 		caseID := r.base.RecordID
-		t := g.start("Task", "Follow up: "+r.base.Title, r.at.Add(-g.hours(8, 0.5)), "Open", 9104, func(e *saas.ActivityEvent) {
+		t := g.start("Task", "Follow up: "+r.base.Title, r.at.Add(-g.hours(8, 0.5)), "Open", 9104, func(e *Event) {
 			e.CaseID, e.CustomerID, e.Priority = caseID, cust, "Normal"
 		})
 		t.move(g.hours(4, 0.6), "In Progress")
@@ -294,7 +320,7 @@ func (g *gen) caseFlow(day time.Time, customers []uint64) {
 }
 
 func (g *gen) approval(day time.Time, slower bool) {
-	r := g.start("Approval", fmt.Sprintf("%s request #%d", approvalNames[g.r.Intn(len(approvalNames))], g.next%100000), g.workTime(day), "Pending", 9103, func(e *saas.ActivityEvent) {
+	r := g.start("Approval", fmt.Sprintf("%s request #%d", approvalNames[g.r.Intn(len(approvalNames))], g.next%100000), g.workTime(day), "Pending", 9103, func(e *Event) {
 		e.Category = approvalNames[g.r.Intn(len(approvalNames))]
 	})
 	wait := 14.0
@@ -316,7 +342,7 @@ func (g *gen) approval(day time.Time, slower bool) {
 }
 
 func (g *gen) record(day time.Time, customers []uint64, improved bool) {
-	r := g.start("OperationsRecord", fmt.Sprintf("%s %d", recordNames[g.r.Intn(len(recordNames))], g.next%100000), g.workTime(day), "Open", 9102, func(e *saas.ActivityEvent) {
+	r := g.start("OperationsRecord", fmt.Sprintf("%s %d", recordNames[g.r.Intn(len(recordNames))], g.next%100000), g.workTime(day), "Open", 9102, func(e *Event) {
 		e.Category = []string{"Operations", "Finance", "Compliance", "Facilities", "HR"}[g.r.Intn(5)]
 		e.CustomerID = customers[g.r.Intn(len(customers))]
 	})

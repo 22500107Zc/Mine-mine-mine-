@@ -50,7 +50,8 @@ func TestCommandDeckPages(t *testing.T) {
 		t.Fatalf("owner deck: %d", code)
 	}
 	for _, want := range []string{"Command Deck", "Activity Graph", "Pipeline &amp; Bottlenecks", "Goal Intelligence", "What is happening",
-		"Where is it happening", "Why might it be happening", "What is it affecting", "What should we test next", "3 events / 12 months"} {
+		"Total active work", "SLA compliance", "Where work is stuck", "What changed", "What management should investigate",
+		"Activity history", "3 events", "DATA COVERAGE"} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("deck missing %q", want)
 		}
@@ -67,11 +68,16 @@ func TestCommandDeckPages(t *testing.T) {
 		t.Fatalf("baseline seeded %d times", seeded)
 	}
 
-	// day drill-down lists the day's records with links into the workspace
+	// day drill-down lists the day's records; each opens its record
+	// intelligence, which links into the workspace
 	code, body = get("/command/activity?day=" + now.Format("2006-01-02"))
-	link := fmt.Sprintf("/compose/ns/%s/pages/7001/record/901", a.Slug)
-	if code != http.StatusOK || !strings.Contains(body, "Call Northwind") || !strings.Contains(body, link) || !strings.Contains(body, "Open → Done") {
+	if code != http.StatusOK || !strings.Contains(body, "Call Northwind") || !strings.Contains(body, "/command/record/901") || !strings.Contains(body, "Open → Done") {
 		t.Fatalf("day drill-down: %d", code)
+	}
+	code, body = get("/command/record/901")
+	link := fmt.Sprintf("/compose/ns/%s/pages/7001/record/901", a.Slug)
+	if code != http.StatusOK || !strings.Contains(body, "Call Northwind") || !strings.Contains(body, link) || !strings.Contains(body, "Completed · Done") {
+		t.Fatalf("record intelligence: %d", code)
 	}
 	if strings.Contains(body, "Beta Secret Plan") {
 		t.Fatal("another company's activity leaked into the drill-down")

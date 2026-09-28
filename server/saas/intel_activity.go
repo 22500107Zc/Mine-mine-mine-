@@ -68,6 +68,22 @@ type ActivityHistory struct {
 	Totals                  []ActCount
 	Filters                 []workflowOption
 	Base                    string
+	extra                   url.Values
+}
+
+// activityURL links to another zoom level or filter of the same graph
+func activityURL(a ActivityHistory, view, filter string) string {
+	q := url.Values{}
+	for k, vv := range a.extra {
+		q[k] = vv
+	}
+	q.Set("view", view)
+	q.Set("date", a.Date.Format("2006-01-02"))
+	q.Del("filter")
+	if filter != "" && filter != "all" {
+		q.Set("filter", filter)
+	}
+	return a.Base + "?" + q.Encode()
 }
 
 var activityFilters = []workflowOption{
@@ -120,7 +136,7 @@ func (in *Intel) ActivityHistory(view, filter string, date time.Time, admin []Ad
 		date = today
 	}
 	date = dayOf(date)
-	h := ActivityHistory{View: view, Filter: filter, Date: date, Filters: activityFilters, Base: base}
+	h := ActivityHistory{View: view, Filter: filter, Date: date, Filters: activityFilters, Base: base, extra: extra}
 
 	link := func(v string, d time.Time) string {
 		q := url.Values{}

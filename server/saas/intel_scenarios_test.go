@@ -30,7 +30,17 @@ func lookups(o fixture.Org) saas.Lookups {
 
 func history(days int) ([]saas.ActivityEvent, fixture.Org) {
 	org := fixture.DefaultOrg(nil)
-	return fixture.Generate(fixture.Options{Now: scnNow, Days: days, Seed: 42, Org: org}), org
+	return convert(fixture.Generate(fixture.Options{Now: scnNow, Days: days, Seed: 42, Org: org})), org
+}
+
+func convert(ee []fixture.Event) []saas.ActivityEvent {
+	out := make([]saas.ActivityEvent, len(ee))
+	for i, e := range ee {
+		out[i] = saas.ActivityEvent{OccurredAt: e.OccurredAt, Module: e.Module, RecordID: e.RecordID, Title: e.Title, Kind: e.Kind,
+			FromStatus: e.FromStatus, ToStatus: e.ToStatus, ActorID: e.ActorID, AssigneeID: e.AssigneeID, DepartmentID: e.DepartmentID,
+			TeamID: e.TeamID, Category: e.Category, Priority: e.Priority, CustomerID: e.CustomerID, CaseID: e.CaseID, DueAt: e.DueAt, Source: e.Source}
+	}
+	return out
 }
 
 var scnTargets = map[string]float64{"Task": 48, "Approval": 36, "Approval|Pending": 24, "Case|Open": 24, "OperationsRecord|In Review": 24}

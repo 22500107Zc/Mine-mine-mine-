@@ -45,6 +45,9 @@ type (
 
 		// workspace namespace → company, for the activity hook
 		nsCompanies nsCache
+
+		// reconstructed execution history per company
+		intelCache intelCache
 	}
 
 	SignupInput struct {
