@@ -1,4 +1,4 @@
-# CulpOS workspace data model
+# St.Cloud~OS workspace data model
 namespace: culpos-workspace-template
 modules:
   Customer:

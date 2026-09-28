@@ -40,7 +40,7 @@ func TestLegalAndSupportPages(t *testing.T) {
 		b, _ := io.ReadAll(rsp.Body)
 		body := string(b)
 
-		if !strings.Contains(body, "<title>CulpOS | "+title+"</title>") {
+		if !strings.Contains(body, "<title>St.Cloud~OS | "+title+"</title>") {
 			t.Errorf("%s: missing branded title", path)
 		}
 
@@ -59,6 +59,10 @@ func TestLegalAndSupportPages(t *testing.T) {
 		if path != "/legal/open-source" && strings.Contains(body, "Corteza") {
 			t.Errorf("%s: upstream name on a customer page", path)
 		}
+
+		if strings.Contains(body, LegacyProductName) || !strings.Contains(body, "St.Cloud~OS") {
+			t.Errorf("%s: product must be presented as St.Cloud~OS", path)
+		}
 	}
 
 	rsp, _ := cl.Get(srv.URL + "/legal/terms")
@@ -71,7 +75,7 @@ func TestLegalAndSupportPages(t *testing.T) {
 
 	rsp, _ = cl.Get(srv.URL + "/legal/privacy")
 	b, _ = io.ReadAll(rsp.Body)
-	if !strings.Contains(string(b), "not received or stored by CulpOS") {
+	if !strings.Contains(string(b), "not received or stored by St.Cloud~OS") {
 		t.Error("privacy policy must state that card numbers are handled by Stripe")
 	}
 

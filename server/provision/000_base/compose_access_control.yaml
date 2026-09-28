@@ -1,5 +1,5 @@
 allow:
-  # CulpOS: company users receive workspace access exclusively through their
+  # St.Cloud~OS: company users receive workspace access exclusively through their
   # company roles, scoped to their own workspace (see saas/integration).
   # The authenticated role must never be granted wildcard workspace access.
   authenticated:

@@ -41,7 +41,7 @@ func ValidateEnvironment() []ConfigProblem {
 
 	app := env("APP_URL", env("PUBLIC_APP_URL", ""))
 	if app == "" {
-		fatal("APP_URL", "is required (public URL of CulpOS, e.g. https://app.example.com)")
+		fatal("APP_URL", "is required (public URL of St.Cloud~OS, e.g. https://app.example.com)")
 	} else if u, err := url.Parse(app); err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") {
 		fatal("APP_URL", "must be an absolute http(s) URL")
 	} else if u.Scheme != "https" && production {
@@ -78,7 +78,7 @@ func ValidateEnvironment() []ConfigProblem {
 	}
 
 	if env("SUPPORT_EMAIL", "") == "" {
-		warn("SUPPORT_EMAIL", "not set; customers are directed to reply to CulpOS emails for support")
+		warn("SUPPORT_EMAIL", "not set; customers are directed to reply to St.Cloud~OS emails for support")
 	}
 
 	return out
@@ -94,11 +94,11 @@ func ReportConfigProblems(w io.Writer, pp []ConfigProblem) bool {
 			stop = true
 		}
 
-		_, _ = fmt.Fprintf(w, "CulpOS configuration %s: %s %s\n", level, p.Setting, p.Message)
+		_, _ = fmt.Fprintf(w, "St.Cloud~OS configuration %s: %s %s\n", level, p.Setting, p.Message)
 	}
 
 	if stop {
-		_, _ = fmt.Fprintln(w, "CulpOS cannot start until the configuration errors above are fixed. See .env.example.")
+		_, _ = fmt.Fprintln(w, "St.Cloud~OS cannot start until the configuration errors above are fixed. See .env.example.")
 	}
 
 	return stop

@@ -322,7 +322,7 @@ func adjustBlockScale(b [4]int, prev, new int) [4]int {
 // ensurePageLayouts creates layouts for pages that have none.
 //
 // migratePages only runs once per database (before config import), so pages
-// imported later (e.g. the CulpOS workspace template) would otherwise be left
+// imported later (e.g. the St.Cloud~OS workspace template) would otherwise be left
 // without a layout and could not be displayed. Safe to run on every boot.
 func ensurePageLayouts(ctx context.Context, log *zap.Logger, s store.Storer) (err error) {
 	layouts, _, err := store.SearchComposePageLayouts(ctx, s, types.PageLayoutFilter{Deleted: filter.StateInclusive})

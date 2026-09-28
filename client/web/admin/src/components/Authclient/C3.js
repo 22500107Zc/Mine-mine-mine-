@@ -8,7 +8,7 @@ const props = {
     handle: 'corteza-webapp',
     meta: {
       description: '',
-      name: 'CulpOS Web Applications',
+      name: 'St.Cloud~OS Web Applications',
     },
   },
   roles: [],

@@ -1,12 +1,17 @@
-# CulpOS
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="server/saas/assets/static/stcloud-logo-light.svg">
+  <img src="server/saas/assets/static/stcloud-logo.svg" alt="St.Cloud~OS" height="48">
+</picture>
 
-**Business Operations System** — by Culp Industries
+# St.Cloud\~OS
 
-CulpOS is one operating system for running a company's internal operations:
+**Business Execution Intelligence OS** — by Culp Industries
+
+St.Cloud\~OS is one operating system for running a company's internal operations:
 customers, contacts, records, cases, tasks, approvals, documents, reports,
 departments and team management — in a single, isolated company workspace.
 
-- **Plan:** CulpOS — **$333.88 USD / month** per company (one subscription = one company account)
+- **Plan:** St.Cloud\~OS — **$333.88 USD / month** per company (one subscription = one company account)
 - No free plan, no trial, no public demo account
 - Payments: Stripe (hosted Checkout and Customer Portal, signature-verified webhooks)
 - Database: PostgreSQL
@@ -16,12 +21,12 @@ departments and team management — in a single, isolated company workspace.
 ## What happens automatically
 
 Operators do not provision companies, roles, workspaces or subscriptions by
-hand. CulpOS does this itself:
+hand. St.Cloud\~OS does this itself:
 
 1. A customer opens `/signup`, enters the company and owner details and clicks
    **Continue to Secure Checkout**. The server creates the Stripe Checkout
    Session and redirects the browser to Stripe.
-2. After payment Stripe calls `POST /stripe/webhook`. CulpOS verifies the
+2. After payment Stripe calls `POST /stripe/webhook`. St.Cloud\~OS verifies the
    signature, reads the subscription from the Stripe API, and provisions the
    company exactly once: company roles (Owner, Administrator, Manager, Employee),
    an isolated workspace with Dashboard, Customers, Contacts, Records, Cases,
@@ -117,7 +122,7 @@ manager) and fill in:
 
 | Variable | Purpose |
 | --- | --- |
-| `APP_URL` | Public https URL of CulpOS (e.g. `https://app.example.com`) |
+| `APP_URL` | Public https URL of St.Cloud\~OS (e.g. `https://app.example.com`) |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `JWT_SECRET`, `CSRF_SECRET`, `SESSION_SECRET` | Random secrets, `openssl rand -hex 32` each |
 | `FOUNDER_BOOTSTRAP_PASSWORD` | Founder password, set on first start (the only Founder credential) |
@@ -126,7 +131,7 @@ manager) and fill in:
 | `SUPPORT_EMAIL` | Shown on Support, legal pages and emails |
 | `LEGAL_GOVERNING_LAW` (optional) | Governing law clause, e.g. `the State of Texas, United States` |
 
-CulpOS validates this configuration at startup and prints a clear message for
+St.Cloud\~OS validates this configuration at startup and prints a clear message for
 anything missing (values are never printed). Missing database, `APP_URL` or
 secrets stop startup; missing Stripe or SMTP settings are reported and shown to
 the Founder until provided.
@@ -135,7 +140,7 @@ the Founder until provided.
 
 In your Stripe account:
 
-1. Create the product **CulpOS** with a recurring price of **$333.88 USD per
+1. Create the product **St.Cloud\~OS** with a recurring price of **$333.88 USD per
    month** and put its price ID in `STRIPE_PRICE_ID`.
 2. Add a webhook endpoint `https://<APP_URL>/stripe/webhook` for these events:
    `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
@@ -147,17 +152,17 @@ In your Stripe account:
    Put the endpoint's signing secret in `STRIPE_WEBHOOK_SECRET`.
 3. Enable the Customer Portal (payment method updates, invoices).
 
-Nothing else is configured in Stripe or in CulpOS: checkout sessions, portal
+Nothing else is configured in Stripe or in St.Cloud\~OS: checkout sessions, portal
 sessions and subscription state are handled by the server.
 
 ### 4. Email
 
 Provide SMTP credentials (`SMTP_*`, `MAIL_FROM`). `MAIL_FROM_NAME` defaults to
-`CulpOS`. All links in emails are built from `APP_URL`.
+`St.Cloud~OS`. All links in emails are built from `APP_URL`.
 
 ### 5. Domain and HTTPS
 
-Point your domain at the host and terminate TLS in front of CulpOS (reverse
+Point your domain at the host and terminate TLS in front of St.Cloud\~OS (reverse
 proxy or load balancer). With an `https://` `APP_URL`, cookies are marked
 Secure and HSTS is sent automatically.
 
@@ -165,7 +170,7 @@ Secure and HSTS is sent automatically.
 
 ```bash
 cp .env.example .env          # fill in the values above
-docker compose up -d --build  # PostgreSQL + CulpOS on port 8080
+docker compose up -d --build  # PostgreSQL + St.Cloud~OS on port 8080
 ```
 
 The `Dockerfile` builds the web applications and the server from source into a
@@ -182,7 +187,7 @@ docker build --secret id=build_ca,src=/path/to/proxy-ca.crt -t culpos .
 
 There is exactly one Founder, and the Founder signs in with a password only —
 there is no Founder username or email. Put the initial password in your secret
-store as `FOUNDER_BOOTSTRAP_PASSWORD`; on first start CulpOS stores only its
+store as `FOUNDER_BOOTSTRAP_PASSWORD`; on first start St.Cloud\~OS stores only its
 bcrypt hash. Sign in at `/founder` and change the password at
 `/founder/account`.
 
@@ -250,7 +255,7 @@ node server/saas/testdata/acceptance.js   # see the header for required variable
 
 ## Open Source Notices
 
-CulpOS includes open source software, including software derived from the
+St.Cloud\~OS includes open source software, including software derived from the
 Corteza project under the Apache License, Version 2.0. See [LICENSE](LICENSE),
-[NOTICE](NOTICE) and `/legal/open-source`. CulpOS branding and original CulpOS
+[NOTICE](NOTICE) and `/legal/open-source`. St.Cloud\~OS branding and original St.Cloud\~OS
 functionality are © Culp Industries.

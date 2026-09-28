@@ -17,7 +17,7 @@ import (
 )
 
 type (
-	// StripeAPI is the subset of the Stripe API CulpOS relies on
+	// StripeAPI is the subset of the Stripe API St.Cloud~OS relies on
 	StripeAPI interface {
 		CreateCustomer(ctx context.Context, p CustomerParams) (string, error)
 		CreateCheckoutSession(ctx context.Context, p CheckoutParams) (*CheckoutSession, error)
@@ -163,7 +163,7 @@ func (c *stripeClient) CreateCustomer(ctx context.Context, p CustomerParams) (st
 	form.Set("email", p.Email)
 	form.Set("name", p.Name)
 	form.Set("metadata[company_id]", strconv.FormatUint(p.CompanyID, 10))
-	form.Set("metadata[product]", "CulpOS")
+	form.Set("metadata[product]", "St.Cloud~OS")
 
 	if err := c.do(ctx, http.MethodPost, "/v1/customers", form, p.IdempotencyKey, &out); err != nil {
 		return "", err

@@ -1,7 +1,7 @@
 // culpos-fixture writes generated operational history into one company of a
-// TEST or DEMO CulpOS database, for screenshots and local development.
+// TEST or DEMO St.Cloud~OS database, for screenshots and local development.
 //
-// It is not part of the CulpOS server and must never be run against a
+// It is not part of the St.Cloud~OS server and must never be run against a
 // production database: it refuses to run unless CULPOS_FIXTURE_CONFIRM is
 // set to "test-environment", and every event it writes is marked with
 // source = 'fixture' so it can always be identified and removed:

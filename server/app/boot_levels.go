@@ -103,7 +103,7 @@ func (app *CortezaApp) Setup() (err error) {
 
 		if app.Opt.Auth.SessionLifetime < time.Hour {
 			log.Warn("AUTH_SESSION_LIFETIME is set to less then an hour, this might not be what you want." +
-				"When user logs-in without 'remember-me',  AUTH_SESSION_LIFETIME is used to set a maximum time before session is expired if user does not interact with CulpOS. " +
+				"When user logs-in without 'remember-me',  AUTH_SESSION_LIFETIME is used to set a maximum time before session is expired if user does not interact with St.Cloud~OS. " +
 				"Recommended session lifetime value is between one hour (default) and a day")
 		}
 
@@ -538,7 +538,7 @@ func (app *CortezaApp) Activate(ctx context.Context) (err error) {
 	}
 
 	if err = app.initSaaS(ctx); err != nil {
-		return fmt.Errorf("failed to init CulpOS commercial layer: %w", err)
+		return fmt.Errorf("failed to init St.Cloud~OS commercial layer: %w", err)
 	}
 
 	if app.SaaS != nil {

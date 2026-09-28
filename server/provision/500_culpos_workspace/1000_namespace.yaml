@@ -1,12 +1,12 @@
-# CulpOS workspace template
+# St.Cloud~OS workspace template
 #
 # Every paid company receives an isolated copy of this workspace
 # (see server/saas/integration). The template itself is never shown to
 # company users. Contains no sample records.
 namespaces:
   culpos-workspace-template:
-    name: CulpOS Workspace Template
+    name: St.Cloud~OS Workspace Template
     enabled: true
     meta:
-      subtitle: CulpOS
+      subtitle: St.Cloud~OS
       description: Company operations workspace — customers, contacts, records, cases, tasks, approvals, documents, departments and reports.

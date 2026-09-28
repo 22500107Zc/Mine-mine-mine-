@@ -6,7 +6,7 @@ data-types:
     description: Your contact information, names, surname, nickname, profile picture
   application-data:
     title: Application Data
-    description: Your personal data stored in CulpOS
+    description: Your personal data stored in St.Cloud~OS
 
 application:
   title: Application Data

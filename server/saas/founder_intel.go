@@ -245,7 +245,7 @@ type signIn struct {
 	At          time.Time
 }
 
-// founderCompanyIntel summarizes how one company uses CulpOS (counts only;
+// founderCompanyIntel summarizes how one company uses St.Cloud~OS (counts only;
 // the Founder does not browse the company's record contents here)
 func (svc *Service) founderCompanyIntel(r *http.Request, c *Company, members []*Member) founderCompanyIntel {
 	ctx := r.Context()

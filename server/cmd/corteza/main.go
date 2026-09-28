@@ -18,7 +18,7 @@ func main() {
 	// Initialize logger before any other action
 	logger.Init()
 
-	// Map CulpOS deployment variables (DATABASE_URL, SMTP_USERNAME, MAIL_FROM, APP_URL...)
+	// Map St.Cloud~OS deployment variables (DATABASE_URL, SMTP_USERNAME, MAIL_FROM, APP_URL...)
 	saas.ApplyEnvAliases()
 
 	// Validate deployment configuration before starting (clear messages, no stack traces)

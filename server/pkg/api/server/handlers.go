@@ -34,7 +34,7 @@ func waitingRoutes(log *zap.Logger, httpOpt options.HttpServerOpt) (r chi.Router
 		// For non GET requests, return 503 (service unavailable)
 		errors.ServeHTTPWithCode(w, r,
 			http.StatusServiceUnavailable,
-			fmt.Errorf("CulpOS is starting"),
+			fmt.Errorf("St.Cloud~OS is starting"),
 			true,
 		)
 	})
@@ -42,7 +42,7 @@ func waitingRoutes(log *zap.Logger, httpOpt options.HttpServerOpt) (r chi.Router
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		// Refresh the page in 15 seconds
 		w.Header().Set("Refresh", "15; url=/")
-		_, _ = fmt.Fprint(w, "CulpOS is starting, please wait...\n\n")
+		_, _ = fmt.Fprint(w, "St.Cloud~OS is starting, please wait...\n\n")
 		if httpOpt.EnableHealthcheckRoute {
 			healthcheck.Defaults().Run(r.Context()).WriteSummaryTo(w)
 		}
@@ -59,7 +59,7 @@ func shutdownRoutes() (r chi.Router) {
 		// For non GET requests, return 503 (service unavailable)
 		errors.ServeHTTPWithCode(w, r,
 			http.StatusServiceUnavailable,
-			fmt.Errorf("CulpOS is restarting"),
+			fmt.Errorf("St.Cloud~OS is restarting"),
 			true,
 		)
 	})
@@ -67,7 +67,7 @@ func shutdownRoutes() (r chi.Router) {
 	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		// Refresh the page in 15 seconds
 		w.Header().Set("Refresh", "15; url=/")
-		_, _ = fmt.Fprint(w, "CulpOS is restarting, please wait...")
+		_, _ = fmt.Fprint(w, "St.Cloud~OS is restarting, please wait...")
 	})
 
 	return

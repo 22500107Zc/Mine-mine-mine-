@@ -1,6 +1,6 @@
-// CulpOS end-to-end acceptance run (real browser) against a running instance.
+// St.Cloud~OS end-to-end acceptance run (real browser) against a running instance.
 //
-// Prerequisites: CulpOS started with STRIPE_API_BASE pointing at
+// Prerequisites: St.Cloud~OS started with STRIPE_API_BASE pointing at
 // stripe_mock.py and SMTP delivered to a local catcher that writes one .eml
 // file per message into MAIL.
 //
@@ -82,7 +82,7 @@ async function signup(b, co, first, email, pw) {
   const done = await snap(page, `signup-complete-${first}`);
   ok(`${co}: webhook activated company`, done.includes('Your workspace is ready'));
   ok(`${co}: company active in database`, sql(`select subscription_status||'/'||provisioning_status from saas_companies where name='${co}'`) === 'active/provisioned');
-  await page.click('text=Sign In to CulpOS'); await page.waitForLoadState('networkidle');
+  await page.click('text=Sign In to St.Cloud~OS'); await page.waitForLoadState('networkidle');
   await page.fill('input[name=email]', email); await page.fill('input[name=password]', pw);
   await post(page, '[data-test-id=button-login]');
   await page.waitForTimeout(1500);
@@ -164,6 +164,14 @@ async function signup(b, co, first, email, pw) {
     await page.goto(B + '/');
     await page.waitForTimeout(3000);
     ok('launcher offers the Command Deck to the owner', (await page.evaluate(() => document.body.innerText)).toLowerCase().includes('command deck'));
+    // St.Cloud~OS brand: launcher wordmark, tab title, icons and PWA manifest
+    const brand = await page.evaluate(() => { const l = document.querySelector('.app-selector img.logo'); return { logo: l && l.getAttribute('src'), w: l && l.naturalWidth, title: document.title, text: document.body.innerText, fav: (document.querySelector('#favicon') || {}).href || '' }; });
+    ok('launcher shows the St.Cloud~OS wordmark', /stcloud-logo-light\.svg$/.test(brand.logo || '') && brand.w > 0, JSON.stringify({ logo: brand.logo, w: brand.w }));
+    ok('launcher tab is titled St.Cloud~OS and uses the St.Cloud~OS icon', brand.title.startsWith('St.Cloud~OS') && /stcloud-mark\.svg|icon\.svg/.test(brand.fav), brand.title + ' ' + brand.fav);
+    ok('old product name is gone from the launcher', !/culpos/i.test(brand.text + brand.title + (brand.logo || '')));
+    const manifest = await (await page.request.get(B + '/stcloud/static/manifest.webmanifest')).json();
+    ok('PWA manifest is St.Cloud~OS', manifest.name === 'St.Cloud~OS' && manifest.short_name === 'St.Cloud~OS' && manifest.icons.every(i => i.src.startsWith('/stcloud/static/')), JSON.stringify(manifest.name));
+    ok('brand icons are served', (await page.request.get(B + '/stcloud/static/favicon.ico')).ok() && (await page.request.get(B + '/stcloud/static/icon-512.png')).ok() && (await page.request.get(B + '/stcloud/static/stcloud-og.png')).ok());
     const avatar = await page.evaluate(() => { const e = document.querySelector('[data-test-id=avatar-initials]'); return e && { text: e.textContent.trim(), bg: getComputedStyle(e).backgroundColor, fg: getComputedStyle(e).color }; });
     ok('generated profile indicator follows the theme', !!avatar && /^[A-Z]{1,3}$/.test(avatar.text) && avatar.bg === 'rgb(18, 23, 29)' && avatar.fg === 'rgb(0, 224, 192)', JSON.stringify(avatar));
     await page.goto(B + '/command');
@@ -330,8 +338,11 @@ async function signup(b, co, first, email, pw) {
     await snap(fp, 'founder-access');
     const loginText = (await fp.evaluate(() => document.body.textContent)).replace(/\s+/g, ' ').trim();
     const inputs = fp.locator('input:not([type=hidden])');
-    ok('Founder Access shows exactly CulpOS / Founder Access / Password / Sign In',
-      loginText === 'CulpOS Founder Access Password Sign In', loginText);
+    const brandAlt = await fp.locator('.founder-access-brand img').getAttribute('alt');
+    const signIn = await fp.locator('button[type=submit]').boundingBox();
+    ok('Founder Sign In button is fully visible', !!signIn && signIn.height >= 40, JSON.stringify(signIn));
+    ok('Founder Access shows exactly St.Cloud~OS / Founder Access / Password / Sign In',
+      brandAlt === 'St.Cloud~OS' && loginText === 'Founder Access Password Sign In', brandAlt + ' | ' + loginText);
     ok('Founder Access has exactly one input: Password',
       (await inputs.count()) === 1 && (await inputs.first().getAttribute('type')) === 'password' &&
       (await fp.getByLabel('Password', { exact: true }).count()) === 1);

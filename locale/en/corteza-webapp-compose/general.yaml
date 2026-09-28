@@ -1,23 +1,23 @@
 label:
   app-name:
     namespace:
-      list: "CulpOS | Workspaces"
-      create: "CulpOS | Create Workspace"
-      edit: "CulpOS | Workspace Configuration - {{label}}"
-      view: "CulpOS | Workspace"
+      list: "St.Cloud~OS | Workspaces"
+      create: "St.Cloud~OS | Create Workspace"
+      edit: "St.Cloud~OS | Workspace Configuration - {{label}}"
+      view: "St.Cloud~OS | Workspace"
     module:
-      list: "CulpOS | Data Configuration - {{label}}"
-      create: "CulpOS | Create Data Form"
-      edit: "CulpOS | Form Configuration - {{label}}"
+      list: "St.Cloud~OS | Data Configuration - {{label}}"
+      create: "St.Cloud~OS | Create Data Form"
+      edit: "St.Cloud~OS | Form Configuration - {{label}}"
     page:
-      list: "CulpOS | Page Configuration - {{label}}"
-      builder: "CulpOS | Page Builder - {{label}}"
-      edit: "CulpOS | Edit Page - {{label}}"
-      record: "CulpOS | Record - {{label}}"
+      list: "St.Cloud~OS | Page Configuration - {{label}}"
+      builder: "St.Cloud~OS | Page Builder - {{label}}"
+      edit: "St.Cloud~OS | Edit Page - {{label}}"
+      record: "St.Cloud~OS | Record - {{label}}"
     chart:
-      list: "CulpOS | Reports - {{label}}"
-      edit: "CulpOS | Edit Report - {{label}}"
-      create: "CulpOS | Create Report"
+      list: "St.Cloud~OS | Reports - {{label}}"
+      edit: "St.Cloud~OS | Edit Report - {{label}}"
+      create: "St.Cloud~OS | Create Report"
   actions: Actions
   active: Active
   add: Add

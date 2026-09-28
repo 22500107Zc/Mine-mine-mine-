@@ -1,8 +1,8 @@
 settings:
   auth.external.enabled: true
-  auth.mail.from-name: CulpOS
+  auth.mail.from-name: St.Cloud~OS
   auth.internal.enabled: true
-  # CulpOS: companies are created through paid signup (/signup) only
+  # St.Cloud~OS: companies are created through paid signup (/signup) only
   auth.internal.signup.enabled: false
   auth.internal.profile-avatar.enabled: true
 

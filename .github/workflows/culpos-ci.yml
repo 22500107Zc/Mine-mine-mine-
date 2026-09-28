@@ -1,4 +1,4 @@
-name: CulpOS CI
+name: St.Cloud~OS CI
 
 on:
   pull_request:
@@ -35,7 +35,7 @@ jobs:
       - name: Vet
         working-directory: server
         run: go vet -mod=vendor ./saas/... ./app/... ./auth/...
-      - name: CulpOS commercial layer tests
+      - name: St.Cloud~OS commercial layer tests
         working-directory: server
         run: go test -mod=vendor -count=1 ./saas/...
       - name: Auth tests

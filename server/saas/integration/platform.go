@@ -1,4 +1,4 @@
-// Package integration connects the CulpOS commercial layer to the application
+// Package integration connects the St.Cloud~OS commercial layer to the application
 // services (users, roles, access control and workspaces).
 package integration
 
@@ -132,7 +132,7 @@ func (p *Platform) ProvisionCompany(ctx context.Context, c *saas.Company) (res s
 		r, cerr := systemService.DefaultRole.Create(ctx, &systemTypes.Role{
 			Name:   c.Name + " · " + def.role.Label(),
 			Handle: handle,
-			Meta:   &systemTypes.RoleMeta{Description: "CulpOS company role for company " + strconv.FormatUint(c.ID, 10)},
+			Meta:   &systemTypes.RoleMeta{Description: "St.Cloud~OS company role for company " + strconv.FormatUint(c.ID, 10)},
 		})
 
 		if cerr != nil {
@@ -169,7 +169,7 @@ func (p *Platform) ProvisionCompany(ctx context.Context, c *saas.Company) (res s
 	return res, nil
 }
 
-// workspace returns the company namespace, cloning the CulpOS workspace
+// workspace returns the company namespace, cloning the St.Cloud~OS workspace
 // template when available
 func (p *Platform) workspace(ctx context.Context, c *saas.Company) (*composeTypes.Namespace, error) {
 	if ns, err := store.LookupComposeNamespaceBySlug(ctx, p.Store, c.Slug); err == nil {
@@ -194,7 +194,7 @@ func (p *Platform) workspace(ctx context.Context, c *saas.Company) (*composeType
 
 		ns.Enabled = true
 		ns.Name = c.Name
-		ns.Meta.Subtitle = "CulpOS"
+		ns.Meta.Subtitle = "St.Cloud~OS"
 		ns.Meta.Description = "Operations workspace for " + c.Name
 		if ns, err = composeService.DefaultNamespace.Update(ctx, ns); err != nil {
 			return nil, err
@@ -208,7 +208,7 @@ func (p *Platform) workspace(ctx context.Context, c *saas.Company) (*composeType
 		Name:    c.Name,
 		Slug:    c.Slug,
 		Enabled: true,
-		Meta:    composeTypes.NamespaceMeta{Subtitle: "CulpOS", Description: "Operations workspace for " + c.Name},
+		Meta:    composeTypes.NamespaceMeta{Subtitle: "St.Cloud~OS", Description: "Operations workspace for " + c.Name},
 	})
 }
 

@@ -1,7 +1,7 @@
 		</main>
 		{{ template "inc_toasts.html.tpl" .alerts }}
 		<footer class="d-flex flex-wrap align-items-end justify-content-center text-white py-4 small">
-				<span class="mr-2"><strong>CulpOS</strong> &middot; &copy; Culp Industries</span>
+				<span class="mr-2"><strong>St.Cloud~OS</strong> &middot; &copy; Culp Industries</span>
 			<a data-test-id="link-terms" href="/legal/terms" class="text-white ml-3">Terms</a>
 			<a data-test-id="link-privacy" href="/legal/privacy" class="text-white ml-3">Privacy</a>
 			<a data-test-id="link-aup" href="/legal/acceptable-use" class="text-white ml-3">Acceptable Use</a>

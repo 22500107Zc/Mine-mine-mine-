@@ -2,12 +2,13 @@ package saas
 
 import (
 	"net"
+	"net/mail"
 	"net/url"
 	"os"
 	"strings"
 )
 
-// envAliases maps CulpOS deployment variables to the variables the
+// envAliases maps St.Cloud~OS deployment variables to the variables the
 // underlying application reads. Existing values are never overwritten.
 var envAliases = [][2]string{
 	{"DATABASE_URL", "DB_DSN"},
@@ -25,10 +26,10 @@ func ApplyEnvAliases() {
 		setDefault(a[1], os.Getenv(a[0]))
 	}
 
-	// MAIL_FROM + MAIL_FROM_NAME → SMTP_FROM ("CulpOS <noreply@...>")
+	// MAIL_FROM + MAIL_FROM_NAME → SMTP_FROM (`"St.Cloud~OS" <noreply@...>`)
 	if from := strings.TrimSpace(os.Getenv("MAIL_FROM")); from != "" {
 		name := env("MAIL_FROM_NAME", DefaultProductName)
-		setDefault("SMTP_FROM", name+" <"+from+">")
+		setDefault("SMTP_FROM", (&mail.Address{Name: name, Address: from}).String())
 	}
 
 	// APP_URL drives the public host name and TLS awareness

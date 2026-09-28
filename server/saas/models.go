@@ -327,7 +327,7 @@ func Evaluate(c *Company, now time.Time) AccessDecision {
 		return AccessDecision{
 			Level:   AccessFull,
 			Reason:  "past-due",
-			Warning: "We could not process your latest payment. Update your payment method to keep your CulpOS workspace active.",
+			Warning: "We could not process your latest payment. Update your payment method to keep your St.Cloud~OS workspace active.",
 		}
 
 	case SubCanceled:

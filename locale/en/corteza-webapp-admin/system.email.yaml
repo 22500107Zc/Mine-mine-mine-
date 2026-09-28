@@ -22,7 +22,7 @@ editor:
 
     tlsInsecure:
       label: Allow use of invalid certificates
-      description: Suppress error if CulpOS can not verify the TLS certificate used by SMTP server.
+      description: Suppress error if St.Cloud~OS can not verify the TLS certificate used by SMTP server.
 
     tlsServerName:
       label: TLS Server name

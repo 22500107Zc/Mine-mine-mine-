@@ -4,8 +4,8 @@
             <img
 							data-test-id="img-logo"
 							class="logo"
-							alt="CulpOS"
-							src="/culpos/static/culpos-logo-light.svg"
+							alt="St.Cloud~OS"
+							src="/stcloud/static/stcloud-logo-light.svg"
 						>
         </a>
     </div>

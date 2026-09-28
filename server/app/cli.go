@@ -88,7 +88,7 @@ func (app *CortezaApp) InitCLI() {
 		}
 
 		if err = app.Activate(ctx); err != nil {
-			cli.HandleError(fmt.Errorf("could not start CulpOS: %w", err))
+			cli.HandleError(fmt.Errorf("could not start St.Cloud~OS: %w", err))
 			return nil
 		}
 

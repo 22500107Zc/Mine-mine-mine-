@@ -125,9 +125,9 @@ editor:
           binding: The type of HTTP binding to use on AuthNRequest, defaults to HTTP Redirect (GET)
         idp:
           url: Location of IdP metadata
-          ident-handle: Name of the IdP field used for filling CulpOS user handle or nickname
-          ident-identifier: Name of the IdP field used for filling and matching CulpOS user email
-          ident-name: Name of the IdP field used for filling CulpOS user full name
+          ident-handle: Name of the IdP field used for filling St.Cloud~OS user handle or nickname
+          ident-identifier: Name of the IdP field used for filling and matching St.Cloud~OS user email
+          ident-name: Name of the IdP field used for filling St.Cloud~OS user full name
 
 
     security:

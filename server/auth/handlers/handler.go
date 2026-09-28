@@ -173,7 +173,7 @@ const (
 )
 
 var (
-	// browser titles ("CulpOS | <title>") for server-rendered account pages
+	// browser titles ("St.Cloud~OS | <title>") for server-rendered account pages
 	pageTitles = map[string]string{
 		TmplLogin:                    "Sign In",
 		TmplLogout:                   "Signed Out",

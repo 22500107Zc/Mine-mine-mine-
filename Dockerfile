@@ -1,4 +1,4 @@
-# CulpOS — production image built from source
+# St.Cloud~OS — production image built from source
 #
 #   docker build -t culpos .
 #

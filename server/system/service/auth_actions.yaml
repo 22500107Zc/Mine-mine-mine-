@@ -214,7 +214,7 @@ errors:
     log: "rate limit exceeded for {{user}}"
 
   - error: maxUserLimitReached
-    message: "you have reached your user limit, contact your CulpOS administrator"
+    message: "you have reached your user limit, contact your St.Cloud~OS administrator"
     severity: warning
 
   - error: disabledSendUserInviteEmail

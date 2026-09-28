@@ -67,7 +67,7 @@ func (app *CortezaApp) mountHttpRoutes(r chi.Router) {
 		)
 	}()
 
-	// CulpOS commercial routes: /signup, /billing, /company, /founder, /legal, Stripe webhook
+	// St.Cloud~OS commercial routes: /signup, /billing, /company, /founder, /legal, Stripe webhook
 	if app.SaaS != nil {
 		app.SaaS.MountRoutes(r)
 	}

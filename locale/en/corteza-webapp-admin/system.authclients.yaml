@@ -1,7 +1,7 @@
 editor:
   info:
     add: Add
-    api: Allow client access to CulpOS API on behalf of user
+    api: Allow client access to St.Cloud~OS API on behalf of user
     choose-date: Choose a date
     delete: Delete
     enabled:
@@ -61,7 +61,7 @@ editor:
     cUrl: Example cURL
     accessToken: Access token
     generateAccessToken: Generate access token
-    discovery: Allow client access to CulpOS Discovery API on behalf of user
+    discovery: Allow client access to St.Cloud~OS Discovery API on behalf of user
     openid: Allow client to use OIDC and verify the user's identity
   new: New Auth Client
   permissions: Permissions

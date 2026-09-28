@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CulpOS automation API
-  description: CulpOS automation REST API reference
+  title: St.Cloud~OS automation API
+  description: St.Cloud~OS automation REST API reference
   version: '2022.9'
   contact:
     email: info@cortezaproject.org

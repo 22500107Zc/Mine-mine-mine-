@@ -1,5 +1,5 @@
-// CulpOS API location (the web applications are configured automatically
-// by the CulpOS server; this file is only used for standalone development)
+// St.Cloud~OS API location (the web applications are configured automatically
+// by the St.Cloud~OS server; this file is only used for standalone development)
 window.CortezaAPI = 'https://app.example.com/api';
 
 // The auth URL can be autoconfigured by replacing /api with /auth in the API URL

@@ -240,7 +240,7 @@ const testWebhookSecret = "whsec_unit_test"
 func testConfig() Config {
 	return Config{
 		Enabled: true,
-		Brand: Brand{ProductName: "CulpOS", CompanyName: "Culp Industries", ProductDescription: "Business Operations System",
+		Brand: Brand{ProductName: "St.Cloud~OS", CompanyName: "Culp Industries", ProductDescription: "Business Execution Intelligence OS",
 			Tagline: DefaultTagline, PriceCents: 33388, PriceDisplay: "$333.88", Currency: "usd", BillingInterval: "month",
 			SupportEmail: "support@culpos.example", AppURL: "https://app.culpos.example", PublicAppURL: "https://app.culpos.example"},
 		StripeSecretKey: "sk_test", StripeWebhookSecret: testWebhookSecret, StripePriceID: "price_culpos",

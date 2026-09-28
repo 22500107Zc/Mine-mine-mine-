@@ -1,9 +1,9 @@
 const buildVueConfig = require('./vue.config-builder')
 
 module.exports = buildVueConfig({
-  appFlavour: 'CulpOS',
+  appFlavour: 'St.Cloud~OS',
   appName: 'one',
-  appLabel: 'CulpOS',
+  appLabel: 'St.Cloud~OS',
   theme: 'corteza-base',
   packageAlias: 'corteza-webapp-one',
 })

@@ -21,6 +21,6 @@ export function parseVersion (version) {
  */
 // eslint-disable-next-line no-unused-vars
 export function getDocumentationURL (path) {
-  // CulpOS: product help is provided through the support page
+  // St.Cloud~OS: product help is provided through the support page
   return '/support'
 }

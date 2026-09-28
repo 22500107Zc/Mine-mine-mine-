@@ -76,7 +76,7 @@ type (
 		AuthService  authServicer
 		ApigwService apigwServicer
 
-		// CulpOS commercial layer (companies, subscriptions, Founder console)
+		// St.Cloud~OS commercial layer (companies, subscriptions, Founder console)
 		SaaS *saas.Service
 
 		systemEntitiesInitialized bool

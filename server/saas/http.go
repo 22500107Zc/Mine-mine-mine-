@@ -42,12 +42,14 @@ var (
 	LicenseText = ""
 )
 
-// MountRoutes mounts all CulpOS commercial routes
+// MountRoutes mounts all St.Cloud~OS commercial routes
 func (svc *Service) MountRoutes(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		r.Use(securityHeaders(svc.cfg.SecureCookies, svc.extraFormOrigins()))
 
 		static, _ := fs.Sub(staticFS, "assets/static")
+		r.Handle("/stcloud/static/*", http.StripPrefix("/stcloud/static/", cacheFor(24*time.Hour, http.FileServer(http.FS(static)))))
+		// Legacy asset path: keeps images in emails sent before the rename working
 		r.Handle("/culpos/static/*", http.StripPrefix("/culpos/static/", cacheFor(24*time.Hour, http.FileServer(http.FS(static)))))
 
 		r.Get("/health", svc.healthHandler)

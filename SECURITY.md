@@ -1,13 +1,13 @@
 # Security
 
-Culp Industries takes the security of CulpOS seriously.
+Culp Industries takes the security of St.Cloud\~OS seriously.
 
 ## Reporting security issues
 
 **Please do not report security vulnerabilities through public issues.**
 
 Report them privately to the security contact configured for your deployment
-(the `SUPPORT_EMAIL` address shown on the CulpOS Support page).
+(the `SUPPORT_EMAIL` address shown on the St.Cloud\~OS Support page).
 
 Please include as much of the following as you can:
 

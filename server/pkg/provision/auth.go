@@ -292,7 +292,7 @@ func defaultAuthClient(ctx context.Context, log *zap.Logger, s store.Storer, aut
 		ID:     id.Next(),
 		Handle: authOpt.DefaultClient,
 		Meta: &types.AuthClientMeta{
-			Name: "CulpOS Web Applications",
+			Name: "St.Cloud~OS Web Applications",
 		},
 		ValidGrant: "authorization_code",
 		RedirectURI: func() string {

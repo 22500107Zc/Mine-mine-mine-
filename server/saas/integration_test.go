@@ -71,7 +71,7 @@ func TestSignupRequiresPaymentThenProvisions(t *testing.T) {
 		t.Fatal("owner not activated")
 	}
 
-	if env.mail.count("Welcome to CulpOS") != 1 {
+	if env.mail.count("Welcome to St.Cloud~OS") != 1 {
 		t.Fatal("welcome email not sent")
 	}
 }
@@ -361,7 +361,7 @@ func TestFounderHTTPFlow(t *testing.T) {
 	// login page branding
 	rsp, _ = cl.Get(srv.URL + "/founder")
 	b, _ := io.ReadAll(rsp.Body)
-	for _, want := range []string{"<title>CulpOS | Founder Access</title>", "Founder Access", "Password", "Sign In"} {
+	for _, want := range []string{"<title>St.Cloud~OS | Founder Access</title>", "Founder Access", "Password", "Sign In"} {
 		if !strings.Contains(string(b), want) {
 			t.Fatalf("founder login page missing %q", want)
 		}
@@ -486,7 +486,7 @@ func TestCompanyMembersInvitationsAndRoles(t *testing.T) {
 	if err := env.svc.Invite(ctx, a.OwnerUserID, "admin@acme.test", "Ann Admin", RoleAdministrator, ""); err != nil {
 		t.Fatal(err)
 	}
-	if env.mail.count("invited to join Acme on CulpOS") != 1 || env.mail.count("Accept Invitation") != 1 {
+	if env.mail.count("invited to join Acme on St.Cloud~OS") != 1 || env.mail.count("Accept Invitation") != 1 {
 		t.Fatal("invitation email missing")
 	}
 
@@ -660,7 +660,7 @@ func TestBillingAndCompanyPages(t *testing.T) {
 	rsp, _ = cl.Get(srv.URL + "/billing")
 	b, _ := io.ReadAll(rsp.Body)
 	body := string(b)
-	for _, want := range []string{"<title>CulpOS | Billing</title>", "$333.88", "/month", "Active", "Next billing date", "Manage Billing", "Cancel Subscription"} {
+	for _, want := range []string{"<title>St.Cloud~OS | Billing</title>", "$333.88", "/month", "Active", "Next billing date", "Manage Billing", "Cancel Subscription"} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("billing page missing %q", want)
 		}

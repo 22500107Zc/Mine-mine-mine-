@@ -1,13 +1,13 @@
-/* CulpOS — Culp Industries. Shared styles for server-rendered pages.
+/* St.Cloud~OS — Culp Industries. Shared styles for server-rendered pages.
    Visual language: near-black grid canvas, flat bordered panels, IBM Plex
    Mono uppercase labels and figures, IBM Plex Sans text, teal accent. */
 
-@font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Sans"; font-weight: 500; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
-@font-face { font-family: "IBM Plex Mono"; font-weight: 600; font-display: swap; src: url("/culpos/static/fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 500; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 600; font-display: swap; src: url("/stcloud/static/fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
 
 :root {
   color-scheme: dark;
@@ -274,7 +274,8 @@ code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); 
 body.founder-access { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
 body.founder-access main { flex: 0 1 auto; max-width: 420px; padding: 24px 16px; }
 .founder-access-card { padding: 36px 28px 30px; }
-.founder-access-brand { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px; font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+.founder-access-brand { display: flex; justify-content: center; margin-bottom: 14px; }
+.founder-access-brand img { height: 40px; width: auto; display: block; }
 .founder-access-card h1 { text-align: center; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--amber); margin: 0 0 28px; }
 
 /* ---------------------------------------------------------------------
@@ -547,9 +548,9 @@ td.good { color: var(--green); } td.bad { color: var(--red); } td.warn { color: 
 .pmap a:hover rect, .pmap a:focus rect { stroke: var(--accent); }
 .pmap a:hover .edge { opacity: 1; stroke-width: 3; }
 .map-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 24px 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
-.lg { display: inline-block; width: 14px; height: 10px; border: 1.5px solid; margin-right: 6px; vertical-align: middle; }
-.lg.bad { border-color: var(--red); } .lg.warn { border-color: var(--amber); } .lg.elev { border-color: #ffd480; } .lg.ok { border-color: var(--green); } .lg.none { border-color: var(--line); }
-.lg.loopl { border: 0; border-top: 2px dashed var(--amber); height: 0; }
+i.lg { display: inline-block; width: 14px; height: 10px; border: 1.5px solid; margin-right: 6px; vertical-align: middle; }
+i.lg.bad { border-color: var(--red); } i.lg.warn { border-color: var(--amber); } i.lg.elev { border-color: #ffd480; } i.lg.ok { border-color: var(--green); } i.lg.none { border-color: var(--line); }
+i.lg.loopl { border: 0; border-top: 2px dashed var(--amber); height: 0; }
 
 /* charts */
 .bars { display: block; font-family: var(--mono); }

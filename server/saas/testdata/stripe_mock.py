@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Minimal Stripe API mock for local CulpOS end-to-end testing.
+"""Minimal Stripe API mock for local St.Cloud~OS end-to-end testing.
 
-Implements the endpoints CulpOS calls and test helpers that emit properly
+Implements the endpoints St.Cloud~OS calls and test helpers that emit properly
 signed webhook events to the application. Never use in production.
 
   POST /__pay?session=cs_...       complete checkout -> checkout.session.completed + invoice.paid
@@ -9,7 +9,7 @@ signed webhook events to the application. Never use in production.
   POST /__delete?sub=sub_...       customer.subscription.deleted
   POST /__replay                   re-send the last event (duplicate delivery)
   GET  /checkout/cs_...            test checkout page ("Pay $333.88 / month" submits /__pay)
-  GET  /portal/cus_...             test customer portal page (link back to CulpOS)
+  GET  /portal/cus_...             test customer portal page (link back to St.Cloud~OS)
 """
 import hashlib, hmac, json, os, sys, time, urllib.parse, urllib.request, itertools
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -64,11 +64,11 @@ class H(BaseHTTPRequestHandler):
             sid = p.path.rsplit("/", 1)[1]
             if sid not in sessions: return self.html(404, "<h1>Checkout session not found</h1>")
             price = "$%d.%02d" % divmod(AMOUNT, 100)
-            return self.html(200, f"<p>TEST MODE</p><h1>Subscribe to CulpOS</h1><p id=amount>{price} per month</p>"
+            return self.html(200, f"<p>TEST MODE</p><h1>Subscribe to St.Cloud~OS</h1><p id=amount>{price} per month</p>"
                                   f"<form method=post action='/__pay?session={sid}&redirect=1'><button id=pay type=submit>Pay {price} / month</button></form>")
         if p.path.startswith("/portal/"):
             cid = p.path.rsplit("/", 1)[1]
-            return self.html(200, f"<p>TEST MODE</p><h1>Billing portal</h1><p>Customer {cid}</p><a id=back href='{urllib.parse.parse_qs(p.query).get('return', [''])[0]}'>Return to CulpOS</a>")
+            return self.html(200, f"<p>TEST MODE</p><h1>Billing portal</h1><p>Customer {cid}</p><a id=back href='{urllib.parse.parse_qs(p.query).get('return', [''])[0]}'>Return to St.Cloud~OS</a>")
         if p.path == "/__state": return self.out(200, {"customers": customers, "sessions": sessions, "subs": subs})
         self.out(404, {"error": {"message": "not found"}})
     def do_POST(self):

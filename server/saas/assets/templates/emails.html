@@ -1,22 +1,22 @@
 {{define "email-head"}}<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{.Brand.ProductName}}</title></head>
-<body style="margin:0;padding:0;background:#F4F6F9;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif;color:#0E1A2B;">
+<body style="margin:0;padding:0;background:#F4F6F9;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif;color:#0B0F13;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F4F6F9;padding:24px 12px;">
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border:1px solid #DCE2EA;border-radius:10px;">
-<tr><td style="padding:20px 28px;border-bottom:3px solid #D4952B;background:#0E1A2B;border-radius:10px 10px 0 0;">
+<tr><td style="padding:20px 28px;border-bottom:3px solid #00E0C0;background:#0B0F13;border-radius:10px 10px 0 0;">
 <img src="{{.LogoURL}}" alt="{{.Brand.ProductName}}" height="32" style="display:block;height:32px;border:0;">
 </td></tr>
 <tr><td style="padding:28px;font-size:15px;line-height:1.55;">
 {{end}}
 
-{{define "email-button"}}<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0;"><tr><td style="background:#1F4E8C;border-radius:8px;"><a href="{{.URL}}" style="display:inline-block;padding:12px 20px;color:#FFFFFF;font-weight:700;text-decoration:none;">{{.Label}}</a></td></tr></table>{{end}}
+{{define "email-button"}}<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0;"><tr><td style="background:#00866F;border-radius:8px;"><a href="{{.URL}}" style="display:inline-block;padding:12px 20px;color:#FFFFFF;font-weight:700;text-decoration:none;">{{.Label}}</a></td></tr></table>{{end}}
 
 {{define "email-foot"}}
 </td></tr>
 <tr><td style="padding:16px 28px;border-top:1px solid #DCE2EA;font-size:12px;color:#5B6778;">
 © {{.Year}} {{.Brand.CompanyName}} · {{.Brand.ProductName}} — {{.Brand.ProductDescription}}<br>
-{{if .Brand.SupportEmail}}Questions? Contact <a href="mailto:{{.Brand.SupportEmail}}" style="color:#1F4E8C;">{{.Brand.SupportEmail}}</a><br>{{end}}
+{{if .Brand.SupportEmail}}Questions? Contact <a href="mailto:{{.Brand.SupportEmail}}" style="color:#00866F;">{{.Brand.SupportEmail}}</a><br>{{end}}
 This is a transactional message about your {{.Brand.ProductName}} account.
 </td></tr>
 </table>
@@ -77,7 +77,7 @@ This is a transactional message about your {{.Brand.ProductName}} account.
 <h1 style="font-size:21px;margin:0 0 12px;">Your {{.Brand.ProductName}} access is unavailable</h1>
 <p>Hello{{if .Name}} {{.Name}}{{end}},</p>
 {{if .Company}}<p>Access to the {{.Brand.ProductName}} workspace for <strong>{{.Company}}</strong> is currently unavailable.</p>{{else}}<p>Your {{.Brand.ProductName}} account is currently disabled.</p>{{end}}
-<p>Your data has not been deleted. If you believe this is a mistake, please contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#1F4E8C;">{{.Brand.ContactEmail}}</a>{{else}}support{{end}}{{if not .Company}} or your company administrator{{end}}.</p>
+<p>Your data has not been deleted. If you believe this is a mistake, please contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#00866F;">{{.Brand.ContactEmail}}</a>{{else}}support{{end}}{{if not .Company}} or your company administrator{{end}}.</p>
 {{template "email-foot" .}}{{end}}
 
 {{define "email-account-enabled"}}{{template "email-head" .}}
@@ -92,5 +92,5 @@ This is a transactional message about your {{.Brand.ProductName}} account.
 <p>Hello{{if .Name}} {{.Name}}{{end}},</p>
 <p>{{.Message}}</p>
 <p style="font-size:13px;color:#5B6778;">Time: {{.When}}</p>
-<p>If you did not expect this change, contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#1F4E8C;">{{.Brand.ContactEmail}}</a>{{else}}your company administrator{{end}} right away.</p>
+<p>If you did not expect this change, contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#00866F;">{{.Brand.ContactEmail}}</a>{{else}}your company administrator{{end}} right away.</p>
 {{template "email-foot" .}}{{end}}

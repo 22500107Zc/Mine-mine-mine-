@@ -9,8 +9,8 @@
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="icon" id="favicon" href="/culpos/static/favicon.ico" sizes="any">
-	<link rel="icon" href="/culpos/static/culpos-mark.svg" type="image/svg+xml">
+	<link rel="icon" id="favicon" href="/stcloud/static/favicon.ico" sizes="any">
+	<link rel="icon" href="/stcloud/static/stcloud-mark.svg" type="image/svg+xml">
 
 	<!-- Fonts -->
 	<link href="{{ links.AuthAssets }}/fonts.css" rel="stylesheet">
@@ -19,9 +19,9 @@
 	<link href="/custom.css" rel="stylesheet">
 	<link href="{{ links.AuthAssets }}/style.css?{{ buildtime }}" rel="stylesheet">
 
-	<title>CulpOS{{ with .pageTitle }} | {{ . }}{{ end }}</title>
-	<meta name="application-name" content="CulpOS">
-	<meta name="description" content="CulpOS — Business Operations System by Culp Industries.">
+	<title>St.Cloud~OS{{ with .pageTitle }} | {{ . }}{{ end }}</title>
+	<meta name="application-name" content="St.Cloud~OS">
+	<meta name="description" content="St.Cloud~OS — Business Execution Intelligence OS by Culp Industries.">
 	<meta name="robots" content="noindex">
 	<style>
 		body {

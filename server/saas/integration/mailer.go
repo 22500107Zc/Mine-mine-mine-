@@ -7,7 +7,7 @@ import (
 	"github.com/cortezaproject/corteza/server/pkg/mail"
 )
 
-// Mailer sends CulpOS transactional email through the configured SMTP relay
+// Mailer sends St.Cloud~OS transactional email through the configured SMTP relay
 type Mailer struct {
 	FromAddress string
 	FromName    string

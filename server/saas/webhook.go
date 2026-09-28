@@ -49,7 +49,7 @@ type (
 	}
 )
 
-// HandledWebhookEvents lists the Stripe events CulpOS processes
+// HandledWebhookEvents lists the Stripe events St.Cloud~OS processes
 var HandledWebhookEvents = []string{
 	"checkout.session.completed",
 	"checkout.session.async_payment_succeeded",
@@ -321,7 +321,7 @@ func (svc *Service) companyForSubscription(ctx context.Context, subID, customerI
 func (svc *Service) applySubscription(ctx context.Context, c *Company, sub *StripeSubscription, evType string) error {
 	upd := sub.ToUpdate()
 
-	// Only the configured CulpOS price is accepted
+	// Only the configured St.Cloud~OS price is accepted
 	if svc.cfg.StripePriceID != "" && upd.PriceID != "" && upd.PriceID != svc.cfg.StripePriceID {
 		svc.log.Error("subscription with unexpected price ignored", zap.Uint64("companyID", c.ID), zap.String("price", upd.PriceID))
 		return nil

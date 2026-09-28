@@ -1,6 +1,6 @@
 package saas
 
-// CulpOS visual theme for the web applications (launcher, workspace,
+// St.Cloud~OS visual theme for the web applications (launcher, workspace,
 // sign-in pages). Both color modes use the same palette so the product looks
 // the same whichever mode a person picks.
 const webappPalette = `{
@@ -28,11 +28,11 @@ $border-radius: 2px;
 $border-radius-lg: 4px;
 $border-radius-sm: 2px;
 
-@font-face { font-family: 'Plex-Regular'; font-display: swap; src: url('/culpos/static/fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
-@font-face { font-family: 'Plex-Medium'; font-display: swap; src: url('/culpos/static/fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2'); }
-@font-face { font-family: 'Plex-Semibold'; font-display: swap; src: url('/culpos/static/fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2'); }
-@font-face { font-family: 'Plex-Mono'; font-display: swap; src: url('/culpos/static/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); }
-@font-face { font-family: 'Plex-Mono-Medium'; font-display: swap; src: url('/culpos/static/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plex-Regular'; font-display: swap; src: url('/stcloud/static/fonts/ibm-plex-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plex-Medium'; font-display: swap; src: url('/stcloud/static/fonts/ibm-plex-sans-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plex-Semibold'; font-display: swap; src: url('/stcloud/static/fonts/ibm-plex-sans-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plex-Mono'; font-display: swap; src: url('/stcloud/static/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Plex-Mono-Medium'; font-display: swap; src: url('/stcloud/static/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); }
 
 html, body { color-scheme: dark; }
 body {

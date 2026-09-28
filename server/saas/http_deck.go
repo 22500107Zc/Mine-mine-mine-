@@ -56,7 +56,7 @@ var deckPages = map[string]deckTab{
 	"person":     {"person", "", "/command/person", "Workload Detail", "What is this person carrying? (workload, not a performance rating)", "org", ""},
 	"goal":       {"goal", "", "/command/goals", "Goal Detail", "Is this goal on track, and what is driving it?", "", ""},
 	"test":       {"test", "", "/command/tests", "Intervention Detail", "What changed after this intervention?", "", ""},
-	"rec":        {"rec", "", "/command/recommendations", "Recommendation", "Why CulpOS suggests this, with the evidence.", "", ""},
+	"rec":        {"rec", "", "/command/recommendations", "Recommendation", "Why St.Cloud~OS suggests this, with the evidence.", "", ""},
 	"defs":       {"defs", "", "/command/definitions", "Metric Definitions", "How every number is calculated.", "", ""},
 }
 

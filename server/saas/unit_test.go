@@ -17,7 +17,7 @@ func TestBrandDefaults(t *testing.T) {
 	}
 
 	b := LoadBrand()
-	if b.ProductName != "CulpOS" || b.CompanyName != "Culp Industries" || b.ProductDescription != "Business Operations System" {
+	if b.ProductName != "St.Cloud~OS" || b.CompanyName != "Culp Industries" || b.ProductDescription != "Business Execution Intelligence OS" {
 		t.Fatalf("unexpected brand: %+v", b)
 	}
 
@@ -25,7 +25,7 @@ func TestBrandDefaults(t *testing.T) {
 		t.Fatalf("unexpected price: %d %s %s", b.PriceCents, b.PriceDisplay, b.PricePerInterval())
 	}
 
-	if b.PageTitle("Billing") != "CulpOS | Billing" || b.PageTitle("") != "CulpOS" {
+	if b.PageTitle("Billing") != "St.Cloud~OS | Billing" || b.PageTitle("") != "St.Cloud~OS" {
 		t.Fatal("unexpected page title format")
 	}
 }
@@ -312,7 +312,7 @@ func TestEnvAliases(t *testing.T) {
 		"DB_DSN":                     "postgres://u:p@h/db",
 		"SMTP_USER":                  "mailer",
 		"SMTP_PASS":                  "pw",
-		"SMTP_FROM":                  "CulpOS <noreply@culpos.example>",
+		"SMTP_FROM":                  `"St.Cloud~OS" <noreply@culpos.example>`,
 		"DOMAIN":                     "app.culpos.example",
 		"AUTH_BASE_URL":              "https://app.culpos.example/auth",
 		"AUTH_SESSION_COOKIE_PATH":   "/",
@@ -345,11 +345,11 @@ func TestTemplatesAreBranded(t *testing.T) {
 		svc.render(rec, httptest.NewRequest("GET", "/x", nil), 200, name, d)
 		body := rec.Body.String()
 
-		if !strings.Contains(body, "CulpOS") {
-			t.Errorf("%s: missing CulpOS branding", name)
+		if !strings.Contains(body, "St.Cloud~OS") {
+			t.Errorf("%s: missing St.Cloud~OS branding", name)
 		}
 
-		for _, bad := range []string{"Corteza", "corteza", "Planet Crust", "planetcrust", "vercel", "low-code", "no-code"} {
+		for _, bad := range []string{"Corteza", "corteza", "Planet Crust", "planetcrust", "vercel", "low-code", "no-code", LegacyProductName, "culpos-logo", "culpos-mark", "/culpos/static"} {
 			if strings.Contains(body, bad) {
 				t.Errorf("%s: contains upstream term %q", name, bad)
 			}
@@ -359,7 +359,7 @@ func TestTemplatesAreBranded(t *testing.T) {
 	rec := httptest.NewRecorder()
 	svc.render(rec, httptest.NewRequest("GET", "/signup", nil), 200, "signup", pageData{"Title": "Create Company", "Form": map[string]string{}})
 	body := rec.Body.String()
-	if !strings.Contains(body, "$333.88") || !strings.Contains(body, "/month") || !strings.Contains(body, "<title>CulpOS | Create Company</title>") {
+	if !strings.Contains(body, "$333.88") || !strings.Contains(body, "/month") || !strings.Contains(body, "<title>St.Cloud~OS | Create Company</title>") {
 		t.Error("signup must show $333.88/month and a branded title")
 	}
 
@@ -368,8 +368,21 @@ func TestTemplatesAreBranded(t *testing.T) {
 		if err != nil {
 			t.Fatalf("email %s: %v", e, err)
 		}
-		if !strings.Contains(html, "CulpOS") || strings.Contains(html, "Corteza") || strings.Contains(html, "localhost") {
+		if !strings.Contains(html, "St.Cloud~OS") || strings.Contains(html, "Corteza") || strings.Contains(html, "localhost") || strings.Contains(html, LegacyProductName) || !strings.Contains(html, "/stcloud/static/stcloud-email-logo.png") {
 			t.Errorf("email %s not properly branded", e)
 		}
+	}
+}
+
+func TestBuiltinLogoDetection(t *testing.T) {
+	for _, v := range []string{"", "/assets/logo.svg", "/culpos/static/culpos-logo-light.svg", "/culpos/static/culpos-mark.svg", DefaultMainLogo, DefaultIconLogo} {
+		if !IsBuiltinLogo(v) {
+			t.Errorf("%q must be treated as a built-in logo", v)
+		}
+	}
+
+	// a logo an administrator uploaded is never replaced
+	if IsBuiltinLogo("/api/system/attachment/settings/123/original/logo.png") {
+		t.Error("uploaded logos must be preserved")
 	}
 }

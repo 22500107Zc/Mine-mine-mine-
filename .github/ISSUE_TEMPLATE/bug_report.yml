@@ -1,5 +1,5 @@
 name: Bug 🐞
-description: File a bug/issue with CulpOS
+description: File a bug/issue with St.Cloud~OS
 title: "When I try to do X I get Y"
 body:
 - type: checkboxes
@@ -19,7 +19,7 @@ body:
 
       Take a quick look on how Github's [markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) works. It will help you format your message and make it joy to read.
 
-      CulpOS is a complex application with many moving parts. You can help us a lot
+      St.Cloud~OS is a complex application with many moving parts. You can help us a lot
       by respecting the following instructions for bug reports.
 
       # Web application bugs
@@ -29,7 +29,7 @@ body:
 
       ## Favours and versions of your operating system and browsers
 
-      CulpOS is thoroughly tested on recent versions of Chrome and Firefox. You might have some special combination that we did not cover. If possible, upgrade your system and browser first. It is usually a good thing to do. If you are not able to or the problem persists, please share the version details.
+      St.Cloud~OS is thoroughly tested on recent versions of Chrome and Firefox. You might have some special combination that we did not cover. If possible, upgrade your system and browser first. It is usually a good thing to do. If you are not able to or the problem persists, please share the version details.
 
       # Server errors
 
@@ -45,11 +45,11 @@ body:
 
       ## Favours and versions of your operating system, Docker and Docker Compose
 
-      A big share of issues is unrelated to any of these. You can skip this when preparing your bug report. If you did some changes and experimenting with CulpOS in such a low level let us know what version you need. 
+      A big share of issues is unrelated to any of these. You can skip this when preparing your bug report. If you did some changes and experimenting with St.Cloud~OS in such a low level let us know what version you need. 
 
 - type: input
   attributes:
-    label: Version of CulpOS
+    label: Version of St.Cloud~OS
     placeholder: 202Y.X.x
     description: "You can make sure by visiting `/version` (e.g.: http://localhost:3000/version)"
   validations:

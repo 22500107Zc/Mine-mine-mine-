@@ -118,7 +118,7 @@ export default {
     filtered: {
       immediate: true,
       handler (list) {
-        // CulpOS: company users have exactly one workspace — open it directly
+        // St.Cloud~OS: company users have exactly one workspace — open it directly
         if (!this.query && list && list.length === 1 && !this.can('compose/', 'namespace.create')) {
           const [ns] = list
           this.$router.replace({ name: 'pages', params: { slug: (ns.slug || ns.namespaceID) } })

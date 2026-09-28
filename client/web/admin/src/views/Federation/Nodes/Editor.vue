@@ -315,12 +315,12 @@ export default {
 
       const html = `
         <p class="mt-4">Hello,</p>
-        <p>${this.userLabel} is sending you an invitation for CulpOS Federated Network.</p>
-        <p>To start sharing data between organizations, go to the Configuration Studio of your CulpOS application, click on &ldquo;Federation&rdquo; and select &ldquo;Pair Federation Network&rdquo; on top right corner.<br />Copy the link below and await confirmation from another administrator.</p>
+        <p>${this.userLabel} is sending you an invitation for St.Cloud~OS Federated Network.</p>
+        <p>To start sharing data between organizations, go to the Configuration Studio of your St.Cloud~OS application, click on &ldquo;Federation&rdquo; and select &ldquo;Pair Federation Network&rdquo; on top right corner.<br />Copy the link below and await confirmation from another administrator.</p>
         <blockquote>
         <p class="text-center text-break"><em>${this.generate.url}</em></p>
         </blockquote>
-        <p>Kind regards, CulpOS team.</p>
+        <p>Kind regards, St.Cloud~OS team.</p>
       `
 
       const values = {

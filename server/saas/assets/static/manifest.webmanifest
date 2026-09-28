@@ -1,31 +1,31 @@
 {
-  "name": "CulpOS",
-  "short_name": "CulpOS",
-  "description": "Business Operations System by Culp Industries",
+  "name": "St.Cloud~OS",
+  "short_name": "St.Cloud~OS",
+  "description": "Business Execution Intelligence OS by Culp Industries",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F4F6F9",
-  "theme_color": "#0E1A2B",
+  "background_color": "#0B0F13",
+  "theme_color": "#0B0F13",
   "icons": [
     {
-      "src": "/culpos/static/icon-192.png",
+      "src": "/stcloud/static/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/culpos/static/icon-512.png",
+      "src": "/stcloud/static/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/culpos/static/icon-maskable-512.png",
+      "src": "/stcloud/static/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/culpos/static/culpos-mark.svg",
+      "src": "/stcloud/static/stcloud-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

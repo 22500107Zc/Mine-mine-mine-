@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: CulpOS federation API
-  description: CulpOS federation REST API reference
+  title: St.Cloud~OS federation API
+  description: St.Cloud~OS federation REST API reference
   version: '2022.9'
   contact:
     email: info@cortezaproject.org

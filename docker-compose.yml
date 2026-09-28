@@ -1,4 +1,4 @@
-# CulpOS — local/production-like stack (PostgreSQL + CulpOS)
+# St.Cloud~OS — local/production-like stack (PostgreSQL + St.Cloud~OS)
 #
 #   cp .env.example .env   # fill in secrets
 #   docker compose up -d --build

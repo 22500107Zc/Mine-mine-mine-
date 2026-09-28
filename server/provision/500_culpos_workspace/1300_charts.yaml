@@ -1,4 +1,4 @@
-# CulpOS workspace reports
+# St.Cloud~OS workspace reports
 namespace: culpos-workspace-template
 charts:
   CasesByStatus:

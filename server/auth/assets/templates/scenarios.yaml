@@ -21,7 +21,7 @@ login:
       - { Label: Google,   Handle: google,   Icon: google }
       - { Label: Facebook, Handle: facebook, Icon: facebook }
       - { Label: GitHub,  Handle: github,  Icon: github }
-      - { Label: CulpOS,   Handle: culpos,  Icon: shield-lock }
+      - { Label: St.Cloud~OS,   Handle: culpos,  Icon: shield-lock }
 
   Only external:
     settings:
@@ -31,7 +31,7 @@ login:
       - { Label: Google,   Handle: google,   Icon: google }
       - { Label: Facebook, Handle: facebook, Icon: facebook }
       - { Label: GitHub,  Handle: github,  Icon: github }
-      - { Label: CulpOS,   Handle: culpos,  Icon: shield-lock }
+      - { Label: St.Cloud~OS,   Handle: culpos,  Icon: shield-lock }
 
   Without signup and pass reset:
     settings:
@@ -195,7 +195,7 @@ authorized-clients:
   Empty: {}
   Full:
     authorizedClients:
-      - Name: CulpOS Web Applications
+      - Name: St.Cloud~OS Web Applications
       - Name: Matrix Chat server
       - Name: Company's Wordpress
 

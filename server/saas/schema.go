@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// schema holds idempotent PostgreSQL DDL for the CulpOS commercial layer.
+// schema holds idempotent PostgreSQL DDL for the St.Cloud~OS commercial layer.
 //
 // Statements are applied in order on every boot; each one must be safe to
 // re-run (IF NOT EXISTS).

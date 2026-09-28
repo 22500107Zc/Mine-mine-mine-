@@ -351,7 +351,7 @@
 {{/* ============================================================ Department / team / person */}}
 {{if or (eq $v "department") (eq $v "team") (eq $v "person")}}
   <p class="crumbs"><a href="{{.Scope.URL "/command/organization"}}">Organization</a> / {{.SubLabel}}</p>
-  {{if eq $v "person"}}<p class="deck-note warn-note">Workload and execution information only. CulpOS does not rate people: these figures do not account for roles, complexity, schedules or absences.</p>{{end}}
+  {{if eq $v "person"}}<p class="deck-note warn-note">Workload and execution information only. St.Cloud~OS does not rate people: these figures do not account for roles, complexity, schedules or absences.</p>{{end}}
   {{with .SubM}}<section class="kpi-grid" aria-label="Detail figures">
     <div class="kpi"><div class="k">{{if eq $v "person"}}Assigned now{{else}}Active work{{end}}</div><div class="v">{{num .WIP}}</div><div class="s">{{.Blocked}} blocked · {{.Aging}} aging · {{.Overdue}} overdue</div><a class="more" href="{{$.Sub.Scope.URL "/command/records" "set" "wip"}}">Records →</a></div>
     <div class="kpi"><div class="k">Completed</div><div class="v">{{num .Completed}}</div><div class="s">{{f1 .Throughput}}/day throughput</div><a class="more" href="{{$.Sub.Scope.URL "/command/records" "set" "completed"}}">Records →</a></div>
@@ -480,7 +480,7 @@
 {{/* ============================================================ Recommendations */}}
 {{if eq $v "recommendations"}}
   {{if .Recs}}<div class="deck-cards flush">{{range .Recs}}{{template "rec-card" (dict "R" . "Scope" $.Scope)}}{{end}}</div>
-  {{else}}<section class="deck-panel deck-empty"><h2>No recommendation meets the evidence threshold</h2><p>CulpOS only recommends an action when a pattern is backed by at least five measured occurrences in this scope. Widen the date range to include more history.</p></section>{{end}}
+  {{else}}<section class="deck-panel deck-empty"><h2>No recommendation meets the evidence threshold</h2><p>St.Cloud~OS only recommends an action when a pattern is backed by at least five measured occurrences in this scope. Widen the date range to include more history.</p></section>{{end}}
 {{end}}
 
 {{if eq $v "rec"}}{{with .Rec}}
@@ -497,7 +497,7 @@
       <dt>Potential action</dt><dd>{{.Action}}</dd>
       <dt>Expected direction</dt><dd>{{.Expected}}</dd>
       <dt>Confidence</dt><dd>{{template "evidence" .Strength}} {{join .Strength.Reasons "; "}}</dd>
-      <dt>Why CulpOS thinks this</dt><dd>{{.Why}}</dd>
+      <dt>Why St.Cloud~OS thinks this</dt><dd>{{.Why}}</dd>
       <dt>Raw data</dt><dd><a href="{{.Records}}">View evidence →</a></dd>
     </dl>
     <form class="deck-inline" method="post" action="/command/actions/tests"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="title" value="{{.Action}}"><input type="hidden" name="module" value="{{.Module}}"><input type="hidden" name="stage" value="{{.Stage}}"><input type="hidden" name="metric" value="{{testMetricFor .Metric}}"><button class="btn small">Start an intervention test</button></form>

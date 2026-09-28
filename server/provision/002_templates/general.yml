@@ -4,17 +4,17 @@ templates:
     partial: true
     meta:
       short: General template header
-      description: CulpOS email header used by system notifications
+      description: St.Cloud~OS email header used by system notifications
     template: |-
-      <div style="width:100%;margin:0;padding:0;background:#F4F6F9;color:#0E1A2B;font-size:15px;line-height:1.55;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif">
+      <div style="width:100%;margin:0;padding:0;background:#F4F6F9;color:#0B0F13;font-size:15px;line-height:1.55;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#F4F6F9;padding:24px 12px">
           <tr>
             <td align="center">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;background:#FFFFFF;border:1px solid #DCE2EA;border-radius:10px">
                 <tr>
-                  <td style="padding:20px 28px;background:#0E1A2B;border-bottom:3px solid #D4952B;border-radius:10px 10px 0 0">
+                  <td style="padding:20px 28px;background:#0B0F13;border-bottom:3px solid #00E0C0;border-radius:10px 10px 0 0">
                     <a href="{{ .BaseURL }}" style="text-decoration:none" target="_blank">
-                      <img src="{{ .Logo }}" alt="CulpOS" height="32" style="display:block;height:32px;border:0">
+                      <img src="{{ .Logo }}" alt="St.Cloud~OS" height="32" style="display:block;height:32px;border:0">
                     </a>
                   </td>
                 </tr>
@@ -26,14 +26,14 @@ templates:
     partial: true
     meta:
       short: General template footer
-      description: CulpOS email footer used by system notifications
+      description: St.Cloud~OS email footer used by system notifications
     template: |-
       </td>
                 </tr>
                 <tr>
                   <td style="padding:16px 28px;border-top:1px solid #DCE2EA;font-size:12px;color:#5B6778">
-                    {{ if .SignatureEmail }}<p style="margin:0 0 6px">Questions? Contact <a href="mailto:{{ .SignatureEmail }}" style="color:#1F4E8C">{{ .SignatureEmail }}</a>.</p>{{ end }}
-                    <p style="margin:0">&copy; Culp Industries &middot; CulpOS &mdash; Business Operations System</p>
+                    {{ if .SignatureEmail }}<p style="margin:0 0 6px">Questions? Contact <a href="mailto:{{ .SignatureEmail }}" style="color:#00866F">{{ .SignatureEmail }}</a>.</p>{{ end }}
+                    <p style="margin:0">&copy; Culp Industries &middot; St.Cloud~OS &mdash; Business Execution Intelligence OS</p>
                   </td>
                 </tr>
               </table>

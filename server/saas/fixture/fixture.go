@@ -1,5 +1,5 @@
 // Package fixture generates synthetic operational history for tests and for
-// local/demo environments only. The CulpOS server never imports it: it is
+// local/demo environments only. The St.Cloud~OS server never imports it: it is
 // used by Go tests and by the culpos-fixture development command, and it
 // must never be run against a production company.
 package fixture
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// Event mirrors a CulpOS activity event (kept separate so tests inside the
+// Event mirrors a St.Cloud~OS activity event (kept separate so tests inside the
 // saas package can use the generator without an import cycle)
 type Event struct {
 	OccurredAt   time.Time

@@ -161,7 +161,7 @@ errors:
     message: "provided password is not secure; use longer password with more special characters"
 
   - error: maxUserLimitReached
-    message: "you have reached your user limit, contact your CulpOS administrator"
+    message: "you have reached your user limit, contact your St.Cloud~OS administrator"
     severity: warning
 
   - error: notAllowedToDeleteAvatar

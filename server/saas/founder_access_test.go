@@ -55,8 +55,8 @@ func TestFounderAccessPageIsPasswordOnly(t *testing.T) {
 	// visible text is exactly the brand, heading, label and button
 	body := html[strings.Index(html, "<body"):]
 	text := strings.Join(strings.Fields(tagRE.ReplaceAllString(body, " ")), " ")
-	if text != "CulpOS Founder Access Password Sign In" {
-		t.Fatalf("unexpected Founder login text: %q", text)
+	if text != "Founder Access Password Sign In" || !strings.Contains(body, `alt="St.Cloud~OS"`) {
+		t.Fatalf("unexpected Founder login content: %q", text)
 	}
 
 	if strings.Contains(html, "test-founder-passphrase-1") {

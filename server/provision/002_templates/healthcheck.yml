@@ -11,7 +11,7 @@ templates:
       short: SMTP configuration check content
     template: |-
       {{template "email_general_header" .}}
-        <h2 style="color:#0E1A2B;font-size:21px;margin:0 0 12px">SMTP configurations check</h2>
+        <h2 style="color:#0B0F13;font-size:21px;margin:0 0 12px">SMTP configurations check</h2>
         <p>Hello,</p>
         <p>Your SMTP configuration test passed</p>
       {{template "email_general_footer" .}}

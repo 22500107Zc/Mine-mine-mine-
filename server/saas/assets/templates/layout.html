@@ -10,19 +10,21 @@
 <meta property="og:title" content="{{brand.PageTitle .Title}}">
 <meta property="og:description" content="{{brand.Tagline}}">
 <meta property="og:type" content="website">
+<meta property="og:image:alt" content="{{brand.ProductName}} — {{brand.ProductDescription}}">
 {{if brand.PublicAppURL}}<meta property="og:url" content="{{brand.URL .Path}}">
-<meta property="og:image" content="{{brand.URL "/culpos/static/culpos-og.png"}}">
+<meta property="og:image" content="{{brand.URL "/stcloud/static/stcloud-og.png"}}">
 <link rel="canonical" href="{{brand.URL .Path}}">{{end}}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{brand.PageTitle .Title}}">
 <meta name="twitter:description" content="{{brand.Tagline}}">
-<meta name="theme-color" content="#0E1A2B">
-<link rel="icon" href="/culpos/static/favicon.ico" sizes="any">
-<link rel="icon" href="/culpos/static/culpos-mark.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/culpos/static/apple-touch-icon.png">
-<link rel="manifest" href="/culpos/static/manifest.webmanifest">
-<link rel="stylesheet" href="/culpos/static/culpos.css">
-<script src="/culpos/static/culpos.js" defer></script>
+<meta name="theme-color" content="#0B0F13">
+<meta name="apple-mobile-web-app-title" content="{{brand.ProductName}}">
+<link rel="icon" href="/stcloud/static/favicon.ico" sizes="any">
+<link rel="icon" href="/stcloud/static/stcloud-mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/stcloud/static/apple-touch-icon.png">
+<link rel="manifest" href="/stcloud/static/manifest.webmanifest">
+<link rel="stylesheet" href="/stcloud/static/stcloud.css">
+<script src="/stcloud/static/stcloud.js" defer></script>
 <title>{{brand.PageTitle .Title}}</title>
 </head>
 <body>
@@ -56,7 +58,7 @@
 {{define "nav-public"}}
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/" aria-label="{{brand.ProductName}} home"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <a class="brand" href="/" aria-label="{{brand.ProductName}} home"><img src="/stcloud/static/stcloud-logo-light.svg" alt="{{brand.ProductName}}"></a>
     <nav aria-label="Primary">
       <a href="/support">Support</a>
       <a href="/auth/login">Sign In</a>
@@ -69,7 +71,7 @@
 {{define "nav-customer"}}
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/" aria-label="{{brand.ProductName}} workspace"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <a class="brand" href="/" aria-label="{{brand.ProductName}} workspace"><img src="/stcloud/static/stcloud-logo-light.svg" alt="{{brand.ProductName}}"></a>
     <nav aria-label="Primary">
       {{if .Workspace}}<a href="{{.Workspace}}">Dashboard</a>{{end}}
       {{if .CanDeck}}<a href="/command" {{if eq .Section "command"}}aria-current="page"{{end}}>Command Deck</a>{{end}}
@@ -86,7 +88,7 @@
 {{define "nav-founder"}}
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="brand" href="/founder/dashboard" aria-label="{{brand.ProductName}} Founder console"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
+    <a class="brand" href="/founder/dashboard" aria-label="{{brand.ProductName}} Founder console"><img src="/stcloud/static/stcloud-logo-light.svg" alt="{{brand.ProductName}}"></a>
     <span class="badge-founder">Founder</span>
     {{if .Founder}}
     <nav aria-label="Founder">

@@ -1,6 +1,6 @@
-# Contributing to CulpOS
+# Contributing to St.Cloud\~OS
 
-CulpOS is developed by Culp Industries.
+St.Cloud\~OS is developed by Culp Industries.
 
 ## Workflow
 
@@ -15,7 +15,7 @@ CulpOS is developed by Culp Industries.
 
 ## Guidelines
 
-- Customer-facing text must use the CulpOS brand (see `server/saas/brand.go`).
+- Customer-facing text must use the St.Cloud\~OS brand (see `server/saas/brand.go`).
 - Keep tenant isolation and subscription checks server-side (`server/saas/gate.go`).
 - Preserve license and attribution notices (`LICENSE`, `NOTICE`, `DCO`).
 

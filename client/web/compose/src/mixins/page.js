@@ -174,7 +174,7 @@ export default {
         const { handle, meta = {} } = this.layout || {}
 
         this.pageTitle = (meta.title || this.page.title) || handle || this.$t('navigation:noPageTitle')
-        document.title = `CulpOS | ${this.pageTitle}`
+        document.title = `St.Cloud~OS | ${this.pageTitle}`
       }
 
       return this.prepareBlocks()

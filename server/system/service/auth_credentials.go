@@ -1243,7 +1243,7 @@ func (svc *auth) SendInviteEmail(ctx context.Context, email string) (err error) 
 // GenerateInviteToken creates an invitation token for an existing user without
 // sending the stock invitation email.
 //
-// CulpOS sends its own branded company invitation (with company and inviter
+// St.Cloud~OS sends its own branded company invitation (with company and inviter
 // details) and uses this token to build the acceptance link.
 func (svc *auth) GenerateInviteToken(ctx context.Context, email string) (token string, err error) {
 	var (

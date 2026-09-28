@@ -1,4 +1,4 @@
-# CulpOS workspace navigation
+# St.Cloud~OS workspace navigation
 namespace: culpos-workspace-template
 pages:
   Dashboard:
@@ -15,7 +15,7 @@ pages:
       - 12
       - 5
       options:
-        body: <p>Welcome to <strong>CulpOS</strong> — your company’s operations in
+        body: <p>Welcome to <strong>St.Cloud~OS</strong> — your company’s operations in
           one system. Use the navigation to manage customers, contacts, records, cases,
           tasks, approvals and documents.</p>
     - title: Open Tasks
@@ -775,7 +775,7 @@ pages:
       - 12
       - 5
       options:
-        body: <p>Your CulpOS subscription, payment method and invoices are managed
+        body: <p>Your St.Cloud~OS subscription, payment method and invoices are managed
           on the <a href="/billing">Billing page</a>.</p><p><a href="/billing">Open
           Billing</a></p>
   CompanyAdmin:

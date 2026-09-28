@@ -1,4 +1,4 @@
-// Package saas implements the CulpOS commercial layer: company accounts,
+// Package saas implements the St.Cloud~OS commercial layer: company accounts,
 // Stripe subscriptions, subscription gating, tenant isolation and the
 // platform-level Founder console.
 //
@@ -15,7 +15,7 @@ import (
 // Brand is the single source of truth for customer-facing product identity.
 //
 // Every value can be overridden through the environment, but the defaults
-// represent the official CulpOS commercial offering.
+// represent the official St.Cloud~OS commercial offering.
 type Brand struct {
 	ProductName        string
 	CompanyName        string
@@ -35,14 +35,20 @@ type Brand struct {
 }
 
 const (
-	DefaultProductName        = "CulpOS"
+	DefaultProductName        = "St.Cloud~OS"
 	DefaultCompanyName        = "Culp Industries"
-	DefaultProductDescription = "Business Operations System"
-	DefaultTagline            = "Run your company’s operations from one system with customers, records, cases, workflows, documents, reports and team management in CulpOS."
+	DefaultProductDescription = "Business Execution Intelligence OS"
+	DefaultTagline            = "Run your company’s operations in one system and see exactly where work slows down, why it changed and what to do next."
 	DefaultPriceCents         = int64(33388)
 	DefaultCurrency           = "usd"
 	DefaultBillingInterval    = "month"
 	DefaultLegalEffectiveDate = "September 27, 2026"
+
+	// LegacyProductName and LegacyProductDescription are the commercial name
+	// and description used before the rename; kept only so content stored by
+	// earlier versions can be migrated at boot
+	LegacyProductName        = "CulpOS"
+	LegacyProductDescription = "Business Operations System"
 )
 
 // LoadBrand reads brand values from the environment
@@ -88,7 +94,7 @@ func (b Brand) PricePerInterval() string {
 	return b.PriceDisplay + "/" + b.BillingInterval
 }
 
-// PageTitle returns "CulpOS | <section>" or "CulpOS"
+// PageTitle returns "St.Cloud~OS | <section>" or "St.Cloud~OS"
 func (b Brand) PageTitle(section string) string {
 	if section == "" {
 		return b.ProductName
@@ -151,3 +157,23 @@ func env(key, def string) string {
 }
 
 var fmtSscan = fmt.Sscan
+
+// Built-in logo locations served from the embedded static assets
+const (
+	DefaultMainLogo = "/stcloud/static/stcloud-logo-light.svg"
+	DefaultIconLogo = "/stcloud/static/stcloud-mark.svg"
+)
+
+// IsBuiltinLogo reports whether a logo setting is empty or points at one of
+// the built-in defaults (current or from before the product rename), i.e. it
+// was not customized by an administrator
+func IsBuiltinLogo(v string) bool {
+	switch v {
+	case "", "/assets/logo.svg",
+		"/culpos/static/culpos-logo.svg", "/culpos/static/culpos-logo-light.svg", "/culpos/static/culpos-mark.svg",
+		"/stcloud/static/stcloud-logo.svg", DefaultMainLogo, DefaultIconLogo:
+		return true
+	}
+
+	return false
+}

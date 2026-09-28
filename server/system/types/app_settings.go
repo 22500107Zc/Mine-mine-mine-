@@ -156,7 +156,7 @@ type (
 					// Require fresh TOTP on every client authorization
 					// Strict bool
 
-					// TOTP issuer, defaults to "CulpOS"
+					// TOTP issuer, defaults to "St.Cloud~OS"
 					Issuer string
 				} `kv:"totp"`
 			} `json:"-" kv:"multi-factor"`
@@ -579,7 +579,7 @@ func (set *ExternalAuthProviderSet) DecodeKV(kv SettingsKV, prefix string) (err 
 				p.Label = "LinkedIn"
 			case "corteza-iam", "corteza", "corteza-one":
 				// Some legacy provider naming
-				p.Label = "CulpOS IAM"
+				p.Label = "St.Cloud~OS IAM"
 			case "crust-iam", "crust", "crust-unify":
 				// Some legacy provider naming
 				p.Label = "Crust IAM"
