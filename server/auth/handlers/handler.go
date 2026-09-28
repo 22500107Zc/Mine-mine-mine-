@@ -463,8 +463,8 @@ func (h *AuthHandlers) enrichTmplData(req *request.AuthReq) interface{} {
 
 func (h *AuthHandlers) bgStylesData() string {
 	if h.Settings.BackgroundUI.BackgroundImageSrcUrl == "" {
-		// CulpOS draws its own grid background from the theme
-		return h.Settings.BackgroundUI.Styles
+		return fmt.Sprintf("background: url(%s/release-background.jpg) no-repeat top; %s",
+			GetLinks().Assets, h.Settings.BackgroundUI.Styles)
 	}
 
 	return fmt.Sprintf("background: url('%s') no-repeat top;  %s",

@@ -262,7 +262,7 @@ func testDB(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 
-	for _, tbl := range []string{"saas_audit_log", "saas_payments", "saas_stripe_events", "saas_founder_sessions", "saas_founders", "saas_company_members", "saas_companies"} {
+	for _, tbl := range []string{"saas_activity_events", "saas_deck_targets", "saas_deck_interventions", "saas_issue_reports", "saas_audit_log", "saas_payments", "saas_stripe_events", "saas_founder_sessions", "saas_founders", "saas_company_members", "saas_companies"} {
 		if _, err = db.Exec("DROP TABLE IF EXISTS " + tbl + " CASCADE"); err != nil {
 			t.Fatal(err)
 		}

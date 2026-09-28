@@ -193,6 +193,23 @@ var schema = []string{
 		created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	)`,
 	`CREATE INDEX IF NOT EXISTS saas_issue_reports_created_idx ON saas_issue_reports (created_at DESC)`,
+	`CREATE INDEX IF NOT EXISTS saas_issue_reports_company_idx ON saas_issue_reports (company_id, created_at DESC)`,
+
+	// Command Deck rows always belong to an existing company; added
+	// idempotently and NOT VALID so upgrades never fail on rows already stored
+	companyKey("saas_activity_events"),
+	companyKey("saas_deck_targets"),
+	companyKey("saas_deck_interventions"),
+	companyKey("saas_issue_reports"),
+}
+
+// companyKey adds a foreign key from table.company_id to saas_companies once
+func companyKey(table string) string {
+	return fmt.Sprintf(`DO $$ BEGIN
+		IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = '%[1]s_company_fk') THEN
+			ALTER TABLE %[1]s ADD CONSTRAINT %[1]s_company_fk FOREIGN KEY (company_id) REFERENCES saas_companies (id) NOT VALID;
+		END IF;
+	END $$`, table)
 }
 
 // Migrate applies the schema

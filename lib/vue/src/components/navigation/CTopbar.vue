@@ -119,7 +119,15 @@
       >
         <template #button-content>
           <div
-            v-if="avatarExists"
+            v-if="avatarInitials"
+            data-test-id="avatar-initials"
+            class="avatar-initials d-flex align-items-center justify-content-center h-100 bg-white text-primary"
+          >
+            {{ avatarInitials }}
+          </div>
+
+          <div
+            v-else-if="avatarExists"
             class="avatar d-flex h-100"
             :style="{
               'background-image': avatarExists ? `url(${profileAvatarUrl})` : 'none',
@@ -254,6 +262,8 @@ export default {
     return {
       currentTheme: 'light',
       isThemeDropdownVisible: false,
+      // label of the avatar attachment ("avatar-initials" when generated)
+      avatarLabel: undefined,
     }
   },
 
@@ -303,6 +313,23 @@ export default {
       return this.$auth.user.meta.avatarID !== '0' && this.$auth.user.meta.avatarID
     },
 
+    // Generated initials avatars are drawn from the theme instead of the
+    // stored image, so every account follows the current colors; uploaded
+    // pictures are shown as they are
+    avatarInitials () {
+      const { name = '', handle = '', email = '' } = this.$auth.user || {}
+      if (!this.avatarExists || (this.avatarLabel && this.avatarLabel !== 'avatar-initials')) {
+        return ''
+      }
+
+      const words = (name || handle || email.split('@')[0] || '').split(/[\s._-]+/).filter(Boolean)
+      const initials = words.length > 1
+        ? words.slice(0, 3).map(w => w[0]).join('')
+        : (words[0] || '').slice(0, 2)
+
+      return initials.toUpperCase()
+    },
+
     themes () {
       return [
         {
@@ -322,6 +349,25 @@ export default {
       immediate: true,
       handler (theme) {
         this.currentTheme = theme
+      },
+    },
+
+    '$auth.user.meta.avatarID': {
+      immediate: true,
+      handler (attachmentID) {
+        this.avatarLabel = undefined
+        if (!this.avatarExists) {
+          return
+        }
+
+        this.$SystemAPI.attachmentRead({ kind: 'avatar', attachmentID })
+          .then(({ meta = {} }) => {
+            this.avatarLabel = (meta.labels || {}).key || 'avatar'
+          })
+          .catch(() => {
+            // unknown: keep showing the stored image
+            this.avatarLabel = 'avatar'
+          })
       },
     },
   },
@@ -374,6 +420,12 @@ $nav-user-icon-size: calc(var(--topbar-height) - 16px);
       }
     }
   }
+}
+
+.avatar-initials {
+  border-radius: 50%;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
 }
 
 .avatar {

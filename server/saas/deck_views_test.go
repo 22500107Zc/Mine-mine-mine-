@@ -255,3 +255,87 @@ func TestCommandDeckTabsAndActions(t *testing.T) {
 func escaped(s string) string {
 	return strings.NewReplacer("&", "&amp;", "'", "&#39;", "·", "·").Replace(s)
 }
+
+func TestCommandDeckTenantIsolation(t *testing.T) {
+	env := newTestEnv(t)
+	env.svc.cfg.SecureCookies = false
+	ctx := context.Background()
+
+	a := env.paidCompany(t, "Acme", "owner@acme.test")
+	b := env.paidCompany(t, "Beta", "owner@beta.test")
+	now := time.Now().UTC()
+	for i := uint64(0); i < 6; i++ {
+		env.svc.RecordActivity(ctx, a.NamespaceID, ActivityEvent{Module: "Task", RecordID: 500 + i, Title: "AcmeOnlyTask", Kind: ActivityCreated, ToStatus: "Open", OccurredAt: now.Add(-48 * time.Hour)})
+		env.svc.RecordActivity(ctx, a.NamespaceID, ActivityEvent{Module: "Task", RecordID: 500 + i, Kind: ActivityStatus, FromStatus: "Open", ToStatus: "Done", OccurredAt: now.Add(-time.Hour)})
+	}
+
+	// Company A's own Command Deck state
+	if err := env.svc.repo.SetDeckTarget(ctx, a.ID, "Task", 17, a.OwnerUserID); err != nil {
+		t.Fatal(err)
+	}
+	if err := env.svc.repo.CreateIntervention(ctx, &Intervention{CompanyID: a.ID, Title: "AcmeOnlyTest", Module: "Task", Metric: "cycle", StartedAt: now, CreatedBy: a.OwnerUserID}); err != nil {
+		t.Fatal(err)
+	}
+	if err := env.svc.repo.CreateIssueReport(ctx, &IssueReport{CompanyID: a.ID, UserID: a.OwnerUserID, Category: "Something is broken", Summary: "AcmeOnlyIssue"}); err != nil {
+		t.Fatal(err)
+	}
+
+	// storage is company scoped
+	if tg, _ := env.svc.repo.DeckTargets(ctx, b.ID); len(tg) != 0 {
+		t.Fatalf("targets leaked: %v", tg)
+	}
+	if ivs, _ := env.svc.repo.Interventions(ctx, b.ID); len(ivs) != 0 {
+		t.Fatalf("tests leaked: %+v", ivs)
+	}
+	if rr, _ := env.svc.repo.IssueReports(ctx, b.ID, 50); len(rr) != 0 {
+		t.Fatalf("issue reports leaked: %+v", rr)
+	}
+	if ee, _ := env.svc.repo.Activity(ctx, b.ID, now.AddDate(-1, 0, 0)); len(ee) != 0 {
+		t.Fatalf("activity leaked: %d events", len(ee))
+	}
+
+	srv, cl := founderServer(t, env)
+	cl.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	get := func(path string) (int, string) {
+		rsp, err := cl.Get(srv.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(rsp.Body)
+		return rsp.StatusCode, string(body)
+	}
+
+	// Company B's owner sees none of it on any tab, even with A's workflow in the scope
+	env.user = b.OwnerUserID
+	env.svc.cache = newAccessCache(0)
+	paths := []string{"/command/pipeline?workflow=Task&period=365", "/command/process?workflow=Task", "/command/activity?day=" + now.Format("2006-01-02")}
+	for _, tab := range deckTabs {
+		paths = append(paths, tab.Path)
+	}
+	for _, p := range paths {
+		code, body := get(p)
+		if code != http.StatusOK {
+			t.Fatalf("%s: %d", p, code)
+		}
+		for _, marker := range []string{"AcmeOnlyTask", "AcmeOnlyTest", "AcmeOnlyIssue", "17.0h"} {
+			if strings.Contains(body, marker) {
+				t.Fatalf("%s shows Company A data (%s)", p, marker)
+			}
+		}
+	}
+
+	// B saving targets never touches A's
+	_, body := get("/command/goals")
+	rsp, _ := cl.PostForm(srv.URL+"/command/actions/targets", url.Values{"csrf": {csrfRE.FindStringSubmatch(body)[1]}, "target_Task": {"99"}})
+	if rsp.StatusCode != http.StatusSeeOther {
+		t.Fatalf("targets: %d", rsp.StatusCode)
+	}
+	if tg, _ := env.svc.repo.DeckTargets(ctx, a.ID); tg["Task"] != 17 {
+		t.Fatalf("Company B changed Company A's target: %v", tg)
+	}
+
+	// company users cannot reach the Founder's issue list
+	if code, body := get("/founder/issues"); code == http.StatusOK && strings.Contains(body, "AcmeOnlyIssue") {
+		t.Fatal("a company user reached Founder issues")
+	}
+}

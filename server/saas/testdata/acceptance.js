@@ -164,6 +164,8 @@ async function signup(b, co, first, email, pw) {
     await page.goto(B + '/');
     await page.waitForTimeout(3000);
     ok('launcher offers the Command Deck to the owner', (await page.evaluate(() => document.body.innerText)).toLowerCase().includes('command deck'));
+    const avatar = await page.evaluate(() => { const e = document.querySelector('[data-test-id=avatar-initials]'); return e && { text: e.textContent.trim(), bg: getComputedStyle(e).backgroundColor, fg: getComputedStyle(e).color }; });
+    ok('generated profile indicator follows the theme', !!avatar && /^[A-Z]{1,3}$/.test(avatar.text) && avatar.bg === 'rgb(18, 23, 29)' && avatar.fg === 'rgb(0, 224, 192)', JSON.stringify(avatar));
     await page.goto(B + '/command');
     const deck = await snap(page, 'command-deck');
     ok('Command Deck shows all sections', ['Activity 7d', 'Completion rate', 'What is happening', 'Where is it happening',
