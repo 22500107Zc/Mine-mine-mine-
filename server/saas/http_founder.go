@@ -168,11 +168,17 @@ func (svc *Service) founderDashboard(w http.ResponseWriter, r *http.Request) {
 	payments, _ := svc.repo.Payments(ctx, 0, "paid", 10)
 	failed, _ := svc.repo.Payments(ctx, 0, "failed", 10)
 	audit, _ := svc.repo.Audit(ctx, 0, "", 12, 0)
+	audit = svc.labelAudit(ctx, audit)
 
 	// companies set to cancel at period end are "cancellations" too
 	pending, _ := svc.repo.SearchCompanies(ctx, CompanyFilter{Status: string(SubActive), Limit: 200})
+	listed := map[uint64]bool{}
+	for _, c := range canceled {
+		listed[c.ID] = true
+	}
 	for _, c := range pending {
-		if c.CancelAtPeriodEnd {
+		if c.CancelAtPeriodEnd && c.SubscriptionStatus == SubActive && !listed[c.ID] {
+			listed[c.ID] = true
 			canceled = append(canceled, c)
 		}
 	}
@@ -283,6 +289,7 @@ func (svc *Service) founderCompany(w http.ResponseWriter, r *http.Request) {
 	payments, _ := svc.repo.Payments(ctx, c.ID, "", 24)
 	events, _ := svc.repo.RecentStripeEvents(ctx, c.ID, 25)
 	audit, _ := svc.repo.Audit(ctx, c.ID, "", 25, 0)
+	audit = svc.labelAudit(ctx, audit)
 
 	dec := Evaluate(c, svc.now())
 	label := map[AccessLevel]string{AccessFull: "Full access", AccessBillingOnly: "Billing & recovery only", AccessNone: "Disabled"}[dec.Level]
@@ -524,7 +531,7 @@ func (svc *Service) founderAudit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := svc.founderPage(r, "Founder · Audit Log", "audit")
-	d["Audit"] = ee
+	d["Audit"] = svc.labelAudit(r.Context(), ee)
 	d["Action"] = action
 	d["CompanyID"] = companyID
 	d["Page"] = page
@@ -549,7 +556,7 @@ func (svc *Service) founderSystem(w http.ResponseWriter, r *http.Request) {
 
 	d := svc.founderPage(r, "Founder · System", "system")
 	d["Events"] = events
-	d["Errors"] = errs
+	d["Errors"] = svc.labelAudit(ctx, errs)
 	svc.systemStatus(ctx, d)
 	svc.render(w, r, http.StatusOK, "founder-system", d)
 }

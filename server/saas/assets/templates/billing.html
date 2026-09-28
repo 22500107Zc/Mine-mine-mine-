@@ -7,7 +7,7 @@
   <div><strong>Payment problem.</strong> {{if eq .Company.SubscriptionStatus "unpaid"}}We couldn’t collect your subscription payment, so access to your workspace is paused. Your data is safe.{{else}}Your latest payment didn’t go through. Update your payment method to keep your workspace active.{{end}}</div>
   {{if and .CanManageSub .Company.StripeCustomerID}}<form method="post" action="/billing/portal"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn danger" type="submit">Fix Payment</button></form>{{end}}
 </div>
-{{else if .Company.CancelAtPeriodEnd}}
+{{else if .Company.CancelScheduled}}
 <div class="alert warning" role="status">Your subscription is set to end on <strong>{{date .Company.BillingPeriodEnd}}</strong>. You keep full access until then{{if .CanManageSub}} — choose <strong>Resume Subscription</strong> to keep it{{end}}.</div>
 {{else if eq .Decision.Reason "canceled"}}
 <div class="alert error" role="alert">Your subscription has ended. Your company’s data is retained{{if .CanManageSub}} — subscribe again to restore access{{end}}.</div>
@@ -25,7 +25,7 @@
     </div>
     <dl class="kv">
       <dt>Status</dt><dd><span class="pill {{subPill .Company.SubscriptionStatus}}">{{.StatusLabel}}</span></dd>
-      {{if .Company.CancelAtPeriodEnd}}<dt>Access until</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>
+      {{if .Company.CancelScheduled}}<dt>Access until</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>
       {{else if eq .Company.SubscriptionStatus "active" "past_due"}}<dt>Next billing date</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>{{end}}
       {{if .Company.BillingPeriodStart}}<dt>Current period</dt><dd>{{date .Company.BillingPeriodStart}} – {{date .Company.BillingPeriodEnd}}</dd>{{end}}
       <dt>Payment method</dt><dd>{{if .Company.PaymentMethodSummary}}{{.Company.PaymentMethodSummary}}{{else}}<span class="muted">Managed securely by our payment processor</span>{{end}}</dd>
@@ -47,7 +47,7 @@
           <button class="btn block" type="submit">Manage Billing</button>
         </form>
         <p class="muted small">Update your payment method, billing details and download invoices.</p>
-        {{if .Company.CancelAtPeriodEnd}}
+        {{if .Company.CancelScheduled}}
           <form method="post" action="/billing/resume" class="stack">
             <input type="hidden" name="csrf" value="{{.CSRF}}">
             <button class="btn secondary block" type="submit">Resume Subscription</button>

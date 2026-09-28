@@ -13,7 +13,7 @@
     <td><a href="/founder/companies/{{.ID}}">{{.Name}}</a><br><span class="pill {{companyPill .Status}}">{{.Status}}</span></td>
     <td>{{orDash .OwnerName}}</td>
     <td>{{.OwnerEmail}}</td>
-    <td><span class="pill {{subPill .SubscriptionStatus}}">{{.SubscriptionStatus.Label}}</span>{{if .CancelAtPeriodEnd}}<br><span class="pill warn">cancels {{date .BillingPeriodEnd}}</span>{{end}}</td>
+    <td><span class="pill {{subPill .SubscriptionStatus}}">{{.SubscriptionStatus.Label}}</span>{{if .CancelScheduled}}<br><span class="pill warn">cancels {{date .BillingPeriodEnd}}</span>{{end}}</td>
     <td>{{money brand.PriceCents}}</td>
     <td>{{date .CreatedAt}}</td>
     <td>{{.UserCount}}</td>

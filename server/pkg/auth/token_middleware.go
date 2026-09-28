@@ -31,7 +31,7 @@ func verifier(ja *jwtauth.JWTAuth) func(http.Handler) http.Handler {
 
 			if token != nil && err == nil {
 				if err = TokenIssuer.Validate(ctx, token); err != nil {
-					errors.ProperlyServeHTTP(w, r, err, false)
+					errors.ProperlyServeHTTP(w, r, err, true)
 					return
 				}
 			}
@@ -73,7 +73,7 @@ func HttpTokenValidator(scope ...string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := verifyToken(r.Context(), scope...)
 			if err != nil && !errors.Is(err, jwtauth.ErrNoTokenFound) {
-				errors.ProperlyServeHTTP(w, r, err, false)
+				errors.ProperlyServeHTTP(w, r, err, true)
 				return
 			}
 
@@ -86,7 +86,12 @@ func HttpTokenValidator(scope ...string) func(http.Handler) http.Handler {
 func verifyToken(ctx context.Context, scope ...string) (err error) {
 	var token jwt.Token
 	if token, _, err = jwtauth.FromContext(ctx); err != nil {
-		return
+		if errors.Is(err, jwtauth.ErrNoTokenFound) {
+			return
+		}
+
+		// malformed, expired or wrongly signed token
+		return errUnauthorized()
 	}
 
 	if token == nil {

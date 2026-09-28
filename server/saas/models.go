@@ -118,6 +118,9 @@ type (
 		Result     string
 		IP         string
 		Metadata   map[string]string
+
+		// CompanyName is resolved for display; it is not stored
+		CompanyName string
 	}
 
 	// AccessDecision is the outcome of evaluating a company's commercial state
@@ -234,6 +237,22 @@ func (r CompanyRole) CanManageSubscription() bool {
 }
 
 // Label for the subscription status
+// CancelScheduled reports a subscription that is still running but will not
+// renew. Stripe keeps cancel_at_period_end set after the subscription ends,
+// so ended subscriptions are excluded.
+func (c *Company) CancelScheduled() bool {
+	if c == nil || !c.CancelAtPeriodEnd {
+		return false
+	}
+
+	switch c.SubscriptionStatus {
+	case SubActive, SubPastDue, SubTrialing:
+		return true
+	}
+
+	return false
+}
+
 func (s SubscriptionStatus) Label() string {
 	switch s {
 	case SubActive:

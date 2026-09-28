@@ -668,7 +668,19 @@ export class Auth {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     }
 
-    return this.axios.post(oauth2FlowURL, data, config).then(({ data }) => data)
+    return this.axios.post(oauth2FlowURL, data, config)
+      .then(({ data }) => data)
+      .catch((err) => {
+        // The server refuses tokens for accounts that may not enter the
+        // application (disabled company, inactive subscription) and says
+        // where the user should go instead
+        const { response: { data: { error = undefined, location = undefined } = {} } = {} } = err
+        if (error === 'access_denied' && typeof location === 'string' && /^\/(?!\/)/.test(location)) {
+          this.location.assign(location)
+        }
+
+        throw err
+      })
   }
 
   private pruneStore (): void {

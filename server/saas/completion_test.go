@@ -9,8 +9,10 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestLegalAndSupportPages(t *testing.T) {
@@ -370,4 +372,57 @@ func TestDirectObjectReferenceMatrix(t *testing.T) {
 		t.Fatal("company user disabled another company through founder route")
 	}
 
+}
+
+func TestFounderDashboardShowsNamesAndEndedSubscriptions(t *testing.T) {
+	env := newTestEnv(t)
+	env.svc.cfg.SecureCookies = false
+	ctx := context.Background()
+	_ = env.svc.BootstrapFounder(ctx)
+
+	ended := env.paidCompany(t, "Ended Co", "owner@ended.test")
+	running := env.paidCompany(t, "Leaving Co", "owner@leaving.test")
+
+	past := env.svc.now().Add(-time.Hour)
+	future := env.svc.now().Add(72 * time.Hour)
+	_ = env.svc.repo.ApplySubscription(ctx, ended.ID, SubscriptionUpdate{Status: SubCanceled, PeriodEnd: &past, CancelAtPeriodEnd: true, CanceledAt: &past})
+	_ = env.svc.repo.ApplySubscription(ctx, running.ID, SubscriptionUpdate{Status: SubActive, PeriodEnd: &future, CancelAtPeriodEnd: true})
+
+	// an owner action lands in the audit log with the owner's user ID
+	if err := env.svc.UpdateCompanyProfile(ctx, running.OwnerUserID, CompanyProfile{Name: "Leaving Co", Industry: "Retail"}, ""); err != nil {
+		t.Fatal(err)
+	}
+
+	srv, cl := founderServer(t, env)
+	tok := getCSRF(t, cl, srv.URL+"/founder")
+	_, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "username": {"founder"}, "password": {"test-founder-passphrase-1"}})
+	rsp, _ := cl.Get(srv.URL + "/founder/dashboard")
+	b, _ := io.ReadAll(rsp.Body)
+	body := string(b)
+
+	if strings.Count(body, `href="/founder/companies/`+strconv.FormatUint(ended.ID, 10)+`">Ended Co</a> — `) != 1 {
+		t.Fatal("ended company must be listed once under cancellations")
+	}
+	if !strings.Contains(body, "Subscription ended") || !strings.Contains(body, "Cancels ") {
+		t.Fatal("cancellations must distinguish ended and scheduled subscriptions")
+	}
+	if strings.Contains(body, "cancels "+fmtDate(&past)) {
+		t.Fatal("an ended subscription must not be shown as cancelling")
+	}
+	if !strings.Contains(body, "owner@leaving.test") || strings.Contains(body, "User "+strconv.FormatUint(running.OwnerUserID, 10)) {
+		t.Fatal("activity must show who acted, not internal user IDs")
+	}
+	if !strings.Contains(body, ">Leaving Co</a></td>") {
+		t.Fatal("activity must show company names")
+	}
+
+	// the ended company's owner sees an ended subscription, not a pending one
+	env.user = ended.OwnerUserID
+	env.svc.cache = newAccessCache(0)
+	rsp, _ = cl.Get(srv.URL + "/billing")
+	b, _ = io.ReadAll(rsp.Body)
+	if strings.Contains(string(b), "set to end") || strings.Contains(string(b), "Resume Subscription") ||
+		!strings.Contains(string(b), "Your subscription has ended") {
+		t.Fatal("billing must show an ended subscription as ended")
+	}
 }

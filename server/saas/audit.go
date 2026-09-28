@@ -85,3 +85,51 @@ func (e AuditEntry) with(action, target, result string, meta map[string]string) 
 	e.OccurredAt = time.Time{}
 	return e
 }
+
+// labelAudit resolves user and company names for display so the Founder
+// sees who did what instead of internal identifiers
+func (svc *Service) labelAudit(ctx context.Context, ee []*AuditEntry) []*AuditEntry {
+	var (
+		userIDs   []uint64
+		companies = map[uint64]string{}
+	)
+
+	for _, e := range ee {
+		if e.ActorType == ActorUser && e.ActorLabel == "" {
+			if id, err := strconv.ParseUint(e.ActorID, 10, 64); err == nil {
+				userIDs = append(userIDs, id)
+			}
+		}
+
+		if e.CompanyID > 0 {
+			companies[e.CompanyID] = ""
+		}
+	}
+
+	users := map[uint64]UserInfo{}
+	if len(userIDs) > 0 {
+		if uu, err := svc.platform.Users(ctx, userIDs...); err == nil {
+			users = uu
+		}
+	}
+
+	for id := range companies {
+		if c, err := svc.repo.CompanyByID(ctx, id); err == nil && c != nil {
+			companies[id] = c.Name
+		}
+	}
+
+	for _, e := range ee {
+		if e.ActorType == ActorUser && e.ActorLabel == "" {
+			if id, err := strconv.ParseUint(e.ActorID, 10, 64); err == nil {
+				if u, ok := users[id]; ok {
+					e.ActorLabel = u.Email
+				}
+			}
+		}
+
+		e.CompanyName = companies[e.CompanyID]
+	}
+
+	return ee
+}

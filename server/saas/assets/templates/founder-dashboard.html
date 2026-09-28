@@ -56,17 +56,27 @@
 <div class="grid-2">
   <section class="card" aria-labelledby="cancel-h">
     <h2 id="cancel-h">Recent Cancellations</h2>
-    {{if .Canceled}}<ul>{{range .Canceled}}<li><a href="/founder/companies/{{.ID}}">{{.Name}}</a> — {{.SubscriptionStatus.Label}}{{if .CancelAtPeriodEnd}} (at period end {{date .BillingPeriodEnd}}){{end}}</li>{{end}}</ul>{{else}}<div class="empty">No cancellations.</div>{{end}}
+    {{if .Canceled}}<ul class="plain-list">{{range .Canceled}}<li><a href="/founder/companies/{{.ID}}">{{.Name}}</a> — {{if eq .SubscriptionStatus "canceled"}}<span class="pill bad">Subscription ended</span>{{else}}<span class="pill warn">Cancels {{date .BillingPeriodEnd}}</span>{{end}}</li>{{end}}</ul>{{else}}<div class="empty">No cancellations.</div>{{end}}
   </section>
   <section class="card" aria-labelledby="admin-h">
     <div class="card-header"><h2 id="admin-h" style="margin:0">Recent Platform Activity</h2><a href="/founder/audit">Audit log</a></div>
-    {{template "audit-table" .Audit}}
+    {{template "audit-table-compact" .Audit}}
   </section>
 </div>
 {{template "foot" .}}{{end}}
 
 {{define "audit-table"}}
 {{if .}}<div class="table-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Actor</th><th scope="col">Role</th><th scope="col">Company</th><th scope="col">Action</th><th scope="col">Target</th><th scope="col">Result</th><th scope="col">IP</th></tr></thead><tbody>
-{{range .}}<tr><td class="nowrap">{{datetime .OccurredAt}}</td><td>{{.ActorType}}{{if .ActorLabel}}: {{.ActorLabel}}{{else if .ActorID}}: {{.ActorID}}{{end}}</td><td>{{orDash .Role}}</td><td>{{if .CompanyID}}<a href="/founder/companies/{{.CompanyID}}">{{.CompanyID}}</a>{{else}}—{{end}}</td><td><span title="{{.Action}}">{{actionLabel .Action}}</span></td><td>{{orDash .Target}}</td><td><span class="pill {{if eq .Result "success"}}ok{{else if eq .Result "denied"}}warn{{else}}bad{{end}}">{{.Result}}</span></td><td class="mono">{{orDash .IP}}</td></tr>{{end}}
+{{range .}}<tr><td class="nowrap">{{datetime .OccurredAt}}</td><td>{{template "audit-actor" .}}</td><td>{{orDash .Role}}</td><td>{{template "audit-company" .}}</td><td><span title="{{.Action}}">{{actionLabel .Action}}</span></td><td>{{orDash .Target}}</td><td><span class="pill {{if eq .Result "success"}}ok{{else if eq .Result "denied"}}warn{{else}}bad{{end}}">{{.Result}}</span></td><td class="mono">{{orDash .IP}}</td></tr>{{end}}
 </tbody></table></div>{{else}}<div class="empty">No events recorded.</div>{{end}}
 {{end}}
+
+{{define "audit-table-compact"}}
+{{if .}}<div class="table-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">Company</th><th scope="col">Action</th></tr></thead><tbody>
+{{range .}}<tr><td class="nowrap small">{{datetime .OccurredAt}}</td><td>{{template "audit-actor" .}}</td><td>{{template "audit-company" .}}</td><td><span title="{{.Action}}">{{actionLabel .Action}}</span>{{if ne .Result "success"}} <span class="pill {{if eq .Result "denied"}}warn{{else}}bad{{end}}">{{.Result}}</span>{{end}}</td></tr>{{end}}
+</tbody></table></div>{{else}}<div class="empty">No events recorded.</div>{{end}}
+{{end}}
+
+{{define "audit-actor"}}{{if eq .ActorType "stripe"}}Stripe{{else if eq .ActorType "system"}}System{{else if eq .ActorType "founder"}}Founder{{if .ActorLabel}} ({{.ActorLabel}}){{end}}{{else if eq .ActorType "public"}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}Visitor{{end}}{{else}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}User {{.ActorID}}{{end}}{{end}}{{end}}
+
+{{define "audit-company"}}{{if .CompanyID}}<a href="/founder/companies/{{.CompanyID}}">{{if .CompanyName}}{{.CompanyName}}{{else}}{{.CompanyID}}{{end}}</a>{{else}}—{{end}}{{end}}

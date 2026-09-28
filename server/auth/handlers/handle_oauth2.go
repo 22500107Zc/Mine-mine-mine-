@@ -279,7 +279,7 @@ func (h *AuthHandlers) oauth2authorizeDefaultClientProc(req *request.AuthReq) (e
 		return
 	}
 
-	if h.guardAccess(req) {
+	if h.denyToken(req) {
 		return nil
 	}
 
@@ -717,6 +717,35 @@ func writeResponse(w http.ResponseWriter, data map[string]interface{}, header ht
 
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(data)
+}
+
+// denyToken refuses token requests of signed-in users whose company may not
+// enter the application. Web applications make these requests in the
+// background, so instead of a redirect they receive an OAuth2 error with the
+// location the browser should be sent to.
+func (h *AuthHandlers) denyToken(req *request.AuthReq) bool {
+	if h.AccessGuard == nil || req.AuthUser == nil || req.AuthUser.User == nil || req.AuthUser.PendingMFA() {
+		return false
+	}
+
+	to := h.AccessGuard(req.Context(), req.AuthUser.User.ID)
+	if to == "" {
+		return false
+	}
+
+	req.Status = -1
+	_ = writeResponse(
+		req.Response,
+		map[string]interface{}{
+			"error":             "access_denied",
+			"error_description": "access to the application is not available for this account",
+			"location":          to,
+		},
+		http.Header{"X-Access-Location": []string{to}},
+		http.StatusForbidden,
+	)
+
+	return true
 }
 
 // guardAccess redirects signed-in users whose company may not enter the
