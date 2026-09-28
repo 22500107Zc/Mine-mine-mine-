@@ -179,7 +179,8 @@ cd ../.. && go run -mod=vendor ./cmd/corteza serve-api
 ```
 
 `server/saas/testdata/stripe_mock.py` is a local Stripe API stand-in that emits
-correctly signed webhooks, for development and end-to-end testing only.
+correctly signed webhooks, and `smtp_catcher.py` stores outgoing email as
+files; both are for development and end-to-end testing only.
 
 ## Testing
 
@@ -187,7 +188,16 @@ correctly signed webhooks, for development and end-to-end testing only.
 cd server
 CULPOS_TEST_DATABASE_URL=postgres://culpos:culpos@localhost:5432/culpos_test?sslmode=disable \
   go test -mod=vendor ./saas/...     # billing, webhooks, Founder, isolation, onboarding, legal pages
-go test -mod=vendor ./auth/... ./app/
+go test -mod=vendor ./...
+```
+
+End-to-end acceptance in a real browser (signup → checkout → webhook
+activation → onboarding → team invitation → tenant isolation → Founder
+disable/enable → payment failure → cancellation), against a running instance
+configured with the Stripe test double and SMTP catcher:
+
+```bash
+node server/saas/testdata/acceptance.js   # see the header for required variables
 ```
 
 ## Open Source Notices
