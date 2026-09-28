@@ -465,3 +465,21 @@ func (p *Platform) RenameWorkspace(ctx context.Context, c *saas.Company, name st
 	_, err = composeService.DefaultNamespace.Update(ctx, ns)
 	return err
 }
+
+// LastSignIns returns the newest retained session start per user
+func (p *Platform) LastSignIns(ctx context.Context, ids ...uint64) (map[uint64]time.Time, error) {
+	out := map[uint64]time.Time{}
+	ctx = sys(ctx)
+	for _, id := range ids {
+		ss, _, err := store.SearchAuthSessions(ctx, p.Store, systemTypes.AuthSessionFilter{UserID: id})
+		if err != nil {
+			return out, err
+		}
+		for _, s := range ss {
+			if s.CreatedAt.After(out[id]) {
+				out[id] = s.CreatedAt
+			}
+		}
+	}
+	return out, nil
+}

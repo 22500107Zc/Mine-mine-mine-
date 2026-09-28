@@ -52,7 +52,7 @@ func (svc *Service) mountFounder(r chi.Router) {
 		r.Get("/founder/billing", svc.founderBilling)
 		r.Get("/founder/audit", svc.founderAudit)
 		r.Get("/founder/issues", svc.founderIssues)
-		r.Post("/founder/issues/{issueID}/{status}", svc.founderIssueStatus)
+		r.Post("/founder/issues/{issueID}/{status}", svc.founderIssueUpdate)
 		r.Get("/founder/system", svc.founderSystem)
 		r.Get("/founder/account", svc.founderAccount)
 		r.Post("/founder/account/password", svc.founderPassword)
@@ -193,6 +193,7 @@ func (svc *Service) founderDashboard(w http.ResponseWriter, r *http.Request) {
 	d["Payments"] = payments
 	d["Failed"] = failed
 	d["Audit"] = audit
+	d["P"] = svc.platformIntel(ctx)
 	svc.systemStatus(ctx, d)
 	svc.render(w, r, http.StatusOK, "founder-dashboard", d)
 }
@@ -314,6 +315,7 @@ func (svc *Service) founderCompany(w http.ResponseWriter, r *http.Request) {
 	d["Events"] = events
 	d["Audit"] = audit
 	d["AccessLabel"] = label
+	d["FI"] = svc.founderCompanyIntel(r, c, members)
 	svc.render(w, r, http.StatusOK, "founder-company", d)
 }
 
@@ -597,7 +599,11 @@ func (svc *Service) founderLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (svc *Service) founderIssues(w http.ResponseWriter, r *http.Request) {
-	issues, err := svc.repo.IssueReports(r.Context(), 0, 200)
+	status := r.URL.Query().Get("status")
+	if !validIssueStatus(status) {
+		status = ""
+	}
+	issues, err := svc.repo.IssueReports(r.Context(), 0, 300, status)
 	if err != nil {
 		svc.internalError(w, r, err)
 		return
@@ -616,26 +622,16 @@ func (svc *Service) founderIssues(w http.ResponseWriter, r *http.Request) {
 			ir.UserEmail = uu[ir.UserID].Email
 		}
 	}
+	counts, _ := svc.repo.IssueCounts(r.Context(), 0)
+	total := 0
+	for _, n := range counts {
+		total += n
+	}
 
 	d := svc.founderPage(r, "Founder · Issues", "issues")
 	d["Issues"] = issues
+	d["Filter"] = status
+	d["Counts"] = counts
+	d["Total"] = total
 	svc.render(w, r, http.StatusOK, "founder-issues", d)
-}
-
-func (svc *Service) founderIssueStatus(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.ParseInt(chi.URLParam(r, "issueID"), 10, 64)
-	status := chi.URLParam(r, "status")
-	if status != "open" && status != "resolved" {
-		svc.renderError(w, r, http.StatusNotFound)
-		return
-	}
-
-	if err := svc.repo.SetIssueStatus(r.Context(), id, status); err != nil {
-		svc.internalError(w, r, err)
-		return
-	}
-
-	fa := founderFrom(r)
-	svc.audit(r.Context(), founderActor(fa.founder, clientIP(r)).with("founder.issue."+status, strconv.FormatInt(id, 10), ResultSuccess, nil))
-	http.Redirect(w, r, "/founder/issues", http.StatusSeeOther)
 }

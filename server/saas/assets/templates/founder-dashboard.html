@@ -33,6 +33,23 @@
   </div>
 </section>
 
+{{with .P}}
+<section class="card" aria-labelledby="usage-h">
+  <div class="card-header"><h2 id="usage-h" style="margin:0">Platform Usage</h2><span class="muted small">measured from company activity · counts only</span></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="k">Active companies · 7 days</div><div class="v">{{.Active7}}</div><div class="s">{{.Active30}} active in 30 days</div></div>
+    <div class="kpi"><div class="k">Operational events · 30 days</div><div class="row"><div class="v">{{num .Events30}}</div>{{spark .EventSeries "good"}}</div><div class="s">{{if .EventsP30}}{{change (float .Events30) (float .EventsP30)}} vs prior 30 days{{else}}no prior period{{end}}</div></div>
+    <div class="kpi"><div class="k">Companies active per day</div><div class="row"><div class="v">{{len .Companies}}</div>{{spark .CompanySeries "neutral"}}</div><div class="s">last 90 days trend</div></div>
+    <div class="kpi"><div class="k">Command Deck adoption</div><div class="v">{{.DeckCompanies30}}</div><div class="s">companies · {{num .DeckViews30}} views in 30 days</div></div>
+    <div class="kpi {{if .OpenIssues}}warn{{end}}"><div class="k">Open issue reports</div><div class="v">{{.OpenIssues}}</div><div class="s"><a href="/founder/issues">Issue inbox →</a></div></div>
+  </div>
+  {{if .Companies}}<div class="table-wrap"><table>
+    <thead><tr><th>Company</th><th>Subscription</th><th class="r">Events 30d</th><th class="r">Active users 30d</th><th class="r">Command Deck views</th><th class="r">Deck users</th><th>Last activity</th><th class="r">Open issues</th></tr></thead>
+    <tbody>{{range .Companies}}<tr><td><a href="/founder/companies/{{.CompanyID}}">{{.Name}}</a></td><td><span class="pill {{subPill .Status}}">{{.Status.Label}}</span></td><td class="r mono">{{num .Events}}</td><td class="r mono">{{.ActiveUsers}}</td><td class="r mono">{{.DeckViews}}</td><td class="r mono">{{.DeckUsers}}</td><td>{{datetime .LastEvent}}</td><td class="r mono">{{.OpenIssues}}</td></tr>{{end}}</tbody>
+  </table></div>{{end}}
+</section>
+{{end}}
+
 <section class="card" aria-labelledby="companies-h">
   <div class="card-header"><h2 id="companies-h" style="margin:0">Recent Signups</h2><a href="/founder/companies">All companies</a></div>
   {{template "founder-companies-table" .Recent}}

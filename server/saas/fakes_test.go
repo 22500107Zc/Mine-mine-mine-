@@ -371,3 +371,13 @@ func (p *fakePlatform) WorkspaceLookups(_ context.Context, c *Company) (Workspac
 	return WorkspaceLookup{Departments: map[uint64]string{}, RecordPages: map[string]uint64{"Task": 7001},
 		Teams: map[uint64]string{}, TeamDepartment: map[uint64]uint64{}, DepartmentManager: map[uint64]uint64{}}, nil
 }
+
+func (p *fakePlatform) LastSignIns(_ context.Context, ids ...uint64) (map[uint64]time.Time, error) {
+	out := map[uint64]time.Time{}
+	for _, id := range ids {
+		if _, ok := p.users[id]; ok {
+			out[id] = time.Now().Add(-2 * time.Hour)
+		}
+	}
+	return out, nil
+}

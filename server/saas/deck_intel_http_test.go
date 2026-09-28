@@ -288,3 +288,84 @@ func TestCommandDeckPopulatedViewsAndIsolation(t *testing.T) {
 		t.Fatal("company B changed company A's intervention notes")
 	}
 }
+
+func TestFounderExecutionIntelligence(t *testing.T) {
+	env := newTestEnv(t)
+	env.svc.cfg.SecureCookies = false
+	ctx := context.Background()
+
+	a := env.paidCompany(t, "Acme", "owner@acme.test")
+	b := env.paidCompany(t, "Beta", "owner@beta.test")
+	org := fixture.DefaultOrg(nil)
+	now := env.svc.now()
+	seedHistory(t, env, a, fixture.Generate(fixture.Options{Now: now, Days: 60, Seed: 3, Org: org, FirstID: 80_000_000}))
+	ir := &IssueReport{CompanyID: a.ID, UserID: a.OwnerUserID, Category: "Data looks wrong", Summary: "Totals differ", Page: "/command/pipeline"}
+	if err := env.svc.repo.CreateIssueReport(ctx, ir); err != nil {
+		t.Fatal(err)
+	}
+	_ = env.svc.repo.RecordDeckView(ctx, a.ID, a.OwnerUserID, now)
+
+	srv, cl := founderServer(t, env)
+	cl.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	get := func(path string) (int, string) {
+		rsp, err := cl.Get(srv.URL + path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(rsp.Body)
+		return rsp.StatusCode, string(body)
+	}
+
+	// company users cannot reach any Founder view
+	env.user = a.OwnerUserID
+	env.svc.cache = newAccessCache(0)
+	for _, p := range []string{"/founder/dashboard", fmt.Sprintf("/founder/companies/%d", b.ID), "/founder/issues"} {
+		if code, body := get(p); code == http.StatusOK && strings.Contains(body, "Platform Usage") {
+			t.Fatalf("company user reached %s", p)
+		}
+	}
+
+	_ = env.svc.BootstrapFounder(ctx)
+	ftok := getCSRF(t, cl, srv.URL+"/founder")
+	_, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {ftok}, "password": {"test-founder-passphrase-1"}})
+
+	code, body := get("/founder/dashboard")
+	if code != http.StatusOK || !strings.Contains(body, "Platform Usage") || !strings.Contains(body, "Command Deck adoption") || !strings.Contains(body, "Acme") {
+		t.Fatalf("founder dashboard: %d", code)
+	}
+	code, body = get(fmt.Sprintf("/founder/companies/%d?date=%s", a.ID, now.AddDate(0, 0, -3).Format("2006-01-02")))
+	if code != http.StatusOK || !strings.Contains(body, "Company Intelligence") || !strings.Contains(body, "Operational Usage") || !strings.Contains(body, "heat-cell") || !strings.Contains(body, "Totals differ") {
+		t.Fatalf("founder company intelligence: %d", code)
+	}
+
+	// issue lifecycle: open → in review → resolved (with note) → reopened
+	tok := csrfRE.FindStringSubmatch(body)[1]
+	for _, st := range []string{"in_review", "resolved", "reopened"} {
+		v := url.Values{"csrf": {tok}}
+		if st == "resolved" {
+			v.Set("note", "Fixed the export totals")
+		}
+		rsp, _ := cl.PostForm(srv.URL+fmt.Sprintf("/founder/issues/%d/%s", ir.ID, st), v)
+		if rsp.StatusCode != http.StatusSeeOther {
+			t.Fatalf("issue %s: %d", st, rsp.StatusCode)
+		}
+		got, _ := env.svc.repo.IssueByID(ctx, ir.ID)
+		if got.Status != st {
+			t.Fatalf("issue status %s, want %s", got.Status, st)
+		}
+	}
+	got, _ := env.svc.repo.IssueByID(ctx, ir.ID)
+	if got.ResolutionNote != "Fixed the export totals" {
+		t.Fatalf("resolution note: %q", got.ResolutionNote)
+	}
+	if rsp, _ := cl.PostForm(srv.URL+fmt.Sprintf("/founder/issues/%d/deleted", ir.ID), url.Values{"csrf": {tok}}); rsp.StatusCode != http.StatusNotFound {
+		t.Fatal("unknown issue states are refused")
+	}
+	code, body = get("/founder/issues?status=reopened")
+	if code != http.StatusOK || !strings.Contains(body, "Totals differ") || !strings.Contains(body, "Reopened · 1") {
+		t.Fatalf("issue inbox filter: %d", code)
+	}
+	if _, body = get("/founder/issues?status=resolved"); strings.Contains(body, "Totals differ") {
+		t.Fatal("status filter")
+	}
+}

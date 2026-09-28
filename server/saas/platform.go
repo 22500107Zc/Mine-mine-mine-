@@ -1,6 +1,7 @@
 package saas
 
 import (
+	"time"
 	"context"
 )
 
@@ -59,6 +60,10 @@ type (
 
 		// Users returns display info for the given users
 		Users(ctx context.Context, ids ...uint64) (map[uint64]UserInfo, error)
+
+		// LastSignIns returns when each user last started a session (only
+		// sessions the platform still retains)
+		LastSignIns(ctx context.Context, ids ...uint64) (map[uint64]time.Time, error)
 
 		// WorkspaceSnapshot returns the current workspace records as activity
 		// (used once to seed the Command Deck for existing workspaces)
