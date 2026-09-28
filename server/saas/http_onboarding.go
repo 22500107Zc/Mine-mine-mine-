@@ -105,7 +105,7 @@ func (svc *Service) welcomeAction(w http.ResponseWriter, r *http.Request) {
 
 	case "finish":
 		err = svc.FinishOnboarding(ctx, cc.UserID, ip)
-		next = "/"
+		next = WorkspacePath(cc.Company)
 
 	default:
 		svc.renderError(w, r, http.StatusNotFound)

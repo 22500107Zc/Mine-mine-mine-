@@ -168,7 +168,10 @@ func TestOnboardingFlow(t *testing.T) {
 		t.Fatal("employee must not complete company onboarding")
 	}
 
-	post("finish", url.Values{})
+	cl.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	if rsp := post("finish", url.Values{}); rsp.Header.Get("Location") != WorkspacePath(cc) {
+		t.Fatalf("finishing setup should open the workspace Dashboard, got %q", rsp.Header.Get("Location"))
+	}
 	env.svc.cache = newAccessCache(0)
 	if got := env.svc.AuthGuard(ctx, c.OwnerUserID); got != "" {
 		t.Fatalf("after onboarding owner should enter the app, got %q", got)
