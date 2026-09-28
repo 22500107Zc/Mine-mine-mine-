@@ -536,3 +536,9 @@ func (c *intelCache) invalidate(companyID uint64) {
 func sortItems(ii []*WorkItem) {
 	sort.SliceStable(ii, func(a, b int) bool { return ii[a].CreatedAt.After(ii[b].CreatedAt) })
 }
+
+// NewIntel replays events (oldest first) and builds the model; used where
+// no cache applies (tests, one-off evaluations)
+func NewIntel(events []ActivityEvent, now time.Time, scope Scope, targets map[string]float64, lk Lookups) *Intel {
+	return BuildIntel(reconstruct(events, now.UTC(), lk.Departments), events, now, scope, targets, lk)
+}

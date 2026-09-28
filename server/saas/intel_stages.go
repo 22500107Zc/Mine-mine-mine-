@@ -177,19 +177,8 @@ func (in *Intel) StagesOf(module string) ProcessStages {
 					if r.HasTarget && d > r.Target {
 						r.Breaches++
 					}
-					if i+1 < len(it.Segments) {
-						next := it.Segments[i+1]
-						k := [2]string{sg.Status, next.Status}
-						e := edges[k]
-						if e == nil {
-							e = &Edge{From: sg.Status, To: next.Status}
-							edges[k] = e
-						}
-						e.Count++
-						delays[k] = append(delays[k], d)
-						if next.Kind == "failed" {
-							r.Fallout++
-						}
+					if i+1 < len(it.Segments) && it.Segments[i+1].Kind == "failed" {
+						r.Fallout++
 					}
 				}
 				if !sg.End.Before(weekStart) && sg.End.Before(w.To) {
@@ -198,6 +187,19 @@ func (in *Intel) StagesOf(module string) ProcessStages {
 						a.weekTimes[wk] = append(a.weekTimes[wk], d)
 					}
 				}
+			}
+
+			// every move out of a status (finished states included: reopens)
+			if i+1 < len(it.Segments) && w.Has(it.Segments[i+1].Start) {
+				next := it.Segments[i+1]
+				k := [2]string{sg.Status, next.Status}
+				e := edges[k]
+				if e == nil {
+					e = &Edge{From: sg.Status, To: next.Status}
+					edges[k] = e
+				}
+				e.Count++
+				delays[k] = append(delays[k], next.Start.Sub(sg.Start).Hours())
 			}
 
 			// still in this stage at the end of the window
