@@ -59,11 +59,10 @@ func founderActor(f *Founder, ip string) AuditEntry {
 	}
 
 	return AuditEntry{
-		ActorType:  ActorFounder,
-		ActorID:    strconv.FormatUint(f.ID, 10),
-		ActorLabel: f.Username,
-		Role:       "Founder",
-		IP:         ip,
+		ActorType: ActorFounder,
+		ActorID:   strconv.FormatUint(f.ID, 10),
+		Role:      "Founder",
+		IP:        ip,
 	}
 }
 

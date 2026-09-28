@@ -4,42 +4,36 @@ import (
 	"context"
 	"crypto/subtle"
 	"errors"
-	"strings"
 	"time"
 
-	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var (
 	// ErrInvalidCredentials is the only error the Founder login ever reports;
-	// it never reveals whether the username exists or the account is locked.
+	// it never reveals whether the Founder exists or is temporarily locked.
 	ErrInvalidCredentials = errors.New("invalid credentials")
 
-	// dummyHash is compared against when the username does not exist so that
-	// response timing does not reveal account existence
+	// dummyHash is compared against when no Founder exists yet so that
+	// response timing does not reveal it
 	dummyHash, _ = bcrypt.GenerateFromPassword([]byte("culpos-timing-equalizer"), bcrypt.DefaultCost)
 )
 
 const founderBcryptCost = 12
 
-// BootstrapFounder creates the platform Founder account from the deployment
-// secret FOUNDER_BOOTSTRAP_PASSWORD. The plaintext is hashed with bcrypt and
-// never stored, logged or returned.
+// BootstrapFounder creates the single platform Founder from the deployment
+// secret FOUNDER_BOOTSTRAP_PASSWORD. The Founder has no username or email:
+// the password is the only credential. The plaintext is hashed with bcrypt
+// and never stored, logged or returned.
 func (svc *Service) BootstrapFounder(ctx context.Context) error {
-	username := strings.ToLower(strings.TrimSpace(svc.cfg.FounderBootstrapUsername))
-	if username == "" {
-		return nil
-	}
-
-	existing, err := svc.repo.FounderByUsername(ctx, username)
+	existing, err := svc.repo.Founder(ctx)
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return err
 	}
 
 	if svc.cfg.FounderBootstrapPassword == "" {
 		if existing == nil {
-			svc.log.Warn("Founder account not bootstrapped: FOUNDER_BOOTSTRAP_PASSWORD is not set")
+			svc.log.Warn("Founder not initialized: FOUNDER_BOOTSTRAP_PASSWORD is not set")
 		}
 		return nil
 	}
@@ -49,7 +43,7 @@ func (svc *Service) BootstrapFounder(ctx context.Context) error {
 	}
 
 	if len(svc.cfg.FounderBootstrapPassword) < 12 {
-		svc.log.Warn("FOUNDER_BOOTSTRAP_PASSWORD is shorter than 12 characters; rotate it after first sign-in")
+		svc.log.Warn("FOUNDER_BOOTSTRAP_PASSWORD is shorter than 12 characters; change it after first sign-in")
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(svc.cfg.FounderBootstrapPassword), founderBcryptCost)
@@ -63,57 +57,56 @@ func (svc *Service) BootstrapFounder(ctx context.Context) error {
 		}
 
 		_ = svc.repo.DeleteFounderSessions(ctx, existing.ID)
-		svc.audit(ctx, AuditEntry{ActorType: ActorSystem}.with("founder.password.reset", username, ResultSuccess, map[string]string{"source": "bootstrap"}))
+		svc.audit(ctx, AuditEntry{ActorType: ActorSystem}.with("founder.password.reset", "", ResultSuccess, map[string]string{"source": "bootstrap"}))
 		svc.log.Info("Founder password reset from bootstrap secret")
 		return nil
 	}
 
-	f := &Founder{ID: svc.newID(), Username: username, PasswordHash: string(hash)}
-	if err = svc.repo.CreateFounder(ctx, f); err != nil {
+	if err = svc.repo.CreateFounder(ctx, &Founder{ID: svc.newID(), PasswordHash: string(hash)}); err != nil {
 		return err
 	}
 
-	svc.audit(ctx, AuditEntry{ActorType: ActorSystem}.with("founder.bootstrap", username, ResultSuccess, nil))
-	svc.log.Info("Founder account bootstrapped", zap.String("username", username))
+	svc.audit(ctx, AuditEntry{ActorType: ActorSystem}.with("founder.bootstrap", "", ResultSuccess, nil))
+	svc.log.Info("Founder initialized")
 	return nil
 }
 
-// FounderLogin authenticates the Founder and returns a new session token
-func (svc *Service) FounderLogin(ctx context.Context, username, password, ip, ua string) (string, *FounderSession, error) {
+// FounderLogin checks the submitted password against the stored hash of the
+// single Founder and returns a new session token
+func (svc *Service) FounderLogin(ctx context.Context, password, ip, ua string) (string, *FounderSession, error) {
 	var (
 		now = svc.now()
 		f   *Founder
 		err error
 	)
 
-	username = strings.ToLower(strings.TrimSpace(username))
-	if len(username) > 100 || len(password) > 256 {
+	if password == "" || len(password) > 256 {
 		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+		svc.audit(ctx, AuditEntry{ActorType: ActorFounder, Role: "Founder", IP: ip}.with("founder.login", "", ResultFailure, nil))
 		return "", nil, ErrInvalidCredentials
 	}
 
-	f, err = svc.repo.FounderByUsername(ctx, username)
+	f, err = svc.repo.Founder(ctx)
 	if err != nil && !errors.Is(err, ErrNotFound) {
 		return "", nil, err
 	}
 
 	if f == nil {
 		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
-		svc.audit(ctx, AuditEntry{ActorType: ActorFounder, ActorLabel: "(unknown)", Role: "Founder", IP: ip}.
-			with("founder.login", "", ResultFailure, nil))
+		svc.audit(ctx, AuditEntry{ActorType: ActorFounder, Role: "Founder", IP: ip}.with("founder.login", "", ResultFailure, nil))
 		return "", nil, ErrInvalidCredentials
 	}
 
 	pwErr := bcrypt.CompareHashAndPassword([]byte(f.PasswordHash), []byte(password))
 
 	if f.LockedUntil != nil && now.Before(*f.LockedUntil) {
-		svc.audit(ctx, founderActor(f, ip).with("founder.login", f.Username, ResultDenied, map[string]string{"reason": "locked"}))
+		svc.audit(ctx, founderActor(f, ip).with("founder.login", "", ResultDenied, map[string]string{"reason": "locked"}))
 		return "", nil, ErrInvalidCredentials
 	}
 
 	if pwErr != nil {
 		_ = svc.repo.FounderLoginFailed(ctx, f.ID, svc.cfg.FounderMaxFailedLogins, svc.cfg.FounderLockoutDuration, now)
-		svc.audit(ctx, founderActor(f, ip).with("founder.login", f.Username, ResultFailure, nil))
+		svc.audit(ctx, founderActor(f, ip).with("founder.login", "", ResultFailure, nil))
 		return "", nil, ErrInvalidCredentials
 	}
 
@@ -149,7 +142,7 @@ func (svc *Service) FounderLogin(ctx context.Context, username, password, ip, ua
 	_ = svc.repo.FounderLoginSucceeded(ctx, f.ID, now)
 	_ = svc.repo.DeleteExpiredFounderSessions(ctx, now)
 
-	svc.audit(ctx, founderActor(f, ip).with("founder.login", f.Username, ResultSuccess, nil))
+	svc.audit(ctx, founderActor(f, ip).with("founder.login", "", ResultSuccess, nil))
 	return token, ses, nil
 }
 
@@ -192,14 +185,14 @@ func (svc *Service) FounderLogout(ctx context.Context, token, ip string) {
 	f, _, err := svc.FounderSession(ctx, token)
 	_ = svc.repo.DeleteFounderSession(ctx, hashToken(token))
 	if err == nil {
-		svc.audit(ctx, founderActor(f, ip).with("founder.logout", f.Username, ResultSuccess, nil))
+		svc.audit(ctx, founderActor(f, ip).with("founder.logout", "", ResultSuccess, nil))
 	}
 }
 
 // FounderChangePassword rotates the Founder password and revokes all other sessions
 func (svc *Service) FounderChangePassword(ctx context.Context, f *Founder, current, next, ip string) error {
 	if bcrypt.CompareHashAndPassword([]byte(f.PasswordHash), []byte(current)) != nil {
-		svc.audit(ctx, founderActor(f, ip).with("founder.password.change", f.Username, ResultFailure, nil))
+		svc.audit(ctx, founderActor(f, ip).with("founder.password.change", "", ResultFailure, nil))
 		return userErr("Current password is incorrect.")
 	}
 
@@ -217,7 +210,7 @@ func (svc *Service) FounderChangePassword(ctx context.Context, f *Founder, curre
 	}
 
 	_ = svc.repo.DeleteFounderSessions(ctx, f.ID)
-	svc.audit(ctx, founderActor(f, ip).with("founder.password.change", f.Username, ResultSuccess, nil))
+	svc.audit(ctx, founderActor(f, ip).with("founder.password.change", "", ResultSuccess, nil))
 	return nil
 }
 

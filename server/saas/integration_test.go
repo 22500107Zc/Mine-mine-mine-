@@ -226,7 +226,7 @@ func TestFounderBootstrapAndLogin(t *testing.T) {
 	}
 
 	var hash string
-	_ = env.db.QueryRow(`SELECT password_hash FROM saas_founders WHERE username = 'founder'`).Scan(&hash)
+	_ = env.db.QueryRow(`SELECT password_hash FROM saas_founders`).Scan(&hash)
 	if hash == "" || strings.Contains(hash, "test-founder-passphrase-1") || !strings.HasPrefix(hash, "$2a$") {
 		t.Fatal("founder password must be stored as a bcrypt hash only")
 	}
@@ -242,7 +242,7 @@ func TestFounderBootstrapAndLogin(t *testing.T) {
 		t.Fatal("duplicate founders")
 	}
 
-	tok, ses, err := env.svc.FounderLogin(ctx, "founder", "test-founder-passphrase-1", "10.0.0.1", "test")
+	tok, ses, err := env.svc.FounderLogin(ctx, "test-founder-passphrase-1", "10.0.0.1", "test")
 	if err != nil || tok == "" || ses.CSRFToken == "" {
 		t.Fatalf("founder login failed: %v", err)
 	}
@@ -258,24 +258,31 @@ func TestFounderBootstrapAndLogin(t *testing.T) {
 		t.Fatal("valid session rejected")
 	}
 
-	// wrong password and unknown user yield the same generic error
-	_, _, e1 := env.svc.FounderLogin(ctx, "founder", "wrong", "10.0.0.1", "test")
-	_, _, e2 := env.svc.FounderLogin(ctx, "nobody", "wrong", "10.0.0.1", "test")
-	if !errors.Is(e1, ErrInvalidCredentials) || !errors.Is(e2, ErrInvalidCredentials) || e1.Error() != e2.Error() {
+	// wrong, empty and oversized passwords yield the same generic error
+	_, _, e1 := env.svc.FounderLogin(ctx, "wrong", "10.0.0.1", "test")
+	_, _, e2 := env.svc.FounderLogin(ctx, "", "10.0.0.1", "test")
+	_, _, e3 := env.svc.FounderLogin(ctx, strings.Repeat("x", 300), "10.0.0.1", "test")
+	if !errors.Is(e1, ErrInvalidCredentials) || !errors.Is(e2, ErrInvalidCredentials) || !errors.Is(e3, ErrInvalidCredentials) ||
+		e1.Error() != e2.Error() || e1.Error() != e3.Error() {
 		t.Fatal("failures must be generic")
 	}
 
-	// logout invalidates server-side
+	// logout invalidates server-side and is audited
 	env.svc.FounderLogout(ctx, tok, "10.0.0.1")
 	if _, _, err = env.svc.FounderSession(ctx, tok); err == nil {
 		t.Fatal("session valid after logout")
 	}
+	var logouts int
+	_ = env.db.QueryRow(`SELECT COUNT(*) FROM saas_audit_log WHERE action = 'founder.logout' AND result = 'success'`).Scan(&logouts)
+	if logouts != 1 {
+		t.Fatal("founder logout not audited")
+	}
 
 	// lockout after repeated failures, even with the right password afterwards
 	for i := 0; i < 5; i++ {
-		_, _, _ = env.svc.FounderLogin(ctx, "founder", "bad", "10.0.0.1", "test")
+		_, _, _ = env.svc.FounderLogin(ctx, "bad-attempt-secret", "10.0.0.1", "test")
 	}
-	if _, _, err = env.svc.FounderLogin(ctx, "founder", "test-founder-passphrase-1", "10.0.0.1", "test"); err == nil {
+	if _, _, err = env.svc.FounderLogin(ctx, "test-founder-passphrase-1", "10.0.0.1", "test"); err == nil {
 		t.Fatal("locked founder must not be able to sign in")
 	}
 
@@ -287,7 +294,8 @@ func TestFounderBootstrapAndLogin(t *testing.T) {
 	}
 
 	var leaked int
-	_ = env.db.QueryRow(`SELECT COUNT(*) FROM saas_audit_log WHERE metadata::text LIKE '%test-founder-passphrase-1%' OR target LIKE '%test-founder-passphrase-1%'`).Scan(&leaked)
+	_ = env.db.QueryRow(`SELECT COUNT(*) FROM saas_audit_log WHERE metadata::text LIKE '%test-founder-passphrase-1%' OR target LIKE '%test-founder-passphrase-1%'
+		OR metadata::text LIKE '%bad-attempt-secret%' OR target LIKE '%bad-attempt-secret%' OR actor_label LIKE '%bad-attempt-secret%'`).Scan(&leaked)
 	if leaked != 0 {
 		t.Fatal("password leaked into the audit log")
 	}
@@ -297,7 +305,7 @@ func TestFounderSessionExpiry(t *testing.T) {
 	env := newTestEnv(t)
 	ctx := context.Background()
 	_ = env.svc.BootstrapFounder(ctx)
-	tok, _, err := env.svc.FounderLogin(ctx, "founder", "test-founder-passphrase-1", "", "")
+	tok, _, err := env.svc.FounderLogin(ctx, "test-founder-passphrase-1", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -353,28 +361,28 @@ func TestFounderHTTPFlow(t *testing.T) {
 	// login page branding
 	rsp, _ = cl.Get(srv.URL + "/founder")
 	b, _ := io.ReadAll(rsp.Body)
-	for _, want := range []string{"<title>CulpOS | Founder</title>", "Username", "Password", "Sign In"} {
+	for _, want := range []string{"<title>CulpOS | Founder Access</title>", "Founder Access", "Password", "Sign In"} {
 		if !strings.Contains(string(b), want) {
 			t.Fatalf("founder login page missing %q", want)
 		}
 	}
 
 	// POST without CSRF is rejected
-	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"username": {"founder"}, "password": {"test-founder-passphrase-1"}})
+	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"password": {"test-founder-passphrase-1"}})
 	if rsp.StatusCode != http.StatusForbidden {
 		t.Fatalf("login without CSRF must fail, got %d", rsp.StatusCode)
 	}
 
 	// wrong password → generic message, 401
 	tok := getCSRF(t, cl, srv.URL+"/founder")
-	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "username": {"founder"}, "password": {"nope"}})
+	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "password": {"nope"}})
 	b, _ = io.ReadAll(rsp.Body)
-	if rsp.StatusCode != http.StatusUnauthorized || !strings.Contains(string(b), "Invalid username or password.") {
+	if rsp.StatusCode != http.StatusUnauthorized || !strings.Contains(string(b), "Sign in failed.") {
 		t.Fatal("expected generic login failure")
 	}
 
 	// success → cookie flags + redirect
-	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "username": {"founder"}, "password": {"test-founder-passphrase-1"}})
+	rsp, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "password": {"test-founder-passphrase-1"}})
 	if rsp.StatusCode != http.StatusSeeOther || rsp.Header.Get("Location") != "/founder/dashboard" {
 		t.Fatalf("login failed: %d", rsp.StatusCode)
 	}

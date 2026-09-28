@@ -62,9 +62,9 @@ var schema = []string{
 	// A user belongs to exactly one company; this is the root of tenant isolation
 	`CREATE UNIQUE INDEX IF NOT EXISTS saas_company_members_user_uq ON saas_company_members (user_id)`,
 
+	// exactly one platform Founder; identified by password only
 	`CREATE TABLE IF NOT EXISTS saas_founders (
 		id              BIGINT      PRIMARY KEY,
-		username        TEXT        NOT NULL,
 		password_hash   TEXT        NOT NULL,
 		failed_attempts INTEGER     NOT NULL DEFAULT 0,
 		locked_until    TIMESTAMPTZ NULL,
@@ -72,7 +72,6 @@ var schema = []string{
 		created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 		updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 	)`,
-	`CREATE UNIQUE INDEX IF NOT EXISTS saas_founders_username_uq ON saas_founders (LOWER(username))`,
 
 	`CREATE TABLE IF NOT EXISTS saas_founder_sessions (
 		token_hash   TEXT        PRIMARY KEY,
@@ -85,6 +84,17 @@ var schema = []string{
 		user_agent   TEXT        NOT NULL DEFAULT ''
 	)`,
 	`CREATE INDEX IF NOT EXISTS saas_founder_sessions_expires_idx ON saas_founder_sessions (expires_at)`,
+
+	// Databases created before the Founder became password-only may hold a
+	// username column and more than one Founder row: keep the Founder that
+	// signed in most recently, drop the username and allow a single row.
+	`DELETE FROM saas_founder_sessions WHERE founder_id <> (
+		SELECT id FROM saas_founders ORDER BY last_login_at DESC NULLS LAST, created_at DESC, id DESC LIMIT 1)`,
+	`DELETE FROM saas_founders WHERE id <> (
+		SELECT id FROM saas_founders ORDER BY last_login_at DESC NULLS LAST, created_at DESC, id DESC LIMIT 1)`,
+	`DROP INDEX IF EXISTS saas_founders_username_uq`,
+	`ALTER TABLE saas_founders DROP COLUMN IF EXISTS username`,
+	`CREATE UNIQUE INDEX IF NOT EXISTS saas_founders_single_uq ON saas_founders ((TRUE))`,
 
 	`CREATE TABLE IF NOT EXISTS saas_stripe_events (
 		id           TEXT        PRIMARY KEY,

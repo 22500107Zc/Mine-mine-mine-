@@ -78,26 +78,27 @@ func (svc *Service) founderLoginForm(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	svc.render(w, r, http.StatusOK, "founder-login", pageData{"Title": "Founder", "Nav": "founder", "MainClass": "narrow", "NoIndex": true})
+	svc.render(w, r, http.StatusOK, "founder-login", pageData{"Title": "Founder Access", "NoIndex": true})
 }
 
 func (svc *Service) founderLoginProc(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 8<<10)
 	if err := r.ParseForm(); err != nil || !svc.validCSRF(r) {
-		svc.render(w, r, http.StatusForbidden, "founder-login", pageData{"Title": "Founder", "Nav": "founder", "MainClass": "narrow", "NoIndex": true,
+		svc.render(w, r, http.StatusForbidden, "founder-login", pageData{"Title": "Founder Access", "NoIndex": true,
 			"Error": "Your session expired. Please try again."})
 		return
 	}
 
-	token, ses, err := svc.FounderLogin(r.Context(), r.PostFormValue("username"), r.PostFormValue("password"), clientIP(r), r.UserAgent())
+	// the password is the only credential; any other submitted field is ignored
+	token, ses, err := svc.FounderLogin(r.Context(), r.PostFormValue("password"), clientIP(r), r.UserAgent())
 	if err != nil {
 		if !errors.Is(err, ErrInvalidCredentials) {
 			svc.log.Error("founder login error")
 		}
 
 		// one generic message for every failure mode
-		svc.render(w, r, http.StatusUnauthorized, "founder-login", pageData{"Title": "Founder", "Nav": "founder", "MainClass": "narrow", "NoIndex": true,
-			"Error": "Invalid username or password."})
+		svc.render(w, r, http.StatusUnauthorized, "founder-login", pageData{"Title": "Founder Access", "NoIndex": true,
+			"Error": "Sign in failed."})
 		return
 	}
 

@@ -243,7 +243,7 @@ func TestLifecycleEmails(t *testing.T) {
 	env := newTestEnv(t)
 	ctx := context.Background()
 	_ = env.svc.BootstrapFounder(ctx)
-	f, _ := env.svc.repo.FounderByUsername(ctx, "founder")
+	f, _ := env.svc.repo.Founder(ctx)
 	c := env.paidCompany(t, "Acme", "owner@acme.test")
 
 	// schedule cancellation then resume
@@ -395,7 +395,7 @@ func TestFounderDashboardShowsNamesAndEndedSubscriptions(t *testing.T) {
 
 	srv, cl := founderServer(t, env)
 	tok := getCSRF(t, cl, srv.URL+"/founder")
-	_, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "username": {"founder"}, "password": {"test-founder-passphrase-1"}})
+	_, _ = cl.PostForm(srv.URL+"/founder", url.Values{"csrf": {tok}, "password": {"test-founder-passphrase-1"}})
 	rsp, _ := cl.Get(srv.URL + "/founder/dashboard")
 	b, _ := io.ReadAll(rsp.Body)
 	body := string(b)

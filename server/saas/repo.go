@@ -523,7 +523,7 @@ func scanFounder(s scanner) (*Founder, error) {
 		locked, last sql.NullTime
 	)
 
-	err := s.Scan(&f.ID, &f.Username, &f.PasswordHash, &f.FailedAttempts, &locked, &last, &f.CreatedAt, &f.UpdatedAt)
+	err := s.Scan(&f.ID, &f.PasswordHash, &f.FailedAttempts, &locked, &last, &f.CreatedAt, &f.UpdatedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -533,10 +533,11 @@ func scanFounder(s scanner) (*Founder, error) {
 	return f, err
 }
 
-const founderColumns = `id, username, password_hash, failed_attempts, locked_until, last_login_at, created_at, updated_at`
+const founderColumns = `id, password_hash, failed_attempts, locked_until, last_login_at, created_at, updated_at`
 
-func (r *Repo) FounderByUsername(ctx context.Context, username string) (*Founder, error) {
-	return scanFounder(r.db.QueryRowContext(ctx, `SELECT `+founderColumns+` FROM saas_founders WHERE LOWER(username) = LOWER($1)`, username))
+// Founder returns the platform Founder (there is at most one)
+func (r *Repo) Founder(ctx context.Context) (*Founder, error) {
+	return scanFounder(r.db.QueryRowContext(ctx, `SELECT `+founderColumns+` FROM saas_founders ORDER BY created_at LIMIT 1`))
 }
 
 func (r *Repo) FounderByID(ctx context.Context, id uint64) (*Founder, error) {
@@ -544,8 +545,8 @@ func (r *Repo) FounderByID(ctx context.Context, id uint64) (*Founder, error) {
 }
 
 func (r *Repo) CreateFounder(ctx context.Context, f *Founder) error {
-	_, err := r.db.ExecContext(ctx, `INSERT INTO saas_founders (id, username, password_hash, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW())`,
-		f.ID, f.Username, f.PasswordHash)
+	_, err := r.db.ExecContext(ctx, `INSERT INTO saas_founders (id, password_hash, created_at, updated_at) VALUES ($1, $2, NOW(), NOW())`,
+		f.ID, f.PasswordHash)
 	return err
 }
 

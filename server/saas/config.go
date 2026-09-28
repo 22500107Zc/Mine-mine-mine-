@@ -24,7 +24,6 @@ type (
 		StripeAPIBase        string
 
 		// Founder bootstrap
-		FounderBootstrapUsername   string
 		FounderBootstrapPassword   string
 		FounderBootstrapForceReset bool
 
@@ -57,7 +56,6 @@ func LoadConfig() Config {
 		StripePriceID:        env("STRIPE_PRICE_ID", ""),
 		StripeAPIBase:        strings.TrimRight(env("STRIPE_API_BASE", "https://api.stripe.com"), "/"),
 
-		FounderBootstrapUsername:   strings.ToLower(env("FOUNDER_BOOTSTRAP_USERNAME", "founder")),
 		FounderBootstrapPassword:   os.Getenv("FOUNDER_BOOTSTRAP_PASSWORD"),
 		FounderBootstrapForceReset: envBool("FOUNDER_BOOTSTRAP_FORCE_RESET", false),
 

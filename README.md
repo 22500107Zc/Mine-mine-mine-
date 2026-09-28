@@ -75,7 +75,7 @@ manager) and fill in:
 | `APP_URL` | Public https URL of CulpOS (e.g. `https://app.example.com`) |
 | `DATABASE_URL` | PostgreSQL connection string |
 | `JWT_SECRET`, `CSRF_SECRET`, `SESSION_SECRET` | Random secrets, `openssl rand -hex 32` each |
-| `FOUNDER_BOOTSTRAP_USERNAME`, `FOUNDER_BOOTSTRAP_PASSWORD` | Founder account created on first start |
+| `FOUNDER_BOOTSTRAP_PASSWORD` | Founder password, set on first start (the only Founder credential) |
 | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_ID` | Billing |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL_FROM`, `MAIL_FROM_NAME` | Email |
 | `SUPPORT_EMAIL` | Shown on Support, legal pages and emails |
@@ -133,14 +133,17 @@ it into the image:
 docker build --secret id=build_ca,src=/path/to/proxy-ca.crt -t culpos .
 ```
 
-### Founder account
+### Founder access
 
-On first start CulpOS creates the Founder account from
-`FOUNDER_BOOTSTRAP_USERNAME` / `FOUNDER_BOOTSTRAP_PASSWORD`. The password is
-stored only as a bcrypt hash. Sign in at `/founder` and change it at
-`/founder/account`. To recover a lost Founder password, set a new
-`FOUNDER_BOOTSTRAP_PASSWORD` with `FOUNDER_BOOTSTRAP_FORCE_RESET=true` for one
-restart, then remove the flag.
+There is exactly one Founder, and the Founder signs in with a password only —
+there is no Founder username or email. Put the initial password in your secret
+store as `FOUNDER_BOOTSTRAP_PASSWORD`; on first start CulpOS stores only its
+bcrypt hash. Sign in at `/founder` and change the password at
+`/founder/account`.
+
+To recover a lost Founder password, set a new `FOUNDER_BOOTSTRAP_PASSWORD`
+together with `FOUNDER_BOOTSTRAP_FORCE_RESET=true` for one restart, then remove
+the flag.
 
 ## Backup and restore
 

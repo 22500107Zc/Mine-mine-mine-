@@ -77,6 +77,6 @@
 </tbody></table></div>{{else}}<div class="empty">No events recorded.</div>{{end}}
 {{end}}
 
-{{define "audit-actor"}}{{if eq .ActorType "stripe"}}Stripe{{else if eq .ActorType "system"}}System{{else if eq .ActorType "founder"}}Founder{{if .ActorLabel}} ({{.ActorLabel}}){{end}}{{else if eq .ActorType "public"}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}Visitor{{end}}{{else}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}User {{.ActorID}}{{end}}{{end}}{{end}}
+{{define "audit-actor"}}{{if eq .ActorType "stripe"}}Stripe{{else if eq .ActorType "system"}}System{{else if eq .ActorType "founder"}}Founder{{else if eq .ActorType "public"}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}Visitor{{end}}{{else}}{{if .ActorLabel}}{{.ActorLabel}}{{else}}User {{.ActorID}}{{end}}{{end}}{{end}}
 
 {{define "audit-company"}}{{if .CompanyID}}<a href="/founder/companies/{{.CompanyID}}">{{if .CompanyName}}{{.CompanyName}}{{else}}{{.CompanyID}}{{end}}</a>{{else}}—{{end}}{{end}}

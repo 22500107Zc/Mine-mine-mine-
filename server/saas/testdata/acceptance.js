@@ -247,13 +247,35 @@ async function signup(b, co, first, email, pw) {
   const F = await b.newContext({ viewport: { width: 1366, height: 900 } });
   const fp = await F.newPage(); fp.on('dialog', d => d.accept());
   {
+    // Founder Access is password-only: no username, no email, no selector
+    const identityInputs = 'input[type=email], input[type=text], input[name*=user i], input[name*=email i], input[autocomplete=username], input[autocomplete=email], select, textarea';
     await fp.goto(B + '/founder');
-    await fp.fill('#username', 'founder'); await fp.fill('#password', 'not-the-password');
-    await post(fp, 'button[type=submit]');
-    ok('Founder wrong password rejected generically', (await fp.content()).includes('Invalid username or password.'));
-    await fp.fill('#username', 'founder'); await fp.fill('#password', FOUNDER_PW);
-    await post(fp, 'button[type=submit]');
+    await snap(fp, 'founder-access');
+    const loginText = (await fp.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ').trim();
+    const inputs = fp.locator('input:not([type=hidden])');
+    ok('Founder Access shows exactly CulpOS / Founder Access / Password / Sign In',
+      loginText === 'CulpOS Founder Access Password Sign In', loginText);
+    ok('Founder Access has exactly one input: Password',
+      (await inputs.count()) === 1 && (await inputs.first().getAttribute('type')) === 'password' &&
+      (await fp.getByLabel('Password', { exact: true }).count()) === 1);
+    ok('Founder Access has no username or email input', (await fp.locator(identityInputs).count()) === 0);
+    await fp.fill('#password', FOUNDER_PW);
+    await post(fp, 'button:has-text("Sign In")');
+    ok('Founder password alone opens /founder/dashboard', fp.url() === B + '/founder/dashboard', fp.url());
     const d = await snap(fp, 'founder-dashboard');
+
+    // an invalid password fails generically (separate browser, no session)
+    const X = await b.newContext(); const xp = await X.newPage();
+    await xp.goto(B + '/founder');
+    await xp.fill('#password', 'not-the-founder-password');
+    await post(xp, 'button:has-text("Sign In")');
+    const failed = await xp.evaluate(() => document.body.innerText);
+    ok('Founder invalid password fails generically', xp.url() === B + '/founder' && failed.includes('Sign in failed.') &&
+      !/hash|locked|exist|not found|username|email/i.test(failed));
+    ok('no username or email input after a failed attempt', (await xp.locator(identityInputs).count()) === 0 &&
+      (await xp.locator('input:not([type=hidden])').count()) === 1);
+    await X.close();
+
     ok('Founder dashboard: both companies, MRR $667.76', d.includes('Acme Operations') && d.includes('Beta Logistics') && d.includes('$667.76'));
     await post(fp, 'a:has-text("Acme Operations")');
     const c = await snap(fp, 'founder-company');

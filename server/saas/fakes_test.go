@@ -242,8 +242,8 @@ func testConfig() Config {
 			Tagline: DefaultTagline, PriceCents: 33388, PriceDisplay: "$333.88", Currency: "usd", BillingInterval: "month",
 			SupportEmail: "support@culpos.example", AppURL: "https://app.culpos.example", PublicAppURL: "https://app.culpos.example"},
 		StripeSecretKey: "sk_test", StripeWebhookSecret: testWebhookSecret, StripePriceID: "price_culpos",
-		FounderBootstrapUsername: "founder", FounderBootstrapPassword: "test-founder-passphrase-1",
-		FounderSessionIdleTTL: 30 * time.Minute, FounderSessionAbsoluteTTL: 8 * time.Hour,
+		FounderBootstrapPassword: "test-founder-passphrase-1",
+		FounderSessionIdleTTL:    30 * time.Minute, FounderSessionAbsoluteTTL: 8 * time.Hour,
 		FounderMaxFailedLogins: 5, FounderLockoutDuration: 15 * time.Minute,
 		SecureCookies: true, WebhookTolerance: 5 * time.Minute, Production: true,
 	}

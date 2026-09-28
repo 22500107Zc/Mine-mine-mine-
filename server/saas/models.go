@@ -63,9 +63,9 @@ type (
 		Suspended bool
 	}
 
+	// Founder is the single platform owner identity; it has no username
 	Founder struct {
 		ID             uint64
-		Username       string
 		PasswordHash   string
 		FailedAttempts int
 		LockedUntil    *time.Time
