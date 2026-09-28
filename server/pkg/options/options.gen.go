@@ -1095,8 +1095,8 @@ func Attachment() (o *AttachmentOpt) {
 	o = &AttachmentOpt{
 		AvatarMaxFileSize:             1000000,
 		AvatarInitialsFontPath:        "fonts/Poppins-Regular.ttf",
-		AvatarInitialsBackgroundColor: "#F3F3F3",
-		AvatarInitialsColor:           "#0B344E",
+		AvatarInitialsBackgroundColor: "#12171D",
+		AvatarInitialsColor:           "#00E0C0",
 	}
 
 	// Custom defaults

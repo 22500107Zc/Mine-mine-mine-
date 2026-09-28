@@ -163,8 +163,8 @@
   <section class="deck-kpis four" aria-label="Process figures">
     <div class="deck-tile"><div class="k">{{.Label}} reviewed</div><div class="v">{{num .Items}}</div><div class="s">items in scope</div></div>
     <div class="deck-tile"><div class="k">Avg status changes</div><div class="v">{{printf "%.1f" .AvgSteps}}</div><div class="s">per item</div></div>
-    <div class="deck-tile"><div class="k">Reopened</div><div class="v {{if ge .ReopenShare 10.0}}amber{{end}}">{{printf "%.0f" .ReopenShare}}%</div><div class="s">{{.Reopened}} items went back after finishing</div></div>
-    <div class="deck-tile"><div class="k">Finished without work step</div><div class="v">{{printf "%.0f" .SkipShare}}%</div><div class="s">{{.Skipped}} items skipped active work</div></div>
+    <div class="deck-tile"><div class="k">Reopened</div><div class="v {{if ge .ReopenShare 10.0}}amber{{end}}">{{printf "%.0f" .ReopenShare}}%</div><div class="s">{{.Reopened}} went back after finishing</div></div>
+    <div class="deck-tile"><div class="k">Skipped work step</div><div class="v">{{printf "%.0f" .SkipShare}}%</div><div class="s">{{.Skipped}} closed without active work</div></div>
   </section>
 
   <section class="deck-panel" aria-labelledby="flow-h">

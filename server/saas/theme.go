@@ -39,6 +39,8 @@ body {
 	background-color: #0B0F13 !important;
 	background-image: linear-gradient(#161B20 1px, transparent 1px), linear-gradient(90deg, #161B20 1px, transparent 1px) !important;
 	background-size: 56px 56px !important;
+	background-repeat: repeat !important;
+	background-position: 0 0 !important;
 	background-attachment: fixed !important;
 }
 #app, .auth, main, .main, .content, .page, .bg-light { background-color: transparent !important; background-image: none !important; }
@@ -107,6 +109,10 @@ a { color: #00E0C0; }
 .auth label { font-family: 'Plex-Mono-Medium', monospace !important; font-size: 12px !important; letter-spacing: .16em; text-transform: uppercase; color: #8E97A0 !important; }
 .footer, .footer a, .version, .version a { color: #8E97A0 !important; }
 .footer a:hover { color: #E7ECF2 !important; }
+/* the sign-in header and footer sit on the dark grid, so their "white" text stays light */
+body > header, body > header .text-white { color: #E7ECF2 !important; }
+body > footer, body > footer.text-white, body > footer .text-white { color: #8E97A0 !important; }
+body > footer a:hover { color: #E7ECF2 !important; }
 .auth .card, .auth .tabs { background-color: #12171D !important; border: 1px solid #262C33 !important; }
 .auth .login-title { font-family: 'Plex-Mono-Medium', monospace; font-size: 14px !important; letter-spacing: .22em; text-transform: uppercase; }
 .auth .nav-item.active { border-bottom: 2px solid #00E0C0 !important; }

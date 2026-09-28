@@ -167,9 +167,10 @@ form.inline { display: inline; }
 
 /* Metrics */
 .metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px; }
-.metric { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.metric { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; display: flex; flex-direction: column; }
 .metric .label { display: block; }
-.metric .value { font-family: var(--mono); font-size: 34px; font-weight: 400; margin-top: 8px; line-height: 1.15; }
+/* values share a baseline across the row, however many lines the label takes */
+.metric .value { font-family: var(--mono); font-size: 34px; font-weight: 400; margin-top: auto; padding-top: 8px; line-height: 1.15; }
 .metric.highlight { border-color: var(--accent); }
 .metric.highlight .value { color: var(--accent); }
 
@@ -366,10 +367,12 @@ a.heat-cell:hover, a.heat-cell:focus-visible { outline: 2px solid var(--text); o
 .deck .tag.bad { color: var(--red); border-color: var(--red); }
 .deck .tag.neutral { color: var(--muted); border-color: var(--line); }
 .deck-table { width: 100%; border-collapse: collapse; }
-.deck-table th { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 16px 24px 12px; border-bottom: 1px solid var(--line); }
-.deck-table td { font-family: var(--mono); font-size: 15px; padding: 14px 24px; border-bottom: 1px solid var(--line-soft); color: var(--text); white-space: nowrap; }
+.deck-table th { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); text-align: left; padding: 16px 16px 12px; border-bottom: 1px solid var(--line); }
+.deck-table td { font-family: var(--mono); font-size: 15px; padding: 14px 16px; border-bottom: 1px solid var(--line-soft); color: var(--text); white-space: nowrap; }
 .deck-table td.t { font-family: var(--sans); white-space: normal; }
 .deck-table th.r, .deck-table td.r { text-align: right; }
+.deck-table th:first-child, .deck-table td:first-child { padding-left: 24px; }
+.deck-table th:last-child, .deck-table td:last-child { padding-right: 24px; }
 .deck-list { list-style: none; margin: 0; padding: 8px 24px 16px; }
 .deck-list li { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
 .deck-list li span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -407,6 +410,8 @@ a.heat-cell:hover, a.heat-cell:focus-visible { outline: 2px solid var(--text); o
   .deck-panel-head { flex-direction: column; padding: 18px; }
   .deck-stages, .deck-cards, .heat-wrap, .deck-note, .deck-scope, .deck-form, .deck-flow, .deck-bars { padding-left: 18px; padding-right: 18px; }
   .deck-table th, .deck-table td { padding-left: 14px; padding-right: 14px; }
+  .deck-table th:first-child, .deck-table td:first-child { padding-left: 18px; }
+  .deck-table th:last-child, .deck-table td:last-child { padding-right: 18px; }
   .deck-scope select { min-width: 0; }
   .deck-flow .step { grid-template-columns: 1fr auto; }
   .deck-flow .step .bar { grid-column: 1 / -1; order: 3; }
