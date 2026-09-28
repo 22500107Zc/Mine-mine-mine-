@@ -136,7 +136,7 @@ async function signup(b, co, first, email, pw) {
     await page.waitForURL(/\/compose\/ns\/.+\/pages/, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(4000);
     const dash = await snap(page, 'owner-dashboard');
-    ok('owner sees Dashboard with workspace navigation', ['Dashboard', 'Customers', 'Tasks'].every(x => dash.includes(x)), page.url());
+    ok('owner sees Dashboard with workspace navigation', ['dashboard', 'customers', 'tasks'].every(x => dash.toLowerCase().includes(x)), page.url());
     ok('onboarding completed recorded', sql(`select onboarding_completed_at is not null from saas_companies where name='Acme Operations'`) === 't');
 
     // Customers page via UI shows onboarding customer, then create one through the app UI.
@@ -163,7 +163,7 @@ async function signup(b, co, first, email, pw) {
     // Command Deck: built from the company's own recorded activity
     await page.goto(B + '/');
     await page.waitForTimeout(3000);
-    ok('launcher offers the Command Deck to the owner', (await page.evaluate(() => document.body.innerText)).includes('Command Deck'));
+    ok('launcher offers the Command Deck to the owner', (await page.evaluate(() => document.body.innerText)).toLowerCase().includes('command deck'));
     await page.goto(B + '/command');
     const deck = await snap(page, 'command-deck');
     ok('Command Deck shows all sections', ['Activity 7d', 'Completion rate', 'What is happening', 'Where is it happening',
@@ -176,14 +176,28 @@ async function signup(b, co, first, email, pw) {
     ok('Activity Graph day lists records created in the app', ['Northwind Traders', 'Contoso Freight', 'Call Northwind about Q4 order'].every(x => day.includes(x)));
     const recLink = await page.locator('a[href*="/record/"]').first().getAttribute('href').catch(() => null);
     ok('day records link into the workspace', !!recLink && recLink.includes('/compose/ns/'), recLink || '');
-    for (const [p, label] of [['/command/pipeline', 'Pipeline & bottlenecks'], ['/command/goals', 'Goal Intelligence']]) {
-      await page.goto(B + p);
-      ok(`Command Deck tab ${p}`, (await snap(page, p.split('/').pop())).toLowerCase().includes(label.toLowerCase()));
+    for (const [p, label] of [['/command/pipeline', 'Where does work stop moving?'], ['/command/outcomes', 'What is it affecting?'],
+      ['/command/process', 'How does work actually move?'], ['/command/organization', 'Who carries the work?'],
+      ['/command/goals', 'What should we aim for'], ['/command/tests', 'Did the change work?'],
+      ['/command/access', 'Who can see and change what?'], ['/command/report', 'Something wrong or missing?']]) {
+      const rsp = await page.goto(B + p);
+      ok(`Command Deck tab ${p}`, rsp.status() === 200 && (await snap(page, p.split('/').pop())).toLowerCase().includes(label.toLowerCase()));
     }
+    await page.goto(B + '/command/pipeline');
+    const pipe = (await page.evaluate(() => document.body.innerText)).toLowerCase();
+    ok('Pipeline shows the four KPI cards', ['avg end-to-end cycle', 'waiting share of cycle', 'stages breaching sla', 'items still in stage'].every(x => pipe.includes(x)));
+    await page.goto(B + '/command/goals');
+    await page.fill('#t-Task', '12');
+    await post(page, 'button:has-text("Save Targets")');
+    ok('Goal Intelligence saves a target', (await page.inputValue('#t-Task')) === '12');
+    await page.goto(B + '/command/tests');
+    await page.fill('#nt-title', 'Morning triage of new tasks');
+    await post(page, 'button:has-text("Start Test")');
+    ok('Intervention test started', /morning triage of new tasks/i.test(await page.evaluate(() => document.body.innerText)));
 
     await page.goto(B + '/billing');
     const bill = await snap(page, 'billing-active');
-    ok('/billing: active, $333.88, next billing date, Manage Billing', /Active/.test(bill) && bill.includes('$333.88') && /Next billing date/i.test(bill) && bill.includes('Manage Billing'));
+    ok('/billing: active, $333.88, next billing date, Manage Billing', /active/i.test(bill) && bill.includes('$333.88') && /next billing date/i.test(bill) && /manage billing/i.test(bill));
     await post(page, 'button:has-text("Manage Billing")');
     ok('Manage Billing opens server-created portal session', page.url().startsWith(MOCK + '/portal/cus_'), page.url());
     await post(page, '#back');
@@ -205,16 +219,22 @@ async function signup(b, co, first, email, pw) {
     await post(page, 'button[type=submit]');
     await page.goto(B + '/'); await page.waitForTimeout(3000);
     const home = await snap(page, 'employee-home');
-    ok('employee home shows Workspace', home.includes('Workspace'));
-    ok('employee launcher hides owner-only apps', !home.includes('Command Deck') && !home.includes('Billing'));
+    ok('employee home shows Workspace', /workspace/i.test(home));
+    ok('employee launcher hides owner-only apps', !/command deck/i.test(home) && !/billing/i.test(home));
     await page.goto(B + '/compose/'); await page.waitForURL(/\/compose\/ns\/.+\/pages/, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(4000);
     const t = await snap(page, 'employee-dashboard');
-    ok('employee accepted invite and sees company workspace', ['Dashboard', 'Customers', 'Tasks'].every(x => t.includes(x)), page.url());
+    ok('employee accepted invite and sees company workspace', ['dashboard', 'customers', 'tasks'].every(x => t.toLowerCase().includes(x)), page.url());
     await page.goto(B + '/billing');
     ok('employee cannot manage billing', !(await page.content()).includes('Cancel Subscription'));
     const deckRsp = await page.goto(B + '/command');
     ok('employee cannot open the Command Deck', deckRsp.status() === 403, String(deckRsp.status()));
+    await page.goto(B + '/support');
+    await page.selectOption('#ir-cat', 'Data looks wrong');
+    await page.fill('#ir-sum', 'Customer export is missing the phone column');
+    await post(page, 'button:has-text("Send Report")');
+    ok('employee reports an issue from Support', /sent to culp industries support/i.test(await page.evaluate(() => document.body.innerText)));
+    ok('support receives the issue by email', !!(await waitMail('support@culpos.test', /issue #\d+/i)));
     await page.goto(B + '/founder/dashboard');
     ok('employee cannot reach Founder dashboard', /\/founder$|\/founder\?|\/founder\/login/.test(page.url()) || !(await page.content()).includes('Monthly Recurring'), page.url());
     E = { ctx, page };
@@ -275,7 +295,7 @@ async function signup(b, co, first, email, pw) {
     const identityInputs = 'input[type=email], input[type=text], input[name*=user i], input[name*=email i], input[autocomplete=username], input[autocomplete=email], select, textarea';
     await fp.goto(B + '/founder');
     await snap(fp, 'founder-access');
-    const loginText = (await fp.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ').trim();
+    const loginText = (await fp.evaluate(() => document.body.textContent)).replace(/\s+/g, ' ').trim();
     const inputs = fp.locator('input:not([type=hidden])');
     ok('Founder Access shows exactly CulpOS / Founder Access / Password / Sign In',
       loginText === 'CulpOS Founder Access Password Sign In', loginText);
@@ -303,6 +323,9 @@ async function signup(b, co, first, email, pw) {
     ok('Founder dashboard: both companies, MRR $667.76', d.includes('Acme Operations') && d.includes('Beta Logistics') && d.includes('$667.76'));
     await post(fp, 'a:has-text("Acme Operations")');
     const c = await snap(fp, 'founder-company');
+    await fp.goto(B + '/founder/issues');
+    ok('Founder sees the reported issue', (await fp.evaluate(() => document.body.innerText)).includes('Customer export is missing the phone column'));
+    await fp.goBack();
     ok('Founder company detail: users, subscription, Stripe IDs, audit', c.includes('eve@acme.test') && /cus_/.test(c) && /sub_/.test(c) && /Audit/i.test(c));
     await post(fp, 'button:has-text("Disable Company")');
     await snap(fp, 'founder-company-disabled');
@@ -316,7 +339,7 @@ async function signup(b, co, first, email, pw) {
     await A.page.goto(B + '/compose/'); await A.page.waitForURL(/\/compose\/ns\/.+\/pages/, { timeout: 30000 }).catch(() => {});
     await A.page.waitForTimeout(4000);
     const back = await snap(A.page, 'owner-after-enable');
-    ok('re-enabled company: access returns', back.includes('Dashboard') && back.includes('Customers'), A.page.url());
+    ok('re-enabled company: access returns', /dashboard/i.test(back) && /customers/i.test(back), A.page.url());
   }
 
   // ---------- payment failure ----------
@@ -331,7 +354,7 @@ async function signup(b, co, first, email, pw) {
     await fetch(`${MOCK}/__recover?sub=${subA}`, { method: 'POST' });
     await sleep(1000);
     await A.page.reload();
-    ok('payment recovered: active again', /Active/.test(await A.page.evaluate(() => document.body.innerText)) && sql(`select subscription_status from saas_companies where name='Acme Operations'`) === 'active');
+    ok('payment recovered: active again', /active/i.test(await A.page.evaluate(() => document.body.innerText)) && sql(`select subscription_status from saas_companies where name='Acme Operations'`) === 'active');
   }
 
   // ---------- cancel / resume / cancellation ----------

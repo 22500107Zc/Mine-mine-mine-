@@ -34,7 +34,7 @@
             <b-col
               v-for="app in filteredApps"
               :key="app.applicationID"
-              cols="12"
+              cols="6"
               md="6"
               lg="4"
               xl="3"
@@ -47,15 +47,15 @@
                 @mouseover="hovered = app.applicationID"
                 @mouseleave="hovered = undefined"
               >
-                <div class="align-content-center d-flex flex-grow-1 flex-wrap">
-                  <b-card-img
-                    class="rounded-bottom thumbnail"
+                <div class="app-icon d-flex align-items-center justify-content-center">
+                  <b-img
+                    class="thumbnail"
                     :src="logoUrl(app)"
-                    :alt="app.unify.name || app.name"
+                    alt=""
                   />
                 </div>
 
-                <h6 class="text-center my-4">
+                <h6 class="app-name text-center mb-0">
                   {{ app.unify.name || app.name }}
                 </h6>
 
@@ -233,21 +233,62 @@ export default {
   }
 
   .app {
-    min-height: 13rem;
-    transition: all 0.2s ease;
-    box-shadow: 0;
+    border-radius: 4px !important;
+    min-height: 11rem;
+    padding: 1.75rem 1rem 1.5rem;
+    justify-content: space-between;
+    transition: border-color 0.2s ease;
+    box-shadow: none;
     top: 0;
 
+    .app-icon {
+      height: 72px;
+      margin-bottom: 1.25rem;
+    }
+
     .thumbnail {
-      max-width: 100%;
-      max-height: 150px;
+      width: 64px;
+      height: 64px;
+      max-width: 64px;
       object-fit: contain;
     }
 
+    .app-name {
+      font-family: 'Plex-Mono-Medium', monospace;
+      font-size: 13px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      line-height: 1.5;
+    }
+
     &:hover {
-      transition: all 0.2s ease;
-      box-shadow: 0px 4px 8px rgba(38, 38, 38, 0.2);
-      top: -2px;
+      border-color: var(--primary) !important;
+
+      .app-name {
+        color: var(--primary);
+      }
+    }
+  }
+
+  @media only screen and (max-width: 576px) {
+    .app {
+      min-height: 9rem;
+      padding: 1.25rem 1rem;
+
+      .app-icon {
+        height: 48px;
+        margin-bottom: .75rem;
+      }
+
+      .thumbnail {
+        width: 44px;
+        height: 44px;
+      }
+
+      .app-name {
+        font-size: 11px;
+        letter-spacing: .14em;
+      }
     }
   }
 

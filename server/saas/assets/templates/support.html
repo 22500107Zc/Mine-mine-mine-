@@ -13,6 +13,14 @@
   {{if .Company}}<p class="muted small">Signed in as a member of <strong>{{.Company.Name}}</strong>.</p>{{end}}
 </section>
 
+{{if .Company}}
+<section class="card" id="report" aria-labelledby="report-h">
+  <h2 id="report-h">Report an issue</h2>
+  <p class="muted">Tell us what went wrong or what is missing. It goes straight to {{brand.CompanyName}} support with your company attached.</p>
+  {{template "issue-form" .}}
+</section>
+{{end}}
+
 <div class="grid-2">
   <section class="card" aria-labelledby="billing-h">
     <h2 id="billing-h">Billing help</h2>
@@ -48,3 +56,19 @@
   </section>
 </div>
 {{template "foot" .}}{{end}}
+
+{{define "issue-form"}}
+<form method="post" action="/support/report">
+  <input type="hidden" name="csrf" value="{{.CSRF}}">
+  <input type="hidden" name="page" value="{{.Path}}">
+  <div class="row-2">
+    <div class="field"><label for="ir-cat">Category</label>
+      <select id="ir-cat" name="category" required>{{range issueCategories}}<option>{{.}}</option>{{end}}</select></div>
+    <div class="field"><label for="ir-sum">Summary</label>
+      <input id="ir-sum" type="text" name="summary" required minlength="5" maxlength="200" placeholder="e.g. Export from Customers is empty"></div>
+  </div>
+  <div class="field"><label for="ir-det">Details</label>
+    <textarea id="ir-det" name="details" rows="5" maxlength="4000" placeholder="What did you do, what happened, and what did you expect?"></textarea></div>
+  <button class="btn" type="submit">Send Report</button>
+</form>
+{{end}}

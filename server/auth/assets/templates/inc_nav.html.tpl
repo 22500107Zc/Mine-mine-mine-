@@ -5,7 +5,7 @@
 							data-test-id="img-logo"
 							class="logo"
 							alt="CulpOS"
-							src="/culpos/static/culpos-logo.svg"
+							src="/culpos/static/culpos-logo-light.svg"
 						>
         </a>
     </div>

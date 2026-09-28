@@ -10,3 +10,18 @@ document.addEventListener('submit', function (e) {
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.heat-wrap').forEach(function (el) { el.scrollLeft = el.scrollWidth; });
 });
+
+// Scope filters apply as soon as a value changes
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('form[data-autosubmit]').forEach(function (form) {
+    var apply = form.querySelector('[data-apply]');
+    if (apply) { apply.hidden = true; }
+    form.querySelectorAll('select').forEach(function (s) {
+      s.addEventListener('change', function () { form.submit(); });
+    });
+  });
+  // keep the active tab in view on small screens
+  document.querySelectorAll('.deck-tabs .active').forEach(function (a) {
+    a.scrollIntoView({ block: 'nearest', inline: 'center' });
+  });
+});

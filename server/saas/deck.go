@@ -74,6 +74,9 @@ type (
 		Impact   ImpactTable
 		Recs     []Recommendation
 
+		// Tracked holds every tracked, not deleted work item (for the tab views)
+		Tracked []*WorkItem
+
 		OpenItems    []*WorkItem // oldest open first
 		OverdueItems []*WorkItem
 	}
@@ -169,6 +172,8 @@ type (
 		HowToTest  string
 		Confidence int
 		Basis      string // measured | correlation
+		Module     string // workflow the test applies to
+		Metric     string // metric an intervention test measures
 		score      float64
 	}
 
@@ -185,7 +190,11 @@ type (
 		DueAt               *time.Time
 		Breached            bool
 		Department          uint64
+		Assignee            uint64
 		People              map[uint64]bool
+		StatusTime          map[string]time.Duration
+		Path                []string
+		Transitions         [][2]string
 		passesWait          []time.Duration
 		lastStatusChangeAt  time.Time
 		completedDay        time.Time
@@ -198,6 +207,14 @@ type (
 )
 
 func hours(d time.Duration) float64 { return d.Hours() }
+
+// statusName labels an empty status
+func statusName(s string) string {
+	if s == "" {
+		return "No status"
+	}
+	return s
+}
 
 func dayOf(t time.Time) time.Time {
 	y, m, d := t.UTC().Date()
@@ -221,6 +238,7 @@ func BuildDeck(events []ActivityEvent, now time.Time, departments map[uint64]str
 		}
 	}
 
+	d.Tracked = tracked
 	d.Enough = len(tracked) >= minItemsForAnalysis
 	d.Stages = stages(tracked)
 	d.Impact = impact(tracked, departments)
@@ -256,7 +274,7 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 	for _, e := range events {
 		it := byID[e.RecordID]
 		if it == nil {
-			it = &WorkItem{Module: e.Module, ID: e.RecordID, CreatedAt: e.OccurredAt, People: map[uint64]bool{},
+			it = &WorkItem{Module: e.Module, ID: e.RecordID, CreatedAt: e.OccurredAt, People: map[uint64]bool{}, StatusTime: map[string]time.Duration{},
 				stage: stageFor(e.Module), lastStatusChangeAt: e.OccurredAt, createdWeekday: e.OccurredAt.Weekday()}
 			byID[e.RecordID] = it
 			order = append(order, it)
@@ -267,6 +285,7 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		}
 		if e.AssigneeID > 0 {
 			it.People[e.AssigneeID] = true
+			it.Assignee = e.AssigneeID
 		}
 		if e.ActorID > 0 {
 			it.People[e.ActorID] = true
@@ -285,6 +304,7 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		case ActivityCreated:
 			it.Status = e.ToStatus
 			it.lastStatusChangeAt = e.OccurredAt
+			it.Path = []string{statusName(e.ToStatus)}
 			continue
 		case ActivityStatus:
 		default:
@@ -300,6 +320,11 @@ func reconstruct(events []ActivityEvent, now time.Time, departments map[uint64]s
 		it.account(e.OccurredAt)
 
 		wasTerminal := it.stage.Done[it.Status] || it.stage.Failed[it.Status]
+		if len(it.Path) == 0 {
+			it.Path = []string{statusName(it.Status)}
+		}
+		it.Transitions = append(it.Transitions, [2]string{statusName(it.Status), statusName(e.ToStatus)})
+		it.Path = append(it.Path, statusName(e.ToStatus))
 		it.Status = e.ToStatus
 		it.lastStatusChangeAt = e.OccurredAt
 
@@ -344,6 +369,10 @@ func (it *WorkItem) account(until time.Time) {
 	dur := until.Sub(it.lastStatusChangeAt)
 	if dur <= 0 || it.stage == nil {
 		return
+	}
+
+	if !it.stage.Done[it.Status] && !it.stage.Failed[it.Status] {
+		it.StatusTime[statusName(it.Status)] += dur
 	}
 
 	switch {
@@ -752,6 +781,7 @@ type corrResult struct {
 
 type reworkResult struct {
 	stage    string
+	module   string
 	fastRate float64
 	slowRate float64
 	n        int
@@ -897,7 +927,7 @@ func reworkCorrelation(items []*WorkItem) *reworkResult {
 		}
 		fr, sr := float64(fastRe)/float64(fast)*100, float64(slowRe)/float64(slow)*100
 		if fr-sr >= 5 && (best == nil || fr-sr > best.fastRate-best.slowRate) {
-			best = &reworkResult{stage: label, fastRate: fr, slowRate: sr, n: len(ii)}
+			best = &reworkResult{stage: label, module: ii[0].Module, fastRate: fr, slowRate: sr, n: len(ii)}
 		}
 	}
 	return best
@@ -1045,6 +1075,8 @@ func recommendations(d *Deck, items []*WorkItem) []Recommendation {
 			HowToTest:  fmt.Sprintf("Run for 3 weeks and compare the average wait in %s against today's %.1fh.", top.Label, top.AvgWaitH),
 			Confidence: confidence(top.Passes, top.WaitShare/100),
 			Basis:      "measured",
+			Module:     top.Module,
+			Metric:     "wait",
 			score:      mid,
 		})
 	}
@@ -1063,6 +1095,8 @@ func recommendations(d *Deck, items []*WorkItem) []Recommendation {
 			HowToTest:  "Staff the extra person for 4 weeks and compare waiting time on those days with the weeks before.",
 			Confidence: confidence(hc.days, -hc.r),
 			Basis:      "correlation",
+			Module:     hc.stage.Module,
+			Metric:     "wait",
 			score:      mid * 0.8,
 		})
 	}
@@ -1077,6 +1111,8 @@ func recommendations(d *Deck, items []*WorkItem) []Recommendation {
 			HowToTest:  "Use the checklist for 4 weeks and compare the reopen rate with the current rate.",
 			Confidence: confidence(rw.n, gap/20),
 			Basis:      "correlation",
+			Module:     rw.module,
+			Metric:     "rework",
 			score:      gap / 2,
 		})
 	}
@@ -1092,6 +1128,8 @@ func recommendations(d *Deck, items []*WorkItem) []Recommendation {
 				HowToTest:  "Hold the review for 4 weeks and compare the missed-due-date rate with the current rate.",
 				Confidence: confidence(st.Passes, st.BreachRate/50),
 				Basis:      "measured",
+				Module:     st.Module,
+				Metric:     "breach",
 				score:      mid,
 			})
 			break

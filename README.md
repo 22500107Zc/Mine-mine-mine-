@@ -32,12 +32,23 @@ hand. CulpOS does this itself:
    invite team, first customer, first task). Invited team members are included
    in the company subscription.
 4. Every change to a workspace record is measured. Owners, administrators and
-   managers get the **Command Deck** at `/command`: activity KPIs, a 12-month
-   activity graph with day drill-down, where work waits (pipeline and
-   bottlenecks), measured findings kept separate from correlations, outcomes
-   by department, and ranked recommendations with evidence, expected effect,
-   confidence and how to test them. It uses only the company's own data and
-   shows nothing it cannot support.
+   managers get the **Command Deck** at `/command`, built only from the
+   company's own data:
+   - **Command Deck** – activity KPIs, what is happening, where, why, what it
+     affects and what to test next
+   - **Activity Graph** – 12-month activity graph with day drill-down to records
+   - **Pipeline & Bottlenecks** – scope filters, end-to-end cycle, waiting
+     share, workflows breaching their target, per-status stages, aging work
+   - **Outcomes & Effects** – monthly trend and the measured effect of waiting,
+     missed due dates and rework on completion time
+   - **Process Review** – how work really moves: transitions, loops, paths
+   - **Organization Frame** – workload by person and department
+   - **Goal Intelligence** – cycle-time targets and ranked recommendations
+   - **Intervention Tests** – start a test and get an automatic before/after
+     measurement
+   - **Org & Access** – people, roles and what each role can do
+   - **Report an Issue** – sent to Culp Industries support (also on `/support`
+     for every member); the Founder sees reports at `/founder/issues`
 5. Subscription changes (payment failures, recovery, cancellation at period
    end, resumption, cancellation) arrive through webhooks and are enforced on
    the server for every request. Customer data is never deleted because of

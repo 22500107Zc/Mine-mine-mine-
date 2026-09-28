@@ -154,6 +154,45 @@ var schema = []string{
 	`CREATE INDEX IF NOT EXISTS saas_activity_company_idx ON saas_activity_events (company_id, occurred_at)`,
 	`CREATE INDEX IF NOT EXISTS saas_activity_record_idx ON saas_activity_events (company_id, record_id)`,
 	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS activity_backfilled_at TIMESTAMPTZ NULL`,
+
+	// Command Deck goals: target completion time per workflow
+	`CREATE TABLE IF NOT EXISTS saas_deck_targets (
+		company_id  BIGINT      NOT NULL,
+		module      TEXT        NOT NULL,
+		cycle_hours NUMERIC     NOT NULL,
+		updated_by  BIGINT      NOT NULL DEFAULT 0,
+		updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		PRIMARY KEY (company_id, module)
+	)`,
+
+	// Command Deck intervention tests (before/after measurement)
+	`CREATE TABLE IF NOT EXISTS saas_deck_interventions (
+		id          BIGSERIAL   PRIMARY KEY,
+		company_id  BIGINT      NOT NULL,
+		title       TEXT        NOT NULL,
+		module      TEXT        NOT NULL DEFAULT '',
+		metric      TEXT        NOT NULL,
+		baseline    NUMERIC     NOT NULL DEFAULT 0,
+		baseline_n  INTEGER     NOT NULL DEFAULT 0,
+		started_at  TIMESTAMPTZ NOT NULL,
+		ended_at    TIMESTAMPTZ NULL,
+		created_by  BIGINT      NOT NULL DEFAULT 0
+	)`,
+	`CREATE INDEX IF NOT EXISTS saas_deck_interventions_company_idx ON saas_deck_interventions (company_id, started_at DESC)`,
+
+	// Issues reported by company users to platform support
+	`CREATE TABLE IF NOT EXISTS saas_issue_reports (
+		id          BIGSERIAL   PRIMARY KEY,
+		company_id  BIGINT      NOT NULL,
+		user_id     BIGINT      NOT NULL,
+		category    TEXT        NOT NULL,
+		summary     TEXT        NOT NULL,
+		details     TEXT        NOT NULL DEFAULT '',
+		page        TEXT        NOT NULL DEFAULT '',
+		status      TEXT        NOT NULL DEFAULT 'open',
+		created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+	)`,
+	`CREATE INDEX IF NOT EXISTS saas_issue_reports_created_idx ON saas_issue_reports (created_at DESC)`,
 }
 
 // Migrate applies the schema

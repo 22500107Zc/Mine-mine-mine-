@@ -88,10 +88,11 @@ func (svc *Service) MountRoutes(r chi.Router) {
 			r.With(httprate.LimitByIP(60, time.Minute)).Post("/company/invite", svc.companyInvite)
 			r.With(httprate.LimitByIP(60, time.Minute)).Post("/company/members/{userID}/{action}", svc.companyMemberAction)
 			r.With(httprate.LimitByIP(30, time.Minute)).Post("/company/profile", svc.companyProfile)
-			r.Get("/command", svc.commandDeck("deck"))
-			r.Get("/command/activity", svc.commandDeck("activity"))
-			r.Get("/command/pipeline", svc.commandDeck("pipeline"))
-			r.Get("/command/goals", svc.commandDeck("goals"))
+			for _, t := range deckTabs {
+				r.Get(t.Path, svc.commandDeck(t.Key))
+			}
+			r.With(httprate.LimitByIP(30, time.Minute)).Post("/command/actions/{action}", svc.deckAction)
+			r.With(httprate.LimitByIP(10, time.Hour)).Post("/support/report", svc.reportIssue)
 			r.Get("/welcome", svc.welcomePage)
 			r.With(httprate.LimitByIP(60, time.Minute)).Post("/welcome/{action}", svc.welcomeAction)
 

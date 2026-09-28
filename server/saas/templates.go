@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"mime"
 	"strings"
 	"time"
 )
@@ -74,10 +75,47 @@ func parseTemplates(b Brand) (*template.Template, error) {
 			}
 			return s
 		},
-		"upper": strings.ToUpper,
-		"hrs":   func(v float64) string { return fmt.Sprintf("%.1fh", v) },
-		"pct1":  func(v float64) string { return fmt.Sprintf("%.1f%%", v) },
-		"num":   formatInt,
+		"upper":           strings.ToUpper,
+		"issueCategories": func() []string { return issueCategories },
+		"lower":           strings.ToLower,
+		"effects": func(ee ...*Effect) []*Effect {
+			var out []*Effect
+			for _, e := range ee {
+				if e != nil {
+					out = append(out, e)
+				}
+			}
+			return out
+		},
+		"stageStat": func(d *Deck, module string) *StageStat {
+			for i := range d.Stages {
+				if d.Stages[i].Module == module {
+					return &d.Stages[i]
+				}
+			}
+			return nil
+		},
+		"metricValue": func(v float64, unit string) string {
+			switch unit {
+			case "h":
+				if v >= 48 {
+					return fmt.Sprintf("%.1fd", v/24)
+				}
+				return fmt.Sprintf("%.1fh", v)
+			case "%":
+				return fmt.Sprintf("%.1f%%", v)
+			}
+			return fmt.Sprintf("%.2f%s", v, unit)
+		},
+		"dur": func(h float64) string {
+			if h >= 48 {
+				return fmt.Sprintf("%.1fd", h/24)
+			}
+			return fmt.Sprintf("%.1fh", h)
+		},
+		"hrs":  func(v float64) string { return fmt.Sprintf("%.1fh", v) },
+		"pct1": func(v float64) string { return fmt.Sprintf("%.1f%%", v) },
+		"num":  formatInt,
 		"change": func(cur, prev float64) template.HTML {
 			if prev <= 0 {
 				return template.HTML(`<span class="muted">no baseline</span>`)
@@ -182,4 +220,9 @@ func formatInt(n int) string {
 		return "-" + b.String()
 	}
 	return b.String()
+}
+
+func init() {
+	// bundled web fonts (IBM Plex, SIL Open Font License)
+	_ = mime.AddExtensionType(".woff2", "font/woff2")
 }

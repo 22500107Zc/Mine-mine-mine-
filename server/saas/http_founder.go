@@ -51,6 +51,8 @@ func (svc *Service) mountFounder(r chi.Router) {
 		r.Post("/founder/users/{userID}/{action}", svc.founderUserAction)
 		r.Get("/founder/billing", svc.founderBilling)
 		r.Get("/founder/audit", svc.founderAudit)
+		r.Get("/founder/issues", svc.founderIssues)
+		r.Post("/founder/issues/{issueID}/{status}", svc.founderIssueStatus)
 		r.Get("/founder/system", svc.founderSystem)
 		r.Get("/founder/account", svc.founderAccount)
 		r.Post("/founder/account/password", svc.founderPassword)
@@ -592,4 +594,48 @@ func (svc *Service) founderLogout(w http.ResponseWriter, r *http.Request) {
 
 	svc.setFounderCookie(w, "", -1)
 	http.Redirect(w, r, "/founder", http.StatusSeeOther)
+}
+
+func (svc *Service) founderIssues(w http.ResponseWriter, r *http.Request) {
+	issues, err := svc.repo.IssueReports(r.Context(), 0, 200)
+	if err != nil {
+		svc.internalError(w, r, err)
+		return
+	}
+
+	ids := map[uint64]bool{}
+	for _, ir := range issues {
+		ids[ir.UserID] = true
+	}
+	var list []uint64
+	for id := range ids {
+		list = append(list, id)
+	}
+	if uu, err := svc.platform.Users(r.Context(), list...); err == nil {
+		for _, ir := range issues {
+			ir.UserEmail = uu[ir.UserID].Email
+		}
+	}
+
+	d := svc.founderPage(r, "Founder · Issues", "issues")
+	d["Issues"] = issues
+	svc.render(w, r, http.StatusOK, "founder-issues", d)
+}
+
+func (svc *Service) founderIssueStatus(w http.ResponseWriter, r *http.Request) {
+	id, _ := strconv.ParseInt(chi.URLParam(r, "issueID"), 10, 64)
+	status := chi.URLParam(r, "status")
+	if status != "open" && status != "resolved" {
+		svc.renderError(w, r, http.StatusNotFound)
+		return
+	}
+
+	if err := svc.repo.SetIssueStatus(r.Context(), id, status); err != nil {
+		svc.internalError(w, r, err)
+		return
+	}
+
+	fa := founderFrom(r)
+	svc.audit(r.Context(), founderActor(fa.founder, clientIP(r)).with("founder.issue."+status, strconv.FormatInt(id, 10), ResultSuccess, nil))
+	http.Redirect(w, r, "/founder/issues", http.StatusSeeOther)
 }

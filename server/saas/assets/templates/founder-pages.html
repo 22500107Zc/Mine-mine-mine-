@@ -254,3 +254,23 @@
   </section>
 </div>
 {{template "foot" .}}{{end}}
+
+{{define "founder-issues"}}{{template "head" .}}
+<h1>Issues</h1>
+<p class="lead">Problems and requests reported by company users.</p>
+<section class="card">
+{{if .Issues}}<div class="table-wrap"><table>
+  <thead><tr><th scope="col">#</th><th scope="col">Reported</th><th scope="col">Company</th><th scope="col">From</th><th scope="col">Category</th><th scope="col">Issue</th><th scope="col">Status</th><th scope="col"></th></tr></thead>
+  <tbody>{{range .Issues}}<tr>
+    <td class="mono">{{.ID}}</td>
+    <td class="nowrap">{{datetime .CreatedAt}}</td>
+    <td><a href="/founder/companies/{{.CompanyID}}">{{orDash .CompanyName}}</a></td>
+    <td>{{orDash .UserEmail}}</td>
+    <td>{{.Category}}</td>
+    <td><strong>{{.Summary}}</strong>{{if .Details}}<div class="muted small" style="white-space:pre-wrap">{{.Details}}</div>{{end}}{{if .Page}}<div class="muted small">Page: {{.Page}}</div>{{end}}</td>
+    <td><span class="pill {{if eq .Status "open"}}warn{{else}}ok{{end}}">{{.Status}}</span></td>
+    <td class="actions"><form class="inline" method="post" action="/founder/issues/{{.ID}}/{{if eq .Status "open"}}resolved{{else}}open{{end}}"><input type="hidden" name="csrf" value="{{$.CSRF}}"><button class="btn small secondary" type="submit">{{if eq .Status "open"}}Mark Resolved{{else}}Reopen{{end}}</button></form></td>
+  </tr>{{end}}</tbody>
+</table></div>{{else}}<div class="empty">No issues have been reported.</div>{{end}}
+</section>
+{{template "foot" .}}{{end}}

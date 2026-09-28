@@ -82,9 +82,14 @@ func (app *CortezaApp) initSaaS(ctx context.Context) error {
 		enforced["general.mail.logo"] = cfg.Brand.URL("/culpos/static/culpos-email-logo.png")
 	}
 
+	// CulpOS look for the web applications and sign-in pages (platform managed)
+	themes, customCSS := saas.WebappTheme()
+	enforced["ui.studio.themes"] = themes
+	enforced["ui.studio.custom-css"] = customCSS
+
 	// Default CulpOS logos for the web applications (only when not customized)
-	if sysService.CurrentSettings.UI.MainLogo == "" {
-		enforced["ui.main-logo"] = "/culpos/static/culpos-logo.svg"
+	if l := sysService.CurrentSettings.UI.MainLogo; l == "" || l == "/culpos/static/culpos-logo.svg" {
+		enforced["ui.main-logo"] = "/culpos/static/culpos-logo-light.svg"
 	}
 
 	if sysService.CurrentSettings.UI.IconLogo == "" {
