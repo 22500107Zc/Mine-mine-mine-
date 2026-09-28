@@ -2,24 +2,33 @@
 <h1>Billing</h1>
 <p class="lead">{{.Company.Name}}</p>
 
-{{if .Decision.Warning}}<div class="alert warning" role="status">{{.Decision.Warning}}</div>{{end}}
-{{if eq .Decision.Reason "payment-required" "not-provisioned"}}<div class="alert warning" role="status">Your subscription is not active yet. Complete payment to activate your {{brand.ProductName}} workspace.</div>{{end}}
-{{if eq .Decision.Reason "unpaid"}}<div class="alert error" role="alert">Your subscription is unpaid. Access to your workspace is paused until payment is completed. Your data is safe.</div>{{end}}
-{{if eq .Decision.Reason "canceled"}}<div class="alert error" role="alert">Your subscription has ended. Your data is retained. Subscribe again to restore access.</div>{{end}}
+{{if .PaymentProblem}}
+<div class="alert error billing-alert" role="alert">
+  <div><strong>Payment problem.</strong> {{if eq .Company.SubscriptionStatus "unpaid"}}We couldn’t collect your subscription payment, so access to your workspace is paused. Your data is safe.{{else}}Your latest payment didn’t go through. Update your payment method to keep your workspace active.{{end}}</div>
+  {{if and .CanManageSub .Company.StripeCustomerID}}<form method="post" action="/billing/portal"><input type="hidden" name="csrf" value="{{.CSRF}}"><button class="btn danger" type="submit">Fix Payment</button></form>{{end}}
+</div>
+{{else if .Company.CancelAtPeriodEnd}}
+<div class="alert warning" role="status">Your subscription is set to end on <strong>{{date .Company.BillingPeriodEnd}}</strong>. You keep full access until then{{if .CanManageSub}} — choose <strong>Resume Subscription</strong> to keep it{{end}}.</div>
+{{else if eq .Decision.Reason "canceled"}}
+<div class="alert error" role="alert">Your subscription has ended. Your company’s data is retained{{if .CanManageSub}} — subscribe again to restore access{{end}}.</div>
+{{else if eq .Decision.Reason "payment-required" "not-provisioned"}}
+<div class="alert warning" role="status">Your subscription isn’t active yet. {{if .CanManageSub}}Complete checkout to activate your workspace.{{else}}Ask your Company Owner to complete checkout.{{end}}</div>
+{{end}}
 
 <div class="grid-2">
   <section class="card" aria-labelledby="plan-h">
-    <h2 id="plan-h">Plan</h2>
+    <h2 id="plan-h">Your plan</h2>
     <div class="plan" style="margin-top:0">
       <div class="name">{{brand.ProductName}}</div>
       <div class="price">{{brand.PriceDisplay}}<span>/{{brand.BillingInterval}}</span></div>
-      <div class="muted small">One subscription for your whole company.</div>
+      <div class="muted small">One subscription for your whole company. Team members are included.</div>
     </div>
     <dl class="kv">
-      <dt>Subscription Status</dt><dd><span class="pill {{subPill .Company.SubscriptionStatus}}">{{.Company.SubscriptionStatus.Label}}</span>{{if .Company.CancelAtPeriodEnd}} <span class="pill warn">Cancels at period end</span>{{end}}</dd>
-      <dt>{{if .Company.CancelAtPeriodEnd}}Access Until{{else}}Next Billing Date{{end}}</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>
-      <dt>Current Period Started</dt><dd>{{date .Company.BillingPeriodStart}}</dd>
-      <dt>Payment Method</dt><dd>{{orDash .Company.PaymentMethodSummary}}</dd>
+      <dt>Status</dt><dd><span class="pill {{subPill .Company.SubscriptionStatus}}">{{.StatusLabel}}</span></dd>
+      {{if .Company.CancelAtPeriodEnd}}<dt>Access until</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>
+      {{else if eq .Company.SubscriptionStatus "active" "past_due"}}<dt>Next billing date</dt><dd>{{date .Company.BillingPeriodEnd}}</dd>{{end}}
+      {{if .Company.BillingPeriodStart}}<dt>Current period</dt><dd>{{date .Company.BillingPeriodStart}} – {{date .Company.BillingPeriodEnd}}</dd>{{end}}
+      <dt>Payment method</dt><dd>{{if .Company.PaymentMethodSummary}}{{.Company.PaymentMethodSummary}}{{else}}<span class="muted">Managed securely by our payment processor</span>{{end}}</dd>
     </dl>
   </section>
 
@@ -27,47 +36,45 @@
     <h2 id="manage-h">Manage</h2>
     {{if .CanManageSub}}
       {{if .NeedsCheckout}}
-        <p>Complete checkout to activate your subscription.</p>
+        <p>Subscribe to {{brand.ProductName}} for {{brand.PricePerInterval}}. You’ll be taken to our secure checkout and brought back here when payment is complete.</p>
         <form method="post" action="/billing/checkout">
           <input type="hidden" name="csrf" value="{{.CSRF}}">
-          <button class="btn block" type="submit">Continue to Secure Checkout</button>
+          <button class="btn block lg" type="submit">Subscribe</button>
         </form>
       {{else}}
-        <p class="muted small">Payment methods, invoices and subscription changes are handled securely through the Stripe customer portal.</p>
-        <form method="post" action="/billing/portal" style="margin-bottom:10px">
+        <form method="post" action="/billing/portal" class="stack">
           <input type="hidden" name="csrf" value="{{.CSRF}}">
-          <button class="btn block" type="submit">Manage Payment Method</button>
+          <button class="btn block" type="submit">Manage Billing</button>
         </form>
-        <form method="post" action="/billing/portal" style="margin-bottom:10px">
-          <input type="hidden" name="csrf" value="{{.CSRF}}">
-          <button class="btn secondary block" type="submit">Manage Subscription &amp; Invoices</button>
-        </form>
+        <p class="muted small">Update your payment method, billing details and download invoices.</p>
         {{if .Company.CancelAtPeriodEnd}}
-          <form method="post" action="/billing/resume">
+          <form method="post" action="/billing/resume" class="stack">
             <input type="hidden" name="csrf" value="{{.CSRF}}">
-            <button class="btn secondary block" type="submit">Keep My Subscription</button>
+            <button class="btn secondary block" type="submit">Resume Subscription</button>
           </form>
         {{else if eq .Company.SubscriptionStatus "active" "past_due"}}
-          <form method="post" action="/billing/cancel" data-confirm="Cancel your CulpOS subscription at the end of the current billing period?">
+          <form method="post" action="/billing/cancel" class="stack" data-confirm="Cancel your {{brand.ProductName}} subscription at the end of the current billing period? You keep access until then and your data is not deleted.">
             <input type="hidden" name="csrf" value="{{.CSRF}}">
             <button class="btn danger block" type="submit">Cancel Subscription</button>
           </form>
-          <p class="muted small">Cancellation takes effect at the end of the current billing period. Your data is not deleted.</p>
+          <p class="muted small">Cancellation takes effect at the end of the current billing period. See our <a href="/legal/cancellation">Cancellation Policy</a>.</p>
         {{end}}
       {{end}}
     {{else}}
-      <p class="muted">Only the Company Owner can change the subscription.</p>
+      <p class="muted">Only the Company Owner can change the subscription or payment method. Contact your Company Owner if something needs to change.</p>
     {{end}}
   </section>
 </div>
 
-{{if .Payments}}
 <section class="card" aria-labelledby="pay-h">
-  <h2 id="pay-h">Recent Payments</h2>
+  <h2 id="pay-h">Payment history</h2>
+  {{if .Payments}}
   <div class="table-wrap"><table>
     <thead><tr><th scope="col">Date</th><th scope="col">Amount</th><th scope="col">Status</th></tr></thead>
-    <tbody>{{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td>{{money .AmountCents}} {{upper .Currency}}</td><td><span class="pill {{if eq .Status "paid"}}ok{{else}}bad{{end}}">{{.Status}}</span></td></tr>{{end}}</tbody>
+    <tbody>{{range .Payments}}<tr><td>{{date .CreatedAt}}</td><td>{{money .AmountCents}} {{upper .Currency}}</td><td><span class="pill {{if eq .Status "paid"}}ok{{else}}bad{{end}}">{{if eq .Status "paid"}}Paid{{else}}Failed{{end}}</span></td></tr>{{end}}</tbody>
   </table></div>
+  {{else}}
+  <div class="empty">No payments yet. Receipts appear here after each monthly payment.</div>
+  {{end}}
 </section>
-{{end}}
 {{template "foot" .}}{{end}}

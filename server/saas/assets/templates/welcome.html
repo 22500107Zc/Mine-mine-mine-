@@ -1,0 +1,92 @@
+{{define "welcome"}}{{template "head" .}}
+<h1>Welcome to {{brand.ProductName}}</h1>
+<p class="lead">Let’s set up {{.Company.Name}}. It takes a couple of minutes — you can skip any step and come back later.</p>
+
+<ol class="wizard" aria-label="Setup progress">
+  {{range $i, $s := .Steps}}{{$n := add $i 1}}
+  <li class="{{if eq $n $.Step}}current{{else if lt $n $.Step}}done{{end}}" {{if eq $n $.Step}}aria-current="step"{{end}}>
+    <a href="/welcome?step={{$n}}"><span class="num">{{if lt $n $.Step}}✓{{else}}{{$n}}{{end}}</span><span class="label">{{$s}}</span></a>
+  </li>
+  {{end}}
+</ol>
+
+<section class="card">
+{{if eq .Step 1}}
+  <h2>Company profile</h2>
+  <p class="muted">This is how your company appears to your team in {{brand.ProductName}}.</p>
+  <form method="post" action="/welcome/profile">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="field"><label for="p-name">Company name</label><input id="p-name" type="text" name="name" required maxlength="100" value="{{.Company.Name}}"></div>
+    <div class="row-2">
+      <div class="field"><label for="p-industry">Industry</label><input id="p-industry" type="text" name="industry" maxlength="100" value="{{.Company.Industry}}" placeholder="e.g. Professional services"></div>
+      <div class="field"><label for="p-phone">Phone</label><input id="p-phone" type="text" name="phone" maxlength="50" value="{{.Company.Phone}}" autocomplete="tel"></div>
+    </div>
+    <div class="field"><label for="p-website">Website</label><input id="p-website" type="text" name="website" maxlength="200" value="{{.Company.Website}}" autocomplete="url"></div>
+    <div class="field"><label for="p-address">Address</label><input id="p-address" type="text" name="address" maxlength="300" value="{{.Company.Address}}" autocomplete="street-address"></div>
+    <div class="wizard-actions"><button class="btn" type="submit">Save and continue</button><a class="btn secondary" href="/welcome?step=2">Skip</a></div>
+  </form>
+
+{{else if eq .Step 2}}
+  <h2>Invite your team</h2>
+  <p class="muted">Everyone you invite is included in your subscription. They receive an email to set their password.</p>
+  <form method="post" action="/welcome/invite">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="row-2">
+      <div class="field"><label for="i-email">Email</label><input id="i-email" type="email" name="email" required maxlength="254"></div>
+      <div class="field"><label for="i-name">Name</label><input id="i-name" type="text" name="name" maxlength="120"></div>
+    </div>
+    <div class="field"><label for="i-role">Role</label>
+      <select id="i-role" name="role">{{range .AssignableRoles}}<option value="{{.}}" {{if eq . "employee"}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+    </div>
+    <div class="wizard-actions"><button class="btn" type="submit">Send invitation</button><a class="btn secondary" href="/welcome?step=3">Continue</a></div>
+  </form>
+  {{if gt (len .Members) 1}}
+  <h3 style="margin-top:20px">Your team</h3>
+  <ul class="plain-list">{{range .Members}}<li>{{orDash .Name}} · <span class="muted">{{.Email}}</span> · {{.Role.Label}}</li>{{end}}</ul>
+  {{end}}
+
+{{else if eq .Step 3}}
+  <h2>Add your first customer</h2>
+  <p class="muted">Customers are the companies and people you do business with. You can add contacts, cases and documents to them later.</p>
+  <form method="post" action="/welcome/customer">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="field"><label for="c-name">Customer name</label><input id="c-name" type="text" name="name" required maxlength="200"></div>
+    <div class="row-2">
+      <div class="field"><label for="c-email">Email</label><input id="c-email" type="email" name="email" maxlength="254"></div>
+      <div class="field"><label for="c-phone">Phone</label><input id="c-phone" type="text" name="phone" maxlength="50"></div>
+    </div>
+    <div class="wizard-actions"><button class="btn" type="submit">Add customer</button><a class="btn secondary" href="/welcome?step=4">Skip</a></div>
+  </form>
+
+{{else if eq .Step 4}}
+  <h2>Create your first task</h2>
+  <p class="muted">Tasks keep work moving. This one is assigned to you.</p>
+  <form method="post" action="/welcome/task">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="field"><label for="t-title">Task</label><input id="t-title" type="text" name="title" required maxlength="200" placeholder="e.g. Call our first customer"></div>
+    <div class="field"><label for="t-due">Due date</label><input id="t-due" type="date" name="dueDate"></div>
+    <div class="wizard-actions"><button class="btn" type="submit">Create task</button><a class="btn secondary" href="/welcome?step=5">Skip</a></div>
+  </form>
+
+{{else}}
+  <h2>You’re all set</h2>
+  <p>Your workspace is ready. From the Dashboard you can see open tasks, cases, approvals and recent activity. Use the menu to reach Customers, Contacts, Records, Cases, Tasks, Documents, Reports and your Team.</p>
+  <ul class="plain-list">
+    <li>Manage users and roles in <a href="/company">Company Admin</a>.</li>
+    <li>View your subscription in <a href="/billing">Billing</a>.</li>
+    <li>Get help anytime from <a href="/support">Support</a>.</li>
+  </ul>
+  <form method="post" action="/welcome/finish">
+    <input type="hidden" name="csrf" value="{{.CSRF}}">
+    <div class="wizard-actions"><button class="btn lg" type="submit">Go to my Dashboard</button></div>
+  </form>
+{{end}}
+</section>
+
+{{if lt .Step 5}}
+<form method="post" action="/welcome/finish" class="skip-setup">
+  <input type="hidden" name="csrf" value="{{.CSRF}}">
+  <button type="submit" class="link-button">Skip setup and go to my Dashboard</button>
+</form>
+{{end}}
+{{template "foot" .}}{{end}}

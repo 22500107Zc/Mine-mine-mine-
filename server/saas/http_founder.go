@@ -192,6 +192,7 @@ func (svc *Service) systemStatus(ctx context.Context, d pageData) {
 	d["Version"] = Version
 	d["DBOK"] = svc.repo.Ping(ctx) == nil
 	d["StripeConfigured"] = svc.cfg.StripeConfigured()
+	d["StripeMissing"] = svc.cfg.StripeMissing()
 	d["MailConfigured"] = MailConfigured()
 	last, failed, _ := svc.repo.LastStripeEventAt(ctx)
 	d["LastWebhook"] = last
@@ -286,8 +287,18 @@ func (svc *Service) founderCompany(w http.ResponseWriter, r *http.Request) {
 	dec := Evaluate(c, svc.now())
 	label := map[AccessLevel]string{AccessFull: "Full access", AccessBillingOnly: "Billing & recovery only", AccessNone: "Disabled"}[dec.Level]
 
+	roleCounts := map[CompanyRole]int{}
+	for _, m := range members {
+		roleCounts[m.Role]++
+	}
+
 	d := svc.founderPage(r, "Founder · "+c.Name, "companies")
 	d["Company"] = c
+	d["RoleCounts"] = []struct {
+		Role  CompanyRole
+		Count int
+	}{{RoleOwner, roleCounts[RoleOwner]}, {RoleAdministrator, roleCounts[RoleAdministrator]}, {RoleManager, roleCounts[RoleManager]}, {RoleEmployee, roleCounts[RoleEmployee]}}
+	d["Workspace"] = WorkspacePath(c)
 	d["Users"] = rows
 	d["Payments"] = payments
 	d["Events"] = events
@@ -452,8 +463,9 @@ func (svc *Service) founderUserAction(w http.ResponseWriter, r *http.Request) {
 		svc.setFlash(w, "success", "User updated.")
 	}
 
-	back := r.Referer()
-	if !strings.Contains(back, "/founder/") {
+	// only redirect back within the Founder console (no open redirects)
+	back := localPath(r.Referer(), r.Host, "")
+	if !strings.HasPrefix(back, "/founder/") {
 		back = "/founder/companies/" + strconv.FormatUint(m.CompanyID, 10)
 	}
 

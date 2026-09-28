@@ -318,6 +318,10 @@ func (svc *Service) AuthGuard(ctx context.Context, userID uint64) string {
 		return "/billing"
 	}
 
+	if c, m, _, _ := svc.AccessForUser(ctx, userID); needsOnboarding(c, m) {
+		return "/welcome"
+	}
+
 	return ""
 }
 
@@ -425,6 +429,13 @@ func (svc *Service) ChangeRole(ctx context.Context, actorID, targetID uint64, ro
 	svc.cache.invalidateUser(targetID)
 	svc.audit(ctx, userActor(actorID, actor.Role, c.ID, ip).
 		with("company.member.role", strconv.FormatUint(targetID, 10), ResultSuccess, map[string]string{"from": string(target.Role), "to": string(role)}))
+
+	if uu, _ := svc.platform.Users(ctx, targetID); uu != nil {
+		if u, ok := uu[targetID]; ok {
+			svc.securityNotice(ctx, u.Email, u.Name, "Your role in "+c.Name+" was changed from "+target.Role.Label()+" to "+role.Label()+". Your permissions have been updated accordingly.")
+		}
+	}
+
 	return nil
 }
 
@@ -535,6 +546,17 @@ func (svc *Service) SetCompanyEnabled(ctx context.Context, f *Founder, companyID
 
 	svc.cache.invalidateCompany(companyID)
 	svc.audit(ctx, founderActor(f, ip).with(action, c.Name, ResultSuccess, map[string]string{"companyID": strconv.FormatUint(c.ID, 10)}))
+
+	if enabled {
+		svc.sendMail(ctx, c.OwnerEmail, "Your "+svc.cfg.Brand.ProductName+" access has been restored", "account-enabled", map[string]any{
+			"Company": c.Name, "Name": c.OwnerName, "URL": svc.cfg.Brand.URL("/"),
+		})
+	} else {
+		svc.sendMail(ctx, c.OwnerEmail, "Your "+svc.cfg.Brand.ProductName+" access is unavailable", "account-disabled", map[string]any{
+			"Company": c.Name, "Name": c.OwnerName,
+		})
+	}
+
 	return nil
 }
 
@@ -563,6 +585,23 @@ func (svc *Service) SetUserEnabled(ctx context.Context, f *Founder, userID uint6
 	e := founderActor(f, ip).with(action, strconv.FormatUint(userID, 10), res, nil)
 	e.CompanyID = companyID
 	svc.audit(ctx, e)
+
+	if err == nil {
+		if uu, _ := svc.platform.Users(ctx, userID); uu != nil {
+			if u, ok := uu[userID]; ok {
+				if enabled {
+					svc.sendMail(ctx, u.Email, "Your "+svc.cfg.Brand.ProductName+" access has been restored", "account-enabled", map[string]any{
+						"Name": u.Name, "URL": svc.cfg.Brand.URL("/"),
+					})
+				} else {
+					svc.sendMail(ctx, u.Email, "Your "+svc.cfg.Brand.ProductName+" account has been disabled", "account-disabled", map[string]any{
+						"Name": u.Name,
+					})
+				}
+			}
+		}
+	}
+
 	return err
 }
 
@@ -589,7 +628,15 @@ func (svc *Service) ResetUserAccess(ctx context.Context, f *Founder, userID uint
 	}
 
 	svc.audit(ctx, founderActor(f, ip).with("user.reset-access", strconv.FormatUint(userID, 10), res, nil))
+	svc.securityNotice(ctx, u.Email, u.Name, "For your security, all of your "+svc.cfg.Brand.ProductName+" sessions were signed out and a password reset link was sent to this address.")
 	return err
+}
+
+// securityNotice emails a security-relevant change to a user
+func (svc *Service) securityNotice(ctx context.Context, email, name, message string) {
+	svc.sendMail(ctx, email, "Security notice — "+svc.cfg.Brand.ProductName, "security-notice", map[string]any{
+		"Name": name, "Message": message, "When": svc.now().Format("January 2, 2006 15:04 UTC"),
+	})
 }
 
 // Signed references --------------------------------------------------------

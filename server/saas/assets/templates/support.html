@@ -1,0 +1,50 @@
+{{define "support"}}{{template "head" .}}
+<h1>Support</h1>
+<p class="lead">We’re here to help your company get the most out of {{brand.ProductName}}.</p>
+
+<section class="card" aria-labelledby="contact-h">
+  <h2 id="contact-h">Contact us</h2>
+  {{if brand.ContactEmail}}
+    <p>Email <a href="mailto:{{brand.ContactEmail}}?subject={{brand.ProductName}}%20support{{if .Company}}%20-%20{{.Company.Name}}{{end}}"><strong>{{brand.ContactEmail}}</strong></a>. Include your company name and a short description of the issue; screenshots help. We reply by email, usually within one business day.</p>
+    <p><a class="btn" href="mailto:{{brand.ContactEmail}}?subject={{brand.ProductName}}%20support{{if .Company}}%20-%20{{.Company.Name}}{{end}}">Email Support</a></p>
+  {{else}}
+    <p>Reply to any email you have received from {{brand.ProductName}} and our team will get back to you, usually within one business day. Please include your company name and a short description of the issue.</p>
+  {{end}}
+  {{if .Company}}<p class="muted small">Signed in as a member of <strong>{{.Company.Name}}</strong>.</p>{{end}}
+</section>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="billing-h">
+    <h2 id="billing-h">Billing help</h2>
+    <ul>
+      <li>The Company Owner manages the subscription from <a href="/billing">Billing</a>: update the payment method, download invoices, cancel or resume.</li>
+      <li>If a payment fails, choose <strong>Fix Payment</strong> on the Billing page to update your card. Your data stays safe while you do.</li>
+      <li>{{brand.ProductName}} costs {{brand.PricePerInterval}} per company, billed monthly. See the <a href="/legal/billing">Subscription and Billing Policy</a>, <a href="/legal/cancellation">Cancellation Policy</a> and <a href="/legal/refunds">Refund Policy</a>.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="access-h">
+    <h2 id="access-h">Account access</h2>
+    <ul>
+      <li>Forgot your password? Use <a href="/auth/request-password-reset">Forgot Password</a> on the sign-in page to receive a reset link.</li>
+      <li>Didn’t receive an invitation? Ask your Company Owner or Administrator to invite you again from Company Admin.</li>
+      <li>Lost access to two-factor authentication? Ask your company administrator to contact support; we verify ownership before resetting access.</li>
+      <li>Manage your password, two-factor authentication and active sessions in <a href="/auth/security">Security settings</a>.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="admin-h">
+    <h2 id="admin-h">Company administration</h2>
+    <ul>
+      <li>Invite team members, change roles and remove users in <a href="/company">Company Admin</a>. Team members are included in your subscription.</li>
+      <li>Roles: <strong>Company Owner</strong> (everything, including billing), <strong>Administrator</strong> (users and workspace configuration), <strong>Manager</strong> (manages records), <strong>Employee</strong> (day-to-day work).</li>
+      <li>Records can be exported from any list in your workspace with <strong>Export</strong>.</li>
+    </ul>
+  </section>
+
+  <section class="card" id="security" aria-labelledby="security-h">
+    <h2 id="security-h">Security reporting</h2>
+    <p>If you believe you have found a security vulnerability or that an account has been compromised, report it right away{{if brand.ContactEmail}} to <a href="mailto:{{brand.ContactEmail}}?subject=Security%20report">{{brand.ContactEmail}}</a> with the subject “Security report”{{end}}. Please include the steps to reproduce and do not access data that does not belong to you. We investigate every report and will keep you informed.</p>
+  </section>
+</div>
+{{template "foot" .}}{{end}}

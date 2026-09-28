@@ -66,3 +66,31 @@ This is a transactional message about your {{.Brand.ProductName}} account.
 {{end}}
 {{template "email-button" (dict "URL" .URL "Label" "Open Billing")}}
 {{template "email-foot" .}}{{end}}
+
+{{define "email-subscription-resumed"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your subscription will continue</h1>
+<p>The scheduled cancellation for <strong>{{.Company}}</strong> has been removed. Your {{.Brand.ProductName}} subscription continues at {{.Brand.PricePerInterval}}{{if .NextDate}}, with the next payment on <strong>{{.NextDate}}</strong>{{end}}.</p>
+{{template "email-button" (dict "URL" .URL "Label" "View Billing")}}
+{{template "email-foot" .}}{{end}}
+
+{{define "email-account-disabled"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your {{.Brand.ProductName}} access is unavailable</h1>
+<p>Hello{{if .Name}} {{.Name}}{{end}},</p>
+{{if .Company}}<p>Access to the {{.Brand.ProductName}} workspace for <strong>{{.Company}}</strong> is currently unavailable.</p>{{else}}<p>Your {{.Brand.ProductName}} account is currently disabled.</p>{{end}}
+<p>Your data has not been deleted. If you believe this is a mistake, please contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#1F4E8C;">{{.Brand.ContactEmail}}</a>{{else}}support{{end}}{{if not .Company}} or your company administrator{{end}}.</p>
+{{template "email-foot" .}}{{end}}
+
+{{define "email-account-enabled"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Your {{.Brand.ProductName}} access has been restored</h1>
+<p>Hello{{if .Name}} {{.Name}}{{end}},</p>
+<p>{{if .Company}}Access to the {{.Brand.ProductName}} workspace for <strong>{{.Company}}</strong>{{else}}Your {{.Brand.ProductName}} account{{end}} is available again.</p>
+{{template "email-button" (dict "URL" .URL "Label" (printf "Open %s" .Brand.ProductName))}}
+{{template "email-foot" .}}{{end}}
+
+{{define "email-security-notice"}}{{template "email-head" .}}
+<h1 style="font-size:21px;margin:0 0 12px;">Security notice</h1>
+<p>Hello{{if .Name}} {{.Name}}{{end}},</p>
+<p>{{.Message}}</p>
+<p style="font-size:13px;color:#5B6778;">Time: {{.When}}</p>
+<p>If you did not expect this change, contact {{if .Brand.ContactEmail}}<a href="mailto:{{.Brand.ContactEmail}}" style="color:#1F4E8C;">{{.Brand.ContactEmail}}</a>{{else}}your company administrator{{end}} right away.</p>
+{{template "email-foot" .}}{{end}}

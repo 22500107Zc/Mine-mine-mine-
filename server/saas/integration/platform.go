@@ -409,3 +409,59 @@ func (p *Platform) Users(ctx context.Context, ids ...uint64) (map[uint64]saas.Us
 func isDuplicate(err error) bool {
 	return err != nil && (strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "already"))
 }
+
+// CreateRecord creates a record in the company workspace acting as the user,
+// so access control and ownership apply exactly as in the application
+func (p *Platform) CreateRecord(ctx context.Context, c *saas.Company, userID uint64, role saas.CompanyRole, module string, values map[string]string) (uint64, error) {
+	if c.NamespaceID == 0 {
+		return 0, fmt.Errorf("workspace not provisioned")
+	}
+
+	mod, err := store.LookupComposeModuleByNamespaceIDHandle(sys(ctx), p.Store, c.NamespaceID, module)
+	if err != nil {
+		return 0, fmt.Errorf("module %s not found: %w", module, err)
+	}
+
+	rr := []uint64{roleFor(c, role)}
+	for _, r := range auth.AuthenticatedRoles() {
+		rr = append(rr, r.ID)
+	}
+
+	uctx := auth.SetIdentityToContext(ctx, auth.Authenticated(userID, rr...))
+
+	rec := &composeTypes.Record{NamespaceID: c.NamespaceID, ModuleID: mod.ID}
+	for name, v := range values {
+		if strings.TrimSpace(v) == "" {
+			continue
+		}
+		rec.Values = append(rec.Values, &composeTypes.RecordValue{Name: name, Value: v})
+	}
+
+	out, verr, err := composeService.DefaultRecord.Create(uctx, rec)
+	if err != nil {
+		return 0, err
+	}
+
+	if verr != nil && !verr.IsValid() {
+		return 0, fmt.Errorf("invalid values: %v", verr)
+	}
+
+	return out.ID, nil
+}
+
+// RenameWorkspace updates the workspace display name
+func (p *Platform) RenameWorkspace(ctx context.Context, c *saas.Company, name string) error {
+	if c.NamespaceID == 0 {
+		return nil
+	}
+
+	ctx = sys(ctx)
+	ns, err := store.LookupComposeNamespaceByID(ctx, p.Store, c.NamespaceID)
+	if err != nil {
+		return err
+	}
+
+	ns.Name = name
+	_, err = composeService.DefaultNamespace.Update(ctx, ns)
+	return err
+}

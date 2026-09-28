@@ -648,7 +648,7 @@ func TestBillingAndCompanyPages(t *testing.T) {
 	rsp, _ = cl.Get(srv.URL + "/billing")
 	b, _ := io.ReadAll(rsp.Body)
 	body := string(b)
-	for _, want := range []string{"<title>CulpOS | Billing</title>", "$333.88", "/month", "Active", "Next Billing Date", "Manage Payment Method", "Cancel Subscription"} {
+	for _, want := range []string{"<title>CulpOS | Billing</title>", "$333.88", "/month", "Active", "Next billing date", "Manage Billing", "Cancel Subscription"} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("billing page missing %q", want)
 		}

@@ -68,6 +68,10 @@ export interface Options {
   refreshRate: number;
   showRefresh: boolean;
 
+  // Empty state shown when the list has no records and no search/filter is active
+  emptyTitle: string;
+  emptyDescription: string;
+
   // Record-lines
   editable: boolean;
   draggable?: boolean;
@@ -135,6 +139,8 @@ const defaults: Readonly<Options> = Object.freeze({
   searchSubmitMode: 'submit',
 
   fullPageNavigation: false,
+  emptyTitle: '',
+  emptyDescription: '',
   showTotalCount: true,
   showDeletedRecordsOption: false,
   customFilterPresets: false,
@@ -198,6 +204,8 @@ export class PageBlockRecordList extends PageBlock {
       'recordSelectorDisplayOption',
       'addRecordDisplayOption',
       'searchSubmitMode',
+      'emptyTitle',
+      'emptyDescription',
     )
 
     Apply(this.options, o, Number, 'perPage', 'refreshRate')

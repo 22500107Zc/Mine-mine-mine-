@@ -28,6 +28,10 @@ type Brand struct {
 	SupportEmail       string
 	AppURL             string
 	PublicAppURL       string
+
+	// Legal document settings
+	LegalEffectiveDate string
+	GoverningLaw       string
 }
 
 const (
@@ -38,6 +42,7 @@ const (
 	DefaultPriceCents         = int64(33388)
 	DefaultCurrency           = "usd"
 	DefaultBillingInterval    = "month"
+	DefaultLegalEffectiveDate = "September 27, 2026"
 )
 
 // LoadBrand reads brand values from the environment
@@ -53,6 +58,8 @@ func LoadBrand() Brand {
 		SupportEmail:       env("SUPPORT_EMAIL", ""),
 		AppURL:             strings.TrimRight(env("APP_URL", ""), "/"),
 		PublicAppURL:       strings.TrimRight(env("PUBLIC_APP_URL", ""), "/"),
+		LegalEffectiveDate: env("LEGAL_EFFECTIVE_DATE", DefaultLegalEffectiveDate),
+		GoverningLaw:       env("LEGAL_GOVERNING_LAW", ""),
 	}
 
 	if b.PublicAppURL == "" {
@@ -97,6 +104,16 @@ func (b Brand) URL(path string) string {
 	}
 
 	return b.PublicAppURL + path
+}
+
+// ContactEmail returns the address customers should write to, falling back to
+// the transactional sender address when no dedicated support mailbox is set
+func (b Brand) ContactEmail() string {
+	if b.SupportEmail != "" {
+		return b.SupportEmail
+	}
+
+	return env("MAIL_FROM", "")
 }
 
 // FormatCents formats USD cents as "$333.88"

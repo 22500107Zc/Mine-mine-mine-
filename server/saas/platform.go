@@ -51,6 +51,12 @@ type (
 		// SendPasswordReset sends the branded password reset email
 		SendPasswordReset(ctx context.Context, email string) error
 
+		// CreateRecord adds a record to a module of the company workspace, as the given user
+		CreateRecord(ctx context.Context, c *Company, userID uint64, role CompanyRole, module string, values map[string]string) (uint64, error)
+
+		// RenameWorkspace keeps the workspace name in sync with the company name
+		RenameWorkspace(ctx context.Context, c *Company, name string) error
+
 		// Users returns display info for the given users
 		Users(ctx context.Context, ids ...uint64) (map[uint64]UserInfo, error)
 	}

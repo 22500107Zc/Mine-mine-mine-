@@ -78,7 +78,7 @@ func (app *CortezaApp) initSaaS(ctx context.Context) error {
 	}
 
 	if cfg.Brand.PublicAppURL != "" {
-		enforced["general.mail.logo"] = cfg.Brand.URL("/culpos/static/culpos-logo.png")
+		enforced["general.mail.logo"] = cfg.Brand.URL("/culpos/static/culpos-email-logo.png")
 	}
 
 	// Default CulpOS logos for the web applications (only when not customized)

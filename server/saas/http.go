@@ -56,9 +56,14 @@ func (svc *Service) MountRoutes(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(noStore)
 
-			r.Get("/legal/terms", svc.staticPage("legal-terms", "Terms of Service", "/legal/terms"))
-			r.Get("/legal/privacy", svc.staticPage("legal-privacy", "Privacy Policy", "/legal/privacy"))
-			r.Get("/legal/open-source", svc.ossPage)
+			r.Get("/legal", svc.legalPage("legal-index", "", "Legal"))
+			r.Get("/legal/terms", svc.legalPage("legal-terms", "terms", "Terms of Service"))
+			r.Get("/legal/privacy", svc.legalPage("legal-privacy", "privacy", "Privacy Policy"))
+			r.Get("/legal/acceptable-use", svc.legalPage("legal-aup", "aup", "Acceptable Use Policy"))
+			r.Get("/legal/billing", svc.legalPage("legal-billing", "billing", "Subscription and Billing Policy"))
+			r.Get("/legal/cancellation", svc.legalPage("legal-cancellation", "cancellation", "Cancellation Policy"))
+			r.Get("/legal/refunds", svc.legalPage("legal-refunds", "refunds", "Refund Policy"))
+			r.Get("/legal/open-source", svc.legalPage("legal-oss", "oss", "Open Source Notices"))
 			r.Get("/support", svc.supportPage)
 
 			r.Get("/account/disabled", svc.statusPage(http.StatusForbidden, "Access unavailable", "Access to this workspace is currently unavailable. Please contact your company administrator or support.", "", ""))
@@ -80,6 +85,9 @@ func (svc *Service) MountRoutes(r chi.Router) {
 			r.Get("/company", svc.companyPage)
 			r.With(httprate.LimitByIP(60, time.Minute)).Post("/company/invite", svc.companyInvite)
 			r.With(httprate.LimitByIP(60, time.Minute)).Post("/company/members/{userID}/{action}", svc.companyMemberAction)
+			r.With(httprate.LimitByIP(30, time.Minute)).Post("/company/profile", svc.companyProfile)
+			r.Get("/welcome", svc.welcomePage)
+			r.With(httprate.LimitByIP(60, time.Minute)).Post("/welcome/{action}", svc.welcomeAction)
 
 			// Founder console
 			svc.mountFounder(r)
@@ -155,28 +163,27 @@ func (svc *Service) internalError(w http.ResponseWriter, r *http.Request, err er
 	svc.renderError(w, r, http.StatusInternalServerError)
 }
 
-func (svc *Service) staticPage(name, title, path string) http.HandlerFunc {
+func (svc *Service) legalPage(name, doc, title string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		svc.render(w, r, http.StatusOK, name, pageData{"Title": title, "Path": path, "MainClass": "medium"})
+		svc.render(w, r, http.StatusOK, name, pageData{"Title": title, "MainClass": "medium", "Doc": doc, "License": LicenseText})
 	}
-}
-
-func (svc *Service) ossPage(w http.ResponseWriter, r *http.Request) {
-	svc.render(w, r, http.StatusOK, "legal-oss", pageData{"Title": "Open Source Notices", "MainClass": "medium", "License": LicenseText})
 }
 
 func (svc *Service) supportPage(w http.ResponseWriter, r *http.Request) {
-	msg := "Contact your company administrator for help with your workspace."
-	if svc.cfg.Brand.SupportEmail != "" {
-		msg = "Our team is here to help. Email " + svc.cfg.Brand.SupportEmail + " and include your company name."
+	d := pageData{"Title": "Support", "MainClass": "medium"}
+
+	// signed-in company users get their company context
+	if svc.sessionUser != nil {
+		if uid := svc.sessionUser(r); uid > 0 {
+			if c, m, dec, err := svc.AccessForUser(r.Context(), uid); err == nil && c != nil {
+				d["Company"] = c
+				d["Member"] = m
+				d["Decision"] = dec
+			}
+		}
 	}
 
-	d := pageData{"Title": "Support", "Heading": "Support", "Message": msg}
-	if svc.cfg.Brand.SupportEmail != "" {
-		d["ActionURL"], d["ActionLabel"] = "mailto:"+svc.cfg.Brand.SupportEmail, "Email Support"
-	}
-
-	svc.render(w, r, http.StatusOK, "status", d)
+	svc.render(w, r, http.StatusOK, "support", d)
 }
 
 func (svc *Service) statusPage(status int, heading, msg, actionURL, actionLabel string) http.HandlerFunc {

@@ -77,6 +77,21 @@ func LoadConfig() Config {
 	return c
 }
 
+// StripeMissing lists missing server-side Stripe settings (names only, never values)
+func (c Config) StripeMissing() []string {
+	var out []string
+	if c.StripeSecretKey == "" {
+		out = append(out, "STRIPE_SECRET_KEY")
+	}
+	if c.StripeWebhookSecret == "" {
+		out = append(out, "STRIPE_WEBHOOK_SECRET")
+	}
+	if c.StripePriceID == "" {
+		out = append(out, "STRIPE_PRICE_ID")
+	}
+	return out
+}
+
 // StripeConfigured reports whether all server-side Stripe values are present
 func (c Config) StripeConfigured() bool {
 	return c.StripeSecretKey != "" && c.StripePriceID != "" && c.StripeWebhookSecret != ""

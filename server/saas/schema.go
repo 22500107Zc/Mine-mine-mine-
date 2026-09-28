@@ -41,6 +41,11 @@ var schema = []string{
 		updated_at             TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 	)`,
 	`CREATE UNIQUE INDEX IF NOT EXISTS saas_companies_slug_uq ON saas_companies (slug)`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS profile_website TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS profile_phone TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS profile_address TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS profile_industry TEXT NOT NULL DEFAULT ''`,
+	`ALTER TABLE saas_companies ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ NULL`,
 	`CREATE UNIQUE INDEX IF NOT EXISTS saas_companies_stripe_customer_uq ON saas_companies (stripe_customer_id) WHERE stripe_customer_id IS NOT NULL`,
 	`CREATE UNIQUE INDEX IF NOT EXISTS saas_companies_stripe_subscription_uq ON saas_companies (stripe_subscription_id) WHERE stripe_subscription_id IS NOT NULL`,
 	`CREATE INDEX IF NOT EXISTS saas_companies_created_at_idx ON saas_companies (created_at DESC)`,

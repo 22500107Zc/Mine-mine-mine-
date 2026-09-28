@@ -31,7 +31,7 @@ func (svc *Service) renderEmail(name string, data map[string]any) (string, error
 	}
 
 	data["Brand"] = svc.cfg.Brand
-	data["LogoURL"] = svc.cfg.Brand.URL("/culpos/static/culpos-logo.png")
+	data["LogoURL"] = svc.cfg.Brand.URL("/culpos/static/culpos-email-logo.png")
 	data["Year"] = svc.now().Year()
 
 	buf := &bytes.Buffer{}

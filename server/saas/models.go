@@ -38,6 +38,11 @@ type (
 		ProvisionedAt        *time.Time
 		LastActivityAt       *time.Time
 		PaymentMethodSummary string
+		Website              string
+		Phone                string
+		Address              string
+		Industry             string
+		OnboardingDoneAt     *time.Time
 		CreatedAt            time.Time
 		UpdatedAt            time.Time
 

@@ -74,7 +74,13 @@ func parseTemplates(b Brand) (*template.Template, error) {
 			return s
 		},
 		"upper": strings.ToUpper,
-		"add":   func(a, b int) int { return a + b },
+		"actionLabel": func(a string) string {
+			if l, ok := actionLabels[a]; ok {
+				return l
+			}
+			return a
+		},
+		"add": func(a, b int) int { return a + b },
 		"dict": func(kv ...any) map[string]any {
 			m := make(map[string]any, len(kv)/2)
 			for i := 0; i+1 < len(kv); i += 2 {
@@ -86,4 +92,38 @@ func parseTemplates(b Brand) (*template.Template, error) {
 		},
 		"sub": func(a, b int) int { return a - b },
 	}).ParseFS(templateFS, "assets/templates/*.html")
+}
+
+// actionLabels are human readable names for audit actions
+var actionLabels = map[string]string{
+	"company.signup":               "Company signed up",
+	"company.provision":            "Workspace provisioned",
+	"company.provision.retry":      "Provisioning retried",
+	"company.disable":              "Company disabled",
+	"company.enable":               "Company enabled",
+	"company.profile.update":       "Company profile updated",
+	"company.member.invite":        "User invited",
+	"company.member.role":          "User role changed",
+	"company.member.remove":        "User removed",
+	"company.billing.sync":         "Billing refreshed from Stripe",
+	"billing.subscription.changed": "Subscription changed",
+	"billing.subscription.cancel":  "Cancellation scheduled",
+	"billing.subscription.resume":  "Subscription resumed",
+	"billing.payment.succeeded":    "Payment received",
+	"billing.payment.failed":       "Payment failed",
+	"billing.portal.open":          "Billing portal opened",
+	"billing.checkout":             "Checkout started",
+	"founder.login":                "Founder sign-in",
+	"founder.logout":               "Founder sign-out",
+	"founder.bootstrap":            "Founder account created",
+	"founder.password.change":      "Founder password changed",
+	"founder.password.reset":       "Founder password reset",
+	"founder.csrf":                 "Blocked request (CSRF)",
+	"user.disable":                 "User disabled",
+	"user.enable":                  "User enabled",
+	"user.reset-access":            "User access reset",
+	"onboarding.complete":          "Setup completed",
+	"onboarding.customer.create":   "First customer added",
+	"onboarding.task.create":       "First task created",
+	"api.permissions":              "Blocked permission change",
 }

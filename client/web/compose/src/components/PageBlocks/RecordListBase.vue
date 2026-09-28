@@ -818,6 +818,22 @@
               v-if="isProcessing"
             />
 
+            <div
+              v-else-if="!items.length && showEmptyState"
+              class="mx-3"
+              data-test-id="record-list-empty-state"
+            >
+              <p class="h6 mb-1">
+                {{ options.emptyTitle }}
+              </p>
+              <p
+                v-if="options.emptyDescription"
+                class="text-muted small mb-0"
+              >
+                {{ options.emptyDescription }}
+              </p>
+            </div>
+
             <p
               v-else-if="!items.length"
               class="mb-0 mx-2"
@@ -1178,6 +1194,12 @@ export default {
   },
 
   computed: {
+    // Friendly empty state configured on the block, only when nothing is searched or filtered
+    showEmptyState () {
+      const { emptyTitle } = this.options || {}
+      return !!emptyTitle && !this.query && !(this.recordListFilter || []).length
+    },
+
     ...mapGetters({
       getModuleByID: 'module/getByID',
       pages: 'page/set',

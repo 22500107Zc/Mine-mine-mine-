@@ -6,13 +6,26 @@
 
 <div class="grid-2">
   <section class="card" aria-labelledby="profile-h">
-    <h2 id="profile-h">Company Profile</h2>
-    <dl class="kv">
-      <dt>Company</dt><dd>{{.Company.Name}}</dd>
+    <h2 id="profile-h">Company profile</h2>
+    {{if .CanManage}}
+    <form method="post" action="/company/profile">
+      <input type="hidden" name="csrf" value="{{.CSRF}}">
+      <div class="field"><label for="p-name">Company name</label><input id="p-name" type="text" name="name" required maxlength="100" value="{{.Company.Name}}"></div>
+      <div class="row-2">
+        <div class="field"><label for="p-industry">Industry</label><input id="p-industry" type="text" name="industry" maxlength="100" value="{{.Company.Industry}}"></div>
+        <div class="field"><label for="p-phone">Phone</label><input id="p-phone" type="text" name="phone" maxlength="50" value="{{.Company.Phone}}"></div>
+      </div>
+      <div class="field"><label for="p-website">Website</label><input id="p-website" type="text" name="website" maxlength="200" value="{{.Company.Website}}"></div>
+      <div class="field"><label for="p-address">Address</label><input id="p-address" type="text" name="address" maxlength="300" value="{{.Company.Address}}"></div>
+      <button class="btn" type="submit">Save profile</button>
+    </form>
+    {{end}}
+    <dl class="kv" style="margin-top:16px">
+      {{if not .CanManage}}<dt>Company</dt><dd>{{.Company.Name}}</dd>{{end}}
       <dt>Company Owner</dt><dd>{{.Company.OwnerName}} ({{.Company.OwnerEmail}})</dd>
       <dt>Workspace</dt><dd>{{if .Workspace}}<a href="{{.Workspace}}">Open workspace</a>{{else}}—{{end}}</dd>
       <dt>Members</dt><dd>{{len .Members}}</dd>
-      <dt>Your Role</dt><dd>{{.Me.Role.Label}}</dd>
+      <dt>Your role</dt><dd>{{.Me.Role.Label}}</dd>
     </dl>
   </section>
 
@@ -67,7 +80,7 @@
     </tbody>
   </table></div>
   {{else}}
-  <div class="empty">No users yet. Invite your team to get started.</div>
+  <div class="empty"><strong>No team members yet.</strong><br>Invite your team to start working together in {{brand.ProductName}}.</div>
   {{end}}
 </section>
 
@@ -76,6 +89,7 @@
   <div class="grid-3">
     <div><h3>Security</h3><p class="muted small">Password, two-factor authentication and active sessions.</p><a href="/auth/security">Security settings</a></div>
     <div><h3>Notifications</h3><p class="muted small">Profile, language and notification preferences.</p><a href="/auth">Account settings</a></div>
+    {{if .CanManage}}<div><h3>Setup guide</h3><p class="muted small">Revisit the first-run setup: profile, team, first customer and task.</p><a href="/welcome">Open setup guide</a></div>{{end}}
     {{if .CanBilling}}<div><h3>Billing</h3><p class="muted small">Subscription, payment method and invoices.</p><a href="/billing">Billing</a></div>{{end}}
   </div>
 </section>

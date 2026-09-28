@@ -60,7 +60,8 @@ const companyColumns = `c.id, c.name, c.slug, c.status, c.owner_user_id, c.owner
 	COALESCE(c.stripe_customer_id, ''), COALESCE(c.stripe_subscription_id, ''), c.stripe_price_id,
 	c.subscription_status, c.billing_period_start, c.billing_period_end, c.cancel_at_period_end,
 	c.canceled_at, c.provisioning_status, c.provisioning_error, c.provisioned_at, c.last_activity_at,
-	c.payment_method_summary, c.created_at, c.updated_at,
+	c.payment_method_summary, c.profile_website, c.profile_phone, c.profile_address, c.profile_industry,
+	c.onboarding_completed_at, c.created_at, c.updated_at,
 	(SELECT COUNT(*) FROM saas_company_members m WHERE m.company_id = c.id)`
 
 type scanner interface {
@@ -69,9 +70,9 @@ type scanner interface {
 
 func scanCompany(s scanner) (*Company, error) {
 	var (
-		c                                                 = &Company{}
-		status, subStatus, provStatus                     string
-		periodStart, periodEnd, canceledAt, provAt, actAt sql.NullTime
+		c                                                        = &Company{}
+		status, subStatus, provStatus                            string
+		periodStart, periodEnd, canceledAt, provAt, actAt, onbAt sql.NullTime
 	)
 
 	err := s.Scan(
@@ -80,7 +81,8 @@ func scanCompany(s scanner) (*Company, error) {
 		&c.StripeCustomerID, &c.StripeSubscriptionID, &c.StripePriceID,
 		&subStatus, &periodStart, &periodEnd, &c.CancelAtPeriodEnd,
 		&canceledAt, &provStatus, &c.ProvisioningError, &provAt, &actAt,
-		&c.PaymentMethodSummary, &c.CreatedAt, &c.UpdatedAt,
+		&c.PaymentMethodSummary, &c.Website, &c.Phone, &c.Address, &c.Industry,
+		&onbAt, &c.CreatedAt, &c.UpdatedAt,
 		&c.UserCount,
 	)
 
@@ -100,6 +102,7 @@ func scanCompany(s scanner) (*Company, error) {
 	c.CanceledAt = nullTime(canceledAt)
 	c.ProvisionedAt = nullTime(provAt)
 	c.LastActivityAt = nullTime(actAt)
+	c.OnboardingDoneAt = nullTime(onbAt)
 	return c, nil
 }
 
@@ -338,6 +341,27 @@ func (r *Repo) SetCompanyStatus(ctx context.Context, companyID uint64, st Compan
 	}
 
 	return nil
+}
+
+// CompanyProfile holds editable company profile fields
+type CompanyProfile struct {
+	Name     string
+	Website  string
+	Phone    string
+	Address  string
+	Industry string
+}
+
+func (r *Repo) UpdateCompanyProfile(ctx context.Context, companyID uint64, p CompanyProfile) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE saas_companies SET name = $2, profile_website = $3, profile_phone = $4,
+		profile_address = $5, profile_industry = $6, updated_at = NOW() WHERE id = $1`,
+		companyID, p.Name, p.Website, p.Phone, p.Address, p.Industry)
+	return err
+}
+
+func (r *Repo) CompleteOnboarding(ctx context.Context, companyID uint64, at time.Time) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE saas_companies SET onboarding_completed_at = COALESCE(onboarding_completed_at, $2), updated_at = NOW() WHERE id = $1`, companyID, at)
+	return err
 }
 
 // TouchActivity records last activity (throttled by caller)

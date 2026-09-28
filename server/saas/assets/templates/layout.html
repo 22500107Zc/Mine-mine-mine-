@@ -36,12 +36,16 @@
 </main>
 <footer class="site-footer">
   <div class="inner">
-    <div>© {{.Year}} {{brand.CompanyName}} · {{brand.ProductName}}</div>
+    <div><strong>{{brand.ProductName}}</strong> · © {{.Year}} {{brand.CompanyName}}</div>
     <nav aria-label="Legal">
       <a href="/legal/terms">Terms</a>
       <a href="/legal/privacy">Privacy</a>
-      {{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">Support</a>{{else}}<a href="/support">Support</a>{{end}}
+      <a href="/legal/acceptable-use">Acceptable Use</a>
+      <a href="/legal/billing">Billing</a>
+      <a href="/legal/cancellation">Cancellation</a>
+      <a href="/legal/refunds">Refunds</a>
       <a href="/legal/open-source">Open Source Notices</a>
+      <a href="/support">Support</a>
     </nav>
   </div>
 </footer>
@@ -54,6 +58,7 @@
   <div class="topbar-inner">
     <a class="brand" href="/" aria-label="{{brand.ProductName}} home"><img src="/culpos/static/culpos-logo-light.svg" alt="{{brand.ProductName}}"></a>
     <nav aria-label="Primary">
+      <a href="/support">Support</a>
       <a href="/auth/login">Sign In</a>
       <a href="/signup">Create Company</a>
     </nav>
@@ -69,6 +74,7 @@
       {{if .Workspace}}<a href="{{.Workspace}}">Dashboard</a>{{end}}
       {{if .CanManage}}<a href="/company" {{if eq .Section "company"}}aria-current="page"{{end}}>Company Admin</a>{{end}}
       {{if .CanBilling}}<a href="/billing" {{if eq .Section "billing"}}aria-current="page"{{end}}>Billing</a>{{end}}
+      <a href="/support" {{if eq .Section "support"}}aria-current="page"{{end}}>Support</a>
       <a href="/auth">Account</a>
       <a href="/auth/logout">Sign Out</a>
     </nav>

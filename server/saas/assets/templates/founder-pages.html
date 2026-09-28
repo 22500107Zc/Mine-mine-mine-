@@ -53,6 +53,31 @@
   </section>
 </div>
 
+<nav class="toolbar" aria-label="Company sections">
+  <a class="btn small secondary" href="#users">View Users</a>
+  <a class="btn small secondary" href="#billing">View Billing</a>
+  <a class="btn small secondary" href="#audit">View Audit History</a>
+</nav>
+
+<div class="grid-2">
+  <section class="card" aria-labelledby="ws-h">
+    <h2 id="ws-h">Workspace</h2>
+    <dl class="kv">
+      <dt>State</dt><dd>{{if eq .Company.ProvisioningStatus "provisioned"}}<span class="pill ok">Ready</span>{{else if eq .Company.ProvisioningStatus "failed"}}<span class="pill bad">Setup failed</span>{{else}}<span class="pill warn">Awaiting payment</span>{{end}}</dd>
+      <dt>Workspace path</dt><dd class="mono">{{.Workspace}}</dd>
+      <dt>First-run setup</dt><dd>{{if .Company.OnboardingDoneAt}}Completed {{date .Company.OnboardingDoneAt}}{{else}}Not completed{{end}}</dd>
+      <dt>Industry</dt><dd>{{orDash .Company.Industry}}</dd>
+      <dt>Website</dt><dd>{{orDash .Company.Website}}</dd>
+      <dt>Phone</dt><dd>{{orDash .Company.Phone}}</dd>
+    </dl>
+  </section>
+  <section class="card" aria-labelledby="roles-h">
+    <h2 id="roles-h">Roles</h2>
+    <dl class="kv">{{range .RoleCounts}}<dt>{{.Role.Label}}</dt><dd>{{.Count}}</dd>{{end}}</dl>
+    <p class="muted small">Last activity: {{datetime .Company.LastActivityAt}}</p>
+  </section>
+</div>
+
 <section class="card" aria-labelledby="a-h">
   <h2 id="a-h">Manage Company</h2>
   <div class="toolbar">
@@ -98,8 +123,8 @@
   </section>
 </div>
 
-<section class="card" aria-labelledby="au-h">
-  <h2 id="au-h">Audit Log</h2>
+<section class="card" id="audit" aria-labelledby="au-h">
+  <h2 id="au-h">Audit History</h2>
   {{template "audit-table" .Audit}}
 </section>
 {{template "foot" .}}{{end}}

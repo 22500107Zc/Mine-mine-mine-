@@ -357,6 +357,10 @@ func (svc *Service) applySubscription(ctx context.Context, c *Company, sub *Stri
 		svc.sendMail(ctx, c.OwnerEmail, "Your "+svc.cfg.Brand.ProductName+" subscription has ended", "subscription-canceled", map[string]any{
 			"Company": c.Name, "EndDate": endDate, "Ended": true, "URL": svc.cfg.Brand.URL("/billing"),
 		})
+	case !upd.CancelAtPeriodEnd && prevCancel && upd.Status == SubActive:
+		svc.sendMail(ctx, c.OwnerEmail, "Your "+svc.cfg.Brand.ProductName+" subscription will continue", "subscription-resumed", map[string]any{
+			"Company": c.Name, "NextDate": endDate, "URL": svc.cfg.Brand.URL("/billing"),
+		})
 	case upd.CancelAtPeriodEnd && !prevCancel:
 		svc.sendMail(ctx, c.OwnerEmail, "Your "+svc.cfg.Brand.ProductName+" subscription is set to cancel", "subscription-canceled", map[string]any{
 			"Company": c.Name, "EndDate": endDate, "Ended": false, "URL": svc.cfg.Brand.URL("/billing"),

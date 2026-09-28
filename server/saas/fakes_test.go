@@ -29,6 +29,7 @@ type fakePlatform struct {
 	revoked    map[uint64]int
 	resets     []string
 	roleOf     map[uint64]CompanyRole
+	records    map[uint64][]string
 }
 
 type fakeUser struct {
@@ -340,3 +341,15 @@ func (e *testEnv) paidCompany(t *testing.T, name, email string) *Company {
 	c, _ = e.svc.repo.CompanyByID(ctx, c.ID)
 	return c
 }
+
+func (p *fakePlatform) CreateRecord(_ context.Context, c *Company, userID uint64, role CompanyRole, module string, values map[string]string) (uint64, error) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.records == nil {
+		p.records = map[uint64][]string{}
+	}
+	p.records[c.ID] = append(p.records[c.ID], module+":"+values["Name"]+values["Title"])
+	return nextTestID(), nil
+}
+
+func (p *fakePlatform) RenameWorkspace(context.Context, *Company, string) error { return nil }

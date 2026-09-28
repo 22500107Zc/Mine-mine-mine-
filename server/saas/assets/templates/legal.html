@@ -1,68 +1,368 @@
+{{define "legal-contact"}}{{if brand.ContactEmail}}<a href="mailto:{{brand.ContactEmail}}">{{brand.ContactEmail}}</a>{{else}}the contact options on our <a href="/support">Support page</a>{{end}}{{end}}
+
+{{define "legal-law"}}{{if brand.GoverningLaw}}the laws of {{brand.GoverningLaw}}{{else}}the laws of the jurisdiction in which {{brand.CompanyName}} is organized{{end}}{{end}}
+
+{{define "legal-nav"}}
+<nav class="legal-nav" aria-label="Legal documents">
+  <a href="/legal/terms" {{if eq .Doc "terms"}}aria-current="page"{{end}}>Terms of Service</a>
+  <a href="/legal/privacy" {{if eq .Doc "privacy"}}aria-current="page"{{end}}>Privacy Policy</a>
+  <a href="/legal/acceptable-use" {{if eq .Doc "aup"}}aria-current="page"{{end}}>Acceptable Use</a>
+  <a href="/legal/billing" {{if eq .Doc "billing"}}aria-current="page"{{end}}>Subscription &amp; Billing</a>
+  <a href="/legal/cancellation" {{if eq .Doc "cancellation"}}aria-current="page"{{end}}>Cancellation</a>
+  <a href="/legal/refunds" {{if eq .Doc "refunds"}}aria-current="page"{{end}}>Refunds</a>
+  <a href="/legal/open-source" {{if eq .Doc "oss"}}aria-current="page"{{end}}>Open Source Notices</a>
+</nav>
+{{end}}
+
+{{define "legal-index"}}{{template "head" .}}
+<article class="card legal">
+  <h1>Legal</h1>
+  <p class="lead">Policies that govern the use of {{brand.ProductName}}, the {{brand.ProductDescription}} operated by {{brand.CompanyName}}.</p>
+  <ul class="legal-list">
+    <li><a href="/legal/terms">Terms of Service</a> — the agreement between your company and {{brand.CompanyName}}.</li>
+    <li><a href="/legal/privacy">Privacy Policy</a> — what information we collect and how we use it.</li>
+    <li><a href="/legal/acceptable-use">Acceptable Use Policy</a> — what may and may not be done with {{brand.ProductName}}.</li>
+    <li><a href="/legal/billing">Subscription and Billing Policy</a> — pricing, invoicing and payment.</li>
+    <li><a href="/legal/cancellation">Cancellation Policy</a> — how cancellation works and what happens to your data.</li>
+    <li><a href="/legal/refunds">Refund Policy</a> — when refunds are issued.</li>
+    <li><a href="/legal/open-source">Open Source Notices</a> — open source software included in {{brand.ProductName}}.</li>
+  </ul>
+</article>
+{{template "foot" .}}{{end}}
+
 {{define "legal-terms"}}{{template "head" .}}
 <article class="card legal">
+  {{template "legal-nav" .}}
   <h1>Terms of Service</h1>
-  <p class="muted">{{brand.ProductName}} · {{brand.CompanyName}}</p>
-  <div class="review-note" role="note"><strong>Draft for legal review.</strong> This page is a structural placeholder. Final terms must be reviewed and approved by counsel for {{brand.CompanyName}} before publication. Nothing on this page creates additional guarantees.</div>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
 
-  <h2>1. The Service</h2>
-  <p>{{brand.ProductName}} is a business operations system provided by {{brand.CompanyName}} (“we”, “us”) to the company that subscribes to it (“Customer”).</p>
-  <h2>2. Accounts and Company Workspaces</h2>
-  <p>One subscription provides one company account and workspace. The Company Owner is responsible for users invited to the workspace and for keeping credentials confidential.</p>
-  <h2>3. Subscription and Payment</h2>
-  <p>The {{brand.ProductName}} plan is billed at {{brand.PricePerInterval}} (USD) in advance, on a recurring monthly basis, through our payment processor. There is no free plan or free trial. [Taxes, refunds and price-change terms — to be completed by counsel.]</p>
-  <h2>4. Cancellation</h2>
-  <p>Customers may cancel from the Billing page. Cancellation takes effect at the end of the current paid period. [Data retention and export terms — to be completed by counsel.]</p>
-  <h2>5. Acceptable Use</h2>
-  <p>[To be completed by counsel.]</p>
-  <h2>6. Customer Data</h2>
-  <p>Customer retains ownership of data it stores in {{brand.ProductName}}. See the <a href="/legal/privacy">Privacy Policy</a>. [To be completed by counsel.]</p>
-  <h2>7. Suspension</h2>
-  <p>We may restrict access to a workspace for non-payment or violation of these terms. Restricting access does not delete Customer data. [To be completed by counsel.]</p>
-  <h2>8. Warranties, Liability and Governing Law</h2>
-  <p>[To be completed by counsel.]</p>
-  <h2>9. Open Source Components</h2>
-  <p>{{brand.ProductName}} includes open source software distributed under its own licenses. See <a href="/legal/open-source">Open Source Notices</a>.</p>
-  <h2>10. Contact</h2>
-  <p>{{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>{{else}}See the <a href="/support">Support</a> page.{{end}}</p>
+  <p>These Terms of Service (the “Terms”) govern access to and use of {{brand.ProductName}}, a business operations software-as-a-service product operated by {{brand.CompanyName}} (“{{brand.CompanyName}}”, “we”, “us” or “our”). The organization that subscribes to {{brand.ProductName}} is referred to as the “Customer” or “your company”, and the individuals your company authorizes to use {{brand.ProductName}} are “Authorized Users”.</p>
+
+  <h2 id="acceptance">1. Acceptance of These Terms</h2>
+  <p>By creating a company account, completing checkout, or accessing or using {{brand.ProductName}}, you agree to these Terms on behalf of your company and confirm that you have authority to bind it. If you do not have that authority, or you do not agree to these Terms, do not use {{brand.ProductName}}. The <a href="/legal/privacy">Privacy Policy</a>, <a href="/legal/acceptable-use">Acceptable Use Policy</a>, <a href="/legal/billing">Subscription and Billing Policy</a>, <a href="/legal/cancellation">Cancellation Policy</a> and <a href="/legal/refunds">Refund Policy</a> form part of these Terms.</p>
+
+  <h2 id="eligibility">2. Eligibility and Business Use</h2>
+  <p>{{brand.ProductName}} is provided for business and professional use. You must be at least 18 years old and able to form a binding contract to create an account. {{brand.ProductName}} is not intended for personal, family or household use, and you may not use it if you are barred from receiving services under applicable law.</p>
+
+  <h2 id="registration">3. Account Registration</h2>
+  <p>To subscribe, you provide your company name and the name, email address and password of the Company Owner. You agree to provide accurate and complete information and to keep it current. A company account is activated only after the initial subscription payment is confirmed by our payment processor.</p>
+
+  <h2 id="company-accounts">4. Company Accounts</h2>
+  <p>Each subscription covers one company account with one isolated company workspace. The Company Owner is the primary administrator of the account and is responsible for the account, its settings, its subscription and the actions of its Authorized Users. Company data is kept separate from the data of other customers.</p>
+
+  <h2 id="authorized-users">5. Authorized Users</h2>
+  <p>The Company Owner and Administrators may invite employees, contractors and other individuals acting on your company’s behalf to become Authorized Users and may assign them roles. Authorized Users are included in the company subscription and are not billed individually. Your company is responsible for ensuring that Authorized Users comply with these Terms, for maintaining appropriate roles and permissions, and for removing access when it is no longer needed. Account credentials may not be shared between individuals.</p>
+
+  <h2 id="subscription">6. Subscription and Fees</h2>
+  <p>{{brand.ProductName}} is offered on a single plan at {{brand.PriceDisplay}} (US dollars) per {{brand.BillingInterval}} per company, billed in advance on a recurring monthly basis. There is no free plan and no free trial. Fees are described in more detail in the <a href="/legal/billing">Subscription and Billing Policy</a>. We may change the price for future billing periods by giving at least 30 days’ notice to the Company Owner by email; the new price applies from the first billing period that begins after the notice period ends.</p>
+
+  <h2 id="billing-authorization">7. Recurring Billing Authorization</h2>
+  <p>By providing a payment method at checkout, you authorize {{brand.CompanyName}}, through our payment processor Stripe, to charge that payment method (or any replacement you provide) the subscription fee and applicable taxes at the start of each monthly billing period until the subscription is canceled. The subscription renews automatically each month unless canceled as described in the <a href="/legal/cancellation">Cancellation Policy</a>.</p>
+
+  <h2 id="taxes">8. Taxes</h2>
+  <p>Fees do not include sales, use, value-added, goods and services or similar taxes. Where we are required to collect such taxes they will be shown on your invoice and charged in addition to the fees. You are responsible for any taxes related to your use of {{brand.ProductName}} other than taxes based on our net income.</p>
+
+  <h2 id="failed-payments">9. Failed Payments</h2>
+  <p>If a payment fails, our payment processor may retry the charge and we will notify the Company Owner. While a payment is past due your company may continue to use {{brand.ProductName}} for a limited period while you update your payment method. If payment is not received, access to the workspace may be limited to billing and account recovery functions until the balance is paid. Limiting access does not delete your company’s data.</p>
+
+  <h2 id="cancellation">10. Cancellation and Access After Cancellation</h2>
+  <p>The Company Owner may cancel at any time from the Billing page. Cancellation takes effect at the end of the current paid billing period, and your company keeps full access until then. After the period ends, access is limited to billing and account recovery. Your company may subscribe again to restore access. Data retention after cancellation is described in the <a href="/legal/cancellation">Cancellation Policy</a>.</p>
+
+  <h2 id="refunds">11. Refunds</h2>
+  <p>Except as described in the <a href="/legal/refunds">Refund Policy</a> or as required by law, fees are non-refundable, including for partial billing periods.</p>
+
+  <h2 id="acceptable-use">12. Acceptable Use and Prohibited Conduct</h2>
+  <p>You must use {{brand.ProductName}} in compliance with applicable law and the <a href="/legal/acceptable-use">Acceptable Use Policy</a>. Without limitation, you may not: attempt to access another customer’s data or account; probe, scan or test the vulnerability of the service except as permitted by our security reporting process; interfere with or disrupt the service; upload malicious code; use the service to send unsolicited communications; resell or sublicense the service; or reverse engineer the service except to the extent that restriction is prohibited by law or by an applicable open source license.</p>
+
+  <h2 id="security">13. Account Security</h2>
+  <p>You are responsible for keeping passwords and other credentials confidential, for enabling the security features appropriate for your company (such as two-factor authentication), and for all activity under your company account. Notify us promptly at {{template "legal-contact" .}} if you believe an account has been compromised. We implement reasonable administrative, technical and physical safeguards designed to protect the service, but no system is completely secure and we do not guarantee that unauthorized access will never occur.</p>
+
+  <h2 id="customer-data">14. Customer Data</h2>
+  <p>“Customer Data” means the records, files and other content that your company and its Authorized Users submit to {{brand.ProductName}}. As between the parties, your company owns Customer Data. You grant {{brand.CompanyName}} a limited, non-exclusive right to host, copy, process, transmit and display Customer Data solely to provide, secure, support and improve {{brand.ProductName}} for your company and as required by law. We do not sell Customer Data. Our handling of personal information is described in the <a href="/legal/privacy">Privacy Policy</a>.</p>
+
+  <h2 id="customer-content">15. Customer Responsibility for Content</h2>
+  <p>Your company is solely responsible for the accuracy, quality and legality of Customer Data, for having all rights and consents needed to submit it, and for how it is used within your company. You must not upload content that infringes the rights of others or that is unlawful. You are responsible for maintaining your own copies of data that is critical to your business; {{brand.ProductName}} provides export functions for that purpose.</p>
+
+  <h2 id="availability">16. Service Availability and Support</h2>
+  <p>We use commercially reasonable efforts to make {{brand.ProductName}} available and to perform maintenance at times that minimize disruption. The service may be unavailable from time to time because of maintenance, updates, failures of third-party providers or events outside our reasonable control, and we do not guarantee uninterrupted or error-free operation. Support is provided by email as described on the <a href="/support">Support page</a>.</p>
+
+  <h2 id="modifications">17. Modifications to the Service</h2>
+  <p>We continuously improve {{brand.ProductName}} and may add, change or remove features. We will not make changes that materially reduce the core functionality of the subscribed service during a paid billing period without notice. If a change materially and adversely affects your company, you may cancel as described in these Terms.</p>
+
+  <h2 id="suspension">18. Suspension and Termination</h2>
+  <p>We may suspend access to a company account, in whole or in part, if payment is not received, if we reasonably believe the account is being used in violation of these Terms or the Acceptable Use Policy, if continued access creates a security risk to {{brand.ProductName}} or other customers, or if required by law. Where practical we will give notice and an opportunity to cure before suspending. We may terminate these Terms for material breach that is not cured within 30 days after notice, or immediately for serious or repeated violations. Your company may terminate by canceling its subscription. Suspension does not delete Customer Data; data retention after termination follows the <a href="/legal/cancellation">Cancellation Policy</a>.</p>
+
+  <h2 id="ip">19. Intellectual Property</h2>
+  <p>{{brand.CompanyName}} and its licensors own {{brand.ProductName}}, including its software, design, documentation and all related intellectual property rights. Subject to these Terms and payment of fees, we grant your company a limited, non-exclusive, non-transferable right for its Authorized Users to access and use {{brand.ProductName}} during the subscription for your internal business operations. No other rights are granted.</p>
+
+  <h2 id="brand">20. {{brand.ProductName}} Branding</h2>
+  <p>“{{brand.ProductName}}”, “{{brand.CompanyName}}” and the associated logos are trademarks of {{brand.CompanyName}}. You may not use them without our prior written permission, except to refer accurately to the service your company uses.</p>
+
+  <h2 id="feedback">21. Feedback</h2>
+  <p>If you provide suggestions or feedback about {{brand.ProductName}}, we may use them without restriction or obligation to you.</p>
+
+  <h2 id="third-party">22. Third-Party Services and Open Source Components</h2>
+  <p>{{brand.ProductName}} relies on third-party services, such as Stripe for payment processing and providers of hosting and email delivery, and includes open source software licensed under separate terms. Those components are identified on the <a href="/legal/open-source">Open Source Notices</a> page. Nothing in these Terms limits rights granted to you under an applicable open source license.</p>
+
+  <h2 id="confidentiality">23. Confidentiality</h2>
+  <p>Each party will protect the other party’s non-public information that is identified as confidential or should reasonably be understood to be confidential, using at least reasonable care, and will use it only to perform under these Terms. This obligation does not apply to information that is or becomes public through no fault of the receiving party, was already known to it, is independently developed, or is lawfully received from a third party. Disclosure required by law is permitted after reasonable notice where legally allowed.</p>
+
+  <h2 id="disclaimers">24. Disclaimers</h2>
+  <p>EXCEPT AS EXPRESSLY STATED IN THESE TERMS, {{upper brand.ProductName}} IS PROVIDED “AS IS” AND “AS AVAILABLE”. TO THE MAXIMUM EXTENT PERMITTED BY LAW, {{upper brand.CompanyName}} DISCLAIMS ALL IMPLIED WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE OR COMPLETELY SECURE, OR THAT IT WILL ACHIEVE ANY PARTICULAR BUSINESS RESULT.</p>
+
+  <h2 id="liability">25. Limitation of Liability</h2>
+  <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, NEITHER PARTY WILL BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, OR FOR LOST PROFITS, REVENUE, GOODWILL OR DATA, ARISING OUT OF OR RELATING TO THESE TERMS, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. EACH PARTY’S TOTAL LIABILITY ARISING OUT OF OR RELATING TO THESE TERMS WILL NOT EXCEED THE FEES PAID OR PAYABLE BY THE CUSTOMER TO {{upper brand.CompanyName}} FOR {{upper brand.ProductName}} IN THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE LIABILITY. THESE LIMITATIONS DO NOT APPLY TO THE CUSTOMER’S PAYMENT OBLIGATIONS, TO A PARTY’S INDEMNIFICATION OBLIGATIONS, OR TO LIABILITY THAT CANNOT BE LIMITED UNDER APPLICABLE LAW.</p>
+
+  <h2 id="indemnification">26. Indemnification</h2>
+  <p>Your company will defend and indemnify {{brand.CompanyName}} and its officers, employees and agents against third-party claims, and related losses, damages and reasonable costs, arising from Customer Data or from use of {{brand.ProductName}} by your company or its Authorized Users in violation of these Terms or applicable law. {{brand.CompanyName}} will defend and indemnify your company against third-party claims alleging that {{brand.ProductName}}, as provided by us, infringes that third party’s intellectual property rights, except to the extent the claim arises from Customer Data, from combinations with items not provided by us, or from use in violation of these Terms. The indemnified party must give prompt notice of the claim, allow the indemnifying party to control the defense and settlement, and provide reasonable cooperation.</p>
+
+  <h2 id="disputes">27. Dispute Resolution</h2>
+  <p>Before filing a claim, each party agrees to try to resolve the dispute informally by contacting the other party and negotiating in good faith for at least 30 days. The Company Owner may start this process by writing to {{template "legal-contact" .}}. If the dispute is not resolved, it will be decided exclusively by the courts located in the jurisdiction whose law governs these Terms, and each party consents to the personal jurisdiction of those courts. Either party may seek injunctive relief to protect its intellectual property or confidential information in any court of competent jurisdiction. Claims must be brought in the party’s individual capacity and not as a plaintiff or class member in a purported class or representative proceeding, to the extent permitted by law.</p>
+
+  <h2 id="law">28. Governing Law</h2>
+  <p>These Terms are governed by {{template "legal-law" .}}, without regard to its conflict-of-laws rules. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+
+  <h2 id="changes">29. Changes to These Terms</h2>
+  <p>We may update these Terms from time to time. We will post the updated Terms on this page with a new effective date and, for material changes, notify the Company Owner by email at least 30 days before the changes take effect. Continued use of {{brand.ProductName}} after the effective date constitutes acceptance of the updated Terms. If your company does not agree, it may cancel before the changes take effect.</p>
+
+  <h2 id="general">30. General</h2>
+  <p>Neither party may assign these Terms without the other party’s consent, except to a successor in a merger, acquisition or sale of substantially all of its relevant assets. Neither party is liable for delays caused by events beyond its reasonable control. If any provision is found unenforceable, the remainder stays in effect. A failure to enforce a provision is not a waiver. These Terms, together with the policies referenced in them, are the entire agreement between the parties regarding {{brand.ProductName}} and supersede prior agreements on that subject. Notices to your company will be sent to the Company Owner’s email address; notices to us must be sent to {{template "legal-contact" .}}.</p>
+
+  <h2 id="contact">31. Contact</h2>
+  <p>Questions about these Terms can be sent to {{template "legal-contact" .}}.</p>
 </article>
 {{template "foot" .}}{{end}}
 
 {{define "legal-privacy"}}{{template "head" .}}
 <article class="card legal">
+  {{template "legal-nav" .}}
   <h1>Privacy Policy</h1>
-  <p class="muted">{{brand.ProductName}} · {{brand.CompanyName}}</p>
-  <div class="review-note" role="note"><strong>Draft for legal review.</strong> This page is a structural placeholder. The final privacy policy must be reviewed and approved by counsel for {{brand.CompanyName}} before publication.</div>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
 
-  <h2>1. Who We Are</h2>
-  <p>{{brand.CompanyName}} operates {{brand.ProductName}}.</p>
-  <h2>2. Information We Collect</h2>
-  <p>Account information (name, email), company information, content Customers store in their workspace, and technical logs (such as IP address and timestamps) used for security and audit purposes. Payment card details are collected and processed by our payment processor (Stripe) and are not stored on {{brand.ProductName}} servers.</p>
-  <h2>3. How We Use Information</h2>
-  <p>To provide and secure the service, process subscriptions, send transactional email (such as invitations, password resets and billing notices) and provide support. [To be completed by counsel.]</p>
-  <h2>4. Sharing</h2>
-  <p>With service providers necessary to operate {{brand.ProductName}} (for example payment processing and email delivery). [To be completed by counsel.]</p>
-  <h2>5. Retention</h2>
-  <p>[To be completed by counsel.]</p>
-  <h2>6. Security</h2>
-  <p>Passwords are stored as one-way hashes. Company workspaces are isolated from one another. [To be completed by counsel.]</p>
-  <h2>7. Your Rights</h2>
-  <p>[To be completed by counsel.]</p>
-  <h2>8. Contact</h2>
-  <p>{{if brand.SupportEmail}}<a href="mailto:{{brand.SupportEmail}}">{{brand.SupportEmail}}</a>{{else}}See the <a href="/support">Support</a> page.{{end}}</p>
+  <p>This Privacy Policy explains how {{brand.CompanyName}} (“we”, “us”) collects, uses, shares and protects information in connection with {{brand.ProductName}}, our {{brand.ProductDescription}}. {{brand.ProductName}} is used by businesses (“Customers”) and the people they authorize to use it (“Users”).</p>
+
+  <h2 id="roles">1. Our Role</h2>
+  <p>For account, billing and usage information we collect to operate our business, {{brand.CompanyName}} decides how the information is used. For the business records, files and other content that Customers store in {{brand.ProductName}} (“Customer Data”), we process information on behalf of and under the instructions of the Customer. If you are a User and have questions about Customer Data, please contact your company’s {{brand.ProductName}} administrator.</p>
+
+  <h2 id="collect">2. Information We Collect</h2>
+  <h3>Account information</h3>
+  <p>Name, email address, password (stored only as a one-way cryptographic hash), role, language and profile preferences, optional profile picture, and optional two-factor authentication settings.</p>
+  <h3>Company information</h3>
+  <p>Company name, the identity of the Company Owner, optional company profile details such as website, phone and address, and the list of Users and their roles.</p>
+  <h3>Billing metadata</h3>
+  <p>Payments are processed by Stripe. Card numbers and security codes are entered on Stripe’s hosted pages and are not received or stored by {{brand.ProductName}}. We receive and store limited billing metadata from Stripe, such as the Stripe customer and subscription identifiers, subscription status, billing period dates, invoice amounts and status, and a payment method summary (for example the card brand and last four digits).</p>
+  <h3>Usage information</h3>
+  <p>Records of actions taken in the service (for example sign-ins, configuration changes, invitations and billing events), timestamps, and the pages and features used.</p>
+  <h3>IP address and device information</h3>
+  <p>IP address, browser type and version, operating system and similar technical information sent by your browser, collected in server logs and audit records for security and troubleshooting.</p>
+  <h3>Cookies and session data</h3>
+  <p>{{brand.ProductName}} uses only cookies and browser storage that are necessary to operate the service: a session cookie that keeps you signed in, security cookies that protect forms against cross-site request forgery, and browser storage that holds the access token and interface preferences of the web application. We do not use advertising or third-party tracking cookies.</p>
+  <h3>Support communications</h3>
+  <p>The content of messages you send us, your contact details and any information you choose to share while we help you.</p>
+  <h3>Customer Data</h3>
+  <p>The customers, contacts, cases, tasks, documents, approvals and other business records that Users enter or upload. Customers decide what Customer Data to store; it may include personal information about the Customer’s own customers, employees or contacts.</p>
+
+  <h2 id="use">3. How We Use Information</h2>
+  <ul>
+    <li><strong>Service operation:</strong> to create and maintain company accounts, authenticate Users, provide the features of {{brand.ProductName}} and process Customer Data as instructed by the Customer.</li>
+    <li><strong>Security:</strong> to protect accounts and the service, keep companies isolated from one another, detect and investigate suspicious activity, and maintain audit records.</li>
+    <li><strong>Billing:</strong> to process subscriptions, invoices and payments through Stripe, handle failed payments and maintain accounting records.</li>
+    <li><strong>Communications:</strong> to send transactional messages such as invitations, password resets, security notices, receipts and billing notices, and to respond to support requests. We send service announcements only when they relate to your use of {{brand.ProductName}}.</li>
+    <li><strong>Fraud prevention:</strong> to prevent abuse, fraudulent payments and violations of our Terms and Acceptable Use Policy.</li>
+    <li><strong>Legal compliance:</strong> to comply with legal obligations, respond to lawful requests, and establish, exercise or defend legal claims.</li>
+    <li><strong>Improvement:</strong> to understand how the service is used in aggregate so that we can fix problems and improve {{brand.ProductName}}.</li>
+  </ul>
+  <p>We do not sell personal information and do not use Customer Data for advertising.</p>
+
+  <h2 id="sharing">4. Service Providers and Sharing</h2>
+  <p>We share information only as needed to operate {{brand.ProductName}}:</p>
+  <ul>
+    <li><strong>Stripe</strong>, which processes subscription payments and hosts the checkout and billing portal pages. Stripe’s handling of payment information is governed by its own privacy policy.</li>
+    <li><strong>Hosting and infrastructure providers</strong>, which host our servers, databases and backups.</li>
+    <li><strong>Email delivery providers</strong>, which deliver transactional email on our behalf.</li>
+  </ul>
+  <p>These providers may use information only to provide their services to us and are required to protect it. We may also disclose information if required by law or legal process, to protect the rights, property or safety of {{brand.CompanyName}}, our Customers or others, or in connection with a merger, acquisition or sale of assets, in which case the recipient will be bound by commitments at least as protective as this policy.</p>
+
+  <h2 id="retention">5. Retention</h2>
+  <p>We keep account and company information for as long as the company account exists. After a subscription ends, Customer Data is retained as described in the <a href="/legal/cancellation">Cancellation Policy</a> so that the Customer can reactivate or export it. Billing records are kept for as long as required for tax and accounting purposes. Security and audit logs are kept for as long as needed to protect the service and investigate incidents, and then deleted or anonymized.</p>
+
+  <h2 id="deletion">6. Access, Correction and Deletion</h2>
+  <p>Users can review and update their profile information from their account settings. Company Owners and Administrators can update company information and remove Users. To request access to, correction of, or deletion of personal information we hold about you, contact {{template "legal-contact" .}}. Requests concerning Customer Data are referred to the relevant Customer, who controls that data. When a Customer requests deletion of its company account, we delete or anonymize its Customer Data within 30 days, except for information we must keep to meet legal obligations.</p>
+
+  <h2 id="security">7. Security</h2>
+  <p>We use administrative, technical and physical measures designed to protect information, including encrypted connections, one-way hashing of passwords, server-side access controls that separate each company’s workspace, role-based permissions, signed payment notifications and audit logging. No method of transmission or storage is completely secure, and we cannot guarantee absolute security. Please report suspected security issues as described on the <a href="/support#security">Support page</a>.</p>
+
+  <h2 id="international">8. International Users</h2>
+  <p>{{brand.CompanyName}} and its service providers may process information in the United States and in other countries where they operate. These countries may have data protection laws that differ from those of your country. Where required, we use appropriate safeguards for international transfers. Depending on where you live, you may have additional rights under local law, such as the right to object to or restrict certain processing or to lodge a complaint with a supervisory authority.</p>
+
+  <h2 id="children">9. Children’s Privacy</h2>
+  <p>{{brand.ProductName}} is a business service and is not directed to children. We do not knowingly collect personal information from children under 16. If you believe a child has provided us with personal information, contact us and we will delete it.</p>
+
+  <h2 id="changes">10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. We will post the updated policy on this page with a new effective date and, for material changes, notify Company Owners by email before the changes take effect.</p>
+
+  <h2 id="contact">11. Privacy Contact</h2>
+  <p>Questions or requests about privacy can be sent to {{template "legal-contact" .}}.</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-aup"}}{{template "head" .}}
+<article class="card legal">
+  {{template "legal-nav" .}}
+  <h1>Acceptable Use Policy</h1>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
+  <p>This Acceptable Use Policy applies to every company and User of {{brand.ProductName}} and forms part of the <a href="/legal/terms">Terms of Service</a>. It exists to keep {{brand.ProductName}} secure and reliable for all customers.</p>
+
+  <h2>1. Permitted Use</h2>
+  <p>{{brand.ProductName}} may be used to run the lawful internal operations of your company: managing customers, contacts, records, cases, tasks, approvals, documents, reports and your team.</p>
+
+  <h2>2. Prohibited Content</h2>
+  <p>You may not store, upload or share through {{brand.ProductName}} content that:</p>
+  <ul>
+    <li>is unlawful, fraudulent, defamatory, harassing or threatening;</li>
+    <li>infringes intellectual property, privacy or other rights of any person;</li>
+    <li>contains malware, viruses or other harmful code;</li>
+    <li>contains sexual content involving minors or promotes violence or terrorism;</li>
+    <li>includes personal information you do not have a lawful basis to process.</li>
+  </ul>
+
+  <h2>3. Prohibited Conduct</h2>
+  <p>You may not:</p>
+  <ul>
+    <li>attempt to access another company’s workspace, data or account, or any part of the service you are not authorized to use;</li>
+    <li>share accounts or credentials, or impersonate another person;</li>
+    <li>probe, scan or test the vulnerability of {{brand.ProductName}} or bypass security or access controls, except through responsible disclosure as described below;</li>
+    <li>interfere with or disrupt the service, including through excessive automated requests, denial-of-service activity or attempts to degrade performance for others;</li>
+    <li>use {{brand.ProductName}} to send spam, bulk unsolicited messages or phishing communications;</li>
+    <li>resell, sublicense or provide {{brand.ProductName}} to third parties as a service;</li>
+    <li>copy, frame or mirror the service, or reverse engineer it except where permitted by law or an applicable open source license;</li>
+    <li>use the service to violate export controls, sanctions or other applicable laws.</li>
+  </ul>
+
+  <h2>4. Automated Access and Integrations</h2>
+  <p>Integrations and automated access must use the interfaces we provide, respect rate limits, and authenticate as a real User or an integration authorized by your company.</p>
+
+  <h2>5. Security Research and Reporting</h2>
+  <p>If you discover a vulnerability, report it privately as described on the <a href="/support#security">Support page</a>. Do not access data that is not yours, do not degrade the service, and give us a reasonable opportunity to fix the issue before any disclosure.</p>
+
+  <h2>6. Enforcement</h2>
+  <p>We may investigate suspected violations and may remove content, restrict features, or suspend or terminate accounts that violate this policy, as described in the Terms of Service. Where practical we will notify the Company Owner and give an opportunity to correct the issue. Serious violations, including attacks on other customers or on the service, may result in immediate suspension.</p>
+
+  <h2>7. Reporting Abuse</h2>
+  <p>Report suspected abuse of {{brand.ProductName}} to {{template "legal-contact" .}}.</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-billing"}}{{template "head" .}}
+<article class="card legal">
+  {{template "legal-nav" .}}
+  <h1>Subscription and Billing Policy</h1>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
+  <p>This policy describes how {{brand.ProductName}} subscriptions are priced and billed. It forms part of the <a href="/legal/terms">Terms of Service</a>.</p>
+
+  <h2>1. Plan and Price</h2>
+  <p>{{brand.ProductName}} is offered on one plan: <strong>{{brand.PricePerInterval}}</strong> in US dollars, per company. One subscription covers one company account and its workspace, including all Authorized Users your company invites. There is no free plan and no free trial.</p>
+
+  <h2>2. Billing Cycle</h2>
+  <p>The subscription is billed monthly in advance. The first charge is made at checkout and the billing date for later months is the same day of the month as the initial purchase (or the last day of the month where that day does not exist). The subscription renews automatically each month until canceled.</p>
+
+  <h2>3. Payment Processing</h2>
+  <p>Payments are processed by Stripe. Accepted payment methods are those offered on the Stripe checkout page. Payment card details are entered directly with Stripe; {{brand.ProductName}} does not receive or store full card numbers or security codes.</p>
+
+  <h2>4. Invoices and Receipts</h2>
+  <p>An invoice and receipt are issued for every charge and are available to the Company Owner through <strong>Billing → Manage Billing</strong>, which also allows the payment method and billing details to be updated.</p>
+
+  <h2>5. Taxes</h2>
+  <p>Prices exclude applicable taxes. Where tax is required it is calculated based on your billing details and shown on the invoice.</p>
+
+  <h2>6. Price Changes</h2>
+  <p>We will give the Company Owner at least 30 days’ notice by email before a price change takes effect. The new price applies from the first billing period that starts after the notice period.</p>
+
+  <h2>7. Failed Payments</h2>
+  <p>If a charge fails, Stripe retries it automatically over the following days and we email the Company Owner. During this time the subscription shows as <em>Past Due</em>, a billing notice appears in {{brand.ProductName}}, and your company keeps access while the payment method is updated. If the balance remains unpaid after the retry period the subscription becomes <em>Unpaid</em> and access is limited to billing and account recovery until payment is made. Your company’s data is not deleted because of a failed payment.</p>
+
+  <h2>8. Who Can Manage Billing</h2>
+  <p>The Company Owner manages the subscription and payment method. Administrators can view billing status. Other Users do not have access to billing.</p>
+
+  <h2>9. Disputes and Chargebacks</h2>
+  <p>If you believe a charge is incorrect, contact {{template "legal-contact" .}} within 30 days of the charge so that we can investigate and correct it. Filing a chargeback without first contacting us may result in suspension of the account while the dispute is resolved.</p>
+
+  <h2>10. Cancellation and Refunds</h2>
+  <p>See the <a href="/legal/cancellation">Cancellation Policy</a> and the <a href="/legal/refunds">Refund Policy</a>.</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-cancellation"}}{{template "head" .}}
+<article class="card legal">
+  {{template "legal-nav" .}}
+  <h1>Cancellation Policy</h1>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
+
+  <h2>1. How to Cancel</h2>
+  <p>The Company Owner can cancel at any time from <strong>Billing → Cancel Subscription</strong> in {{brand.ProductName}}. No phone call or email is required. We send a confirmation email when the cancellation is scheduled.</p>
+
+  <h2>2. When Cancellation Takes Effect</h2>
+  <p>Cancellation takes effect at the end of the current paid billing period. Your company keeps full access until that date and is not charged again.</p>
+
+  <h2>3. Changing Your Mind</h2>
+  <p>Until the end of the billing period, the Company Owner can choose <strong>Resume Subscription</strong> on the Billing page to keep the subscription active without interruption.</p>
+
+  <h2>4. Access After Cancellation</h2>
+  <p>After the paid period ends, operational access to the workspace is closed and Users can sign in only to reach billing and account recovery. The Company Owner can subscribe again at any time to restore full access to the existing workspace and data.</p>
+
+  <h2>5. Your Data After Cancellation</h2>
+  <p>Canceling does not immediately delete your company’s data. We retain Customer Data for at least 90 days after the subscription ends so that your company can reactivate or obtain an export. Before cancellation takes effect, Users can export records from the workspace using the export functions. After the retention period we may delete Customer Data, and we will email the Company Owner before doing so. The Company Owner can also request earlier deletion by contacting {{template "legal-contact" .}}.</p>
+
+  <h2>6. Cancellation by {{brand.CompanyName}}</h2>
+  <p>We may cancel or suspend a subscription in the circumstances described in the <a href="/legal/terms#suspension">Terms of Service</a>, such as non-payment or serious violations of the <a href="/legal/acceptable-use">Acceptable Use Policy</a>.</p>
+
+  <h2>7. Refunds</h2>
+  <p>Cancellation does not generate a refund for the current billing period. See the <a href="/legal/refunds">Refund Policy</a>.</p>
+</article>
+{{template "foot" .}}{{end}}
+
+{{define "legal-refunds"}}{{template "head" .}}
+<article class="card legal">
+  {{template "legal-nav" .}}
+  <h1>Refund Policy</h1>
+  <p class="muted">Effective {{brand.LegalEffectiveDate}}</p>
+
+  <h2>1. General Rule</h2>
+  <p>{{brand.ProductName}} is billed monthly in advance and your company can cancel at any time before the next billing date. Because of this, subscription fees are non-refundable, and we do not provide refunds or credits for partial months, unused time, or periods in which the service was not used.</p>
+
+  <h2>2. When We Issue Refunds</h2>
+  <p>We will refund charges that result from:</p>
+  <ul>
+    <li>a duplicate charge for the same billing period;</li>
+    <li>a billing error on our part, such as an incorrect amount;</li>
+    <li>a renewal charge made after a cancellation was confirmed, where the charge resulted from our error;</li>
+    <li>an extended outage of {{brand.ProductName}} caused by us that prevented use for most of a billing period, in which case we will credit or refund the affected period;</li>
+    <li>any circumstance in which a refund is required by applicable law.</li>
+  </ul>
+
+  <h2>3. How to Request a Refund</h2>
+  <p>The Company Owner should contact {{template "legal-contact" .}} within 30 days of the charge, including the company name and the invoice date. We review requests promptly and reply by email.</p>
+
+  <h2>4. How Refunds Are Paid</h2>
+  <p>Approved refunds are returned to the original payment method through Stripe. Depending on the card issuer or bank, it may take 5–10 business days for the refund to appear.</p>
+
+  <h2>5. Chargebacks</h2>
+  <p>Please contact us before disputing a charge with your bank. We can usually resolve billing problems faster directly.</p>
 </article>
 {{template "foot" .}}{{end}}
 
 {{define "legal-oss"}}{{template "head" .}}
 <article class="card legal">
+  {{template "legal-nav" .}}
   <h1>Open Source Notices</h1>
-  <p>{{brand.ProductName}} is developed by {{brand.CompanyName}}. The {{brand.ProductName}} name, branding, user interface additions, subscription and billing functionality, Founder console and other original modifications are © {{brand.CompanyName}}.</p>
-  <p>{{brand.ProductName}} is built on open source software. We gratefully acknowledge the projects below and distribute them in accordance with their licenses. Modified files carry notices stating that they were changed.</p>
+  <p>{{brand.ProductName}} is developed and operated by {{brand.CompanyName}}. The {{brand.ProductName}} name, logos and branding, and the original features added by {{brand.CompanyName}} — including company accounts, subscriptions and billing, company administration, onboarding and platform administration — are © {{brand.CompanyName}}.</p>
+  <p>{{brand.ProductName}} is built with open source software. We gratefully acknowledge the projects below and distribute them in accordance with their licenses. Files that we modified carry notices stating that they were changed.</p>
 
   <h2>Corteza</h2>
   <p>Portions of {{brand.ProductName}} are derived from the Corteza project, Copyright © the Corteza project authors and contributors (maintained by Planet Crust), licensed under the Apache License, Version 2.0. Source: <span class="mono">github.com/cortezaproject/corteza</span>.</p>
 
   <h2>Third-party components</h2>
-  <p>{{brand.ProductName}} also includes third-party libraries (Go modules and JavaScript packages) under their respective licenses (including Apache-2.0, MIT, BSD and ISC). License texts for these components are distributed with the source code in the <span class="mono">vendor</span> directories and package metadata.</p>
+  <p>{{brand.ProductName}} also includes third-party libraries under their respective licenses, including the Apache License 2.0, the MIT License, the BSD licenses and the ISC License. The license text of each component is included with the source code distribution of that component.</p>
 
   <h2>Apache License, Version 2.0</h2>
   <div class="license-text" tabindex="0" aria-label="Apache License text">{{.License}}</div>

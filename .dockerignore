@@ -1,0 +1,15 @@
+.git
+.github
+**/node_modules
+client/**/dist
+lib/**/dist
+**/.env
+**/.env.*
+!.env.example
+server/build
+server/var
+server/tests
+server/pkg/locale/src/en
+extra
+**/*.log
+**/.DS_Store

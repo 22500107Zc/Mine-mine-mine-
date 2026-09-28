@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
@@ -96,6 +97,8 @@ func (svc *Service) billingPage(w http.ResponseWriter, r *http.Request) {
 	d["NeedsCheckout"] = cc.Company.StripeSubscriptionID == "" ||
 		cc.Decision.Reason == "canceled" ||
 		cc.Company.SubscriptionStatus == SubIncompleteExpired
+	d["PaymentProblem"] = cc.Company.SubscriptionStatus == SubPastDue || cc.Company.SubscriptionStatus == SubUnpaid
+	d["StatusLabel"] = billingStatusLabel(cc.Company)
 	svc.render(w, r, http.StatusOK, "billing", d)
 }
 
@@ -289,4 +292,58 @@ func (svc *Service) flashErr(w http.ResponseWriter, err error) {
 
 	svc.log.Error("customer action failed", zap.Error(err))
 	svc.setFlash(w, "error", "Something went wrong. Please try again.")
+}
+
+func (svc *Service) companyProfile(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil || !svc.validCSRF(r) {
+		svc.renderError(w, r, http.StatusForbidden)
+		return
+	}
+
+	cc, ok := svc.customer(w, r)
+	if !ok {
+		return
+	}
+
+	err := svc.UpdateCompanyProfile(r.Context(), cc.UserID, CompanyProfile{
+		Name: r.PostFormValue("name"), Industry: r.PostFormValue("industry"), Website: r.PostFormValue("website"),
+		Phone: r.PostFormValue("phone"), Address: r.PostFormValue("address"),
+	}, clientIP(r))
+
+	if err != nil {
+		svc.flashErr(w, err)
+	} else {
+		svc.setFlash(w, "success", "Company profile updated.")
+	}
+
+	http.Redirect(w, r, "/company", http.StatusSeeOther)
+}
+
+// billingStatusLabel is the customer-facing subscription state
+func billingStatusLabel(c *Company) string {
+	switch c.SubscriptionStatus {
+	case SubActive:
+		if c.CancelAtPeriodEnd {
+			return "Active — ends " + fmtDate(c.BillingPeriodEnd)
+		}
+		return "Active"
+	case SubPastDue:
+		return "Past Due"
+	case SubUnpaid:
+		return "Unpaid"
+	case SubCanceled:
+		return "Canceled"
+	case "", SubIncomplete, SubIncompleteExpired:
+		return "Not subscribed"
+	}
+
+	return c.SubscriptionStatus.Label()
+}
+
+func fmtDate(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+
+	return t.Format("Jan 2, 2006")
 }
