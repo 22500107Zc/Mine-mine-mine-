@@ -126,3 +126,16 @@ func (r *result) Error() string {
 
 	return r.err.Error()
 }
+
+// WriteSummaryTo writes PASS/FAIL per check without error details, so that
+// public health endpoints never expose hosts, credentials or internal errors
+func (rr results) WriteSummaryTo(w io.Writer) {
+	for _, r := range rr {
+		status := "PASS"
+		if !r.IsHealthy() {
+			status = "FAIL"
+		}
+
+		_, _ = fmt.Fprintf(w, "%s %s\n", status, r.Label)
+	}
+}

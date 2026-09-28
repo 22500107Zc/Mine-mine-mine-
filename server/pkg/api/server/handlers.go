@@ -44,7 +44,7 @@ func waitingRoutes(log *zap.Logger, httpOpt options.HttpServerOpt) (r chi.Router
 		w.Header().Set("Refresh", "15; url=/")
 		_, _ = fmt.Fprint(w, "CulpOS is starting, please wait...\n\n")
 		if httpOpt.EnableHealthcheckRoute {
-			healthcheck.Defaults().Run(r.Context()).WriteTo(w)
+			healthcheck.Defaults().Run(r.Context()).WriteSummaryTo(w)
 		}
 	})
 
@@ -98,6 +98,9 @@ func activeRoutes(log *zap.Logger, mountable []func(r chi.Router), opts *options
 
 		// Base middleware, CORS, RealIP, RequestID, context-logger
 		r.Use(BaseMiddleware(envOpt.IsProduction(), log)...)
+
+		// Baseline security headers for every response
+		r.Use(securityHeaders(httpOpt.SslTerminated))
 
 		// Logging request if enabled
 		if httpOpt.LogRequest {

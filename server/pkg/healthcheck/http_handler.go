@@ -11,6 +11,6 @@ func HttpHandler() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		results.WriteTo(w)
+		results.WriteSummaryTo(w)
 	}
 }

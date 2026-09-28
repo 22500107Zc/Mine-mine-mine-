@@ -50,6 +50,8 @@ func (svc *Service) MountRoutes(r chi.Router) {
 		static, _ := fs.Sub(staticFS, "assets/static")
 		r.Handle("/culpos/static/*", http.StripPrefix("/culpos/static/", cacheFor(24*time.Hour, http.FileServer(http.FS(static)))))
 
+		r.Get("/health", svc.healthHandler)
+
 		// Stripe webhook: authenticated by signature, not by CSRF/session
 		r.With(httprate.LimitByIP(600, time.Minute)).Post("/stripe/webhook", svc.webhookHandler)
 

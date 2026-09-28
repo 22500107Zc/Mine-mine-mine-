@@ -10,9 +10,10 @@ import (
 
 func (svc *Service) signupForm(w http.ResponseWriter, r *http.Request) {
 	svc.render(w, r, http.StatusOK, "signup", pageData{
-		"Title":     "Create Company",
-		"MainClass": "narrow",
-		"Form":      map[string]string{},
+		"Title":       "Create Company",
+		"MainClass":   "narrow",
+		"Form":        map[string]string{},
+		"Unavailable": !svc.cfg.StripeConfigured(),
 	})
 }
 

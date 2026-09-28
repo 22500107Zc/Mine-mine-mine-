@@ -12,6 +12,7 @@
   </ol>
 
   {{if .Error}}<div class="alert error" role="alert">{{.Error}}</div>{{end}}
+  {{if .Unavailable}}<div class="alert warning" role="status">New subscriptions are temporarily unavailable. Please try again later{{if brand.ContactEmail}} or contact <a href="mailto:{{brand.ContactEmail}}">{{brand.ContactEmail}}</a>{{end}}.</div>{{end}}
 
   <form method="post" action="/signup" novalidate>
     <input type="hidden" name="csrf" value="{{.CSRF}}">
@@ -51,7 +52,7 @@
       </ul>
     </section>
 
-    <button class="btn block lg" type="submit">Continue to Secure Checkout</button>
+    <button class="btn block lg" type="submit" {{if .Unavailable}}disabled{{end}}>Continue to Secure Checkout</button>
     <p class="muted small" style="margin-top:12px">Payment is processed by Stripe. Your workspace is activated as soon as payment is confirmed. By continuing you agree to the <a href="/legal/terms">Terms of Service</a> and <a href="/legal/privacy">Privacy Policy</a>.</p>
   </form>
   <p class="small" style="text-align:center;margin-top:16px">Already have an account? <a href="/auth/login">Sign In</a></p>

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	// Embed the IANA timezone database into the binary so timezone-aware
 	// features (e.g. record export) work in minimal deploy images that
 	// don't ship /usr/share/zoneinfo.
@@ -18,6 +20,13 @@ func main() {
 
 	// Map CulpOS deployment variables (DATABASE_URL, SMTP_USERNAME, MAIL_FROM, APP_URL...)
 	saas.ApplyEnvAliases()
+
+	// Validate deployment configuration before starting (clear messages, no stack traces)
+	if len(os.Args) > 1 && os.Args[1] == "serve-api" {
+		if saas.ReportConfigProblems(os.Stderr, saas.ValidateEnvironment()) {
+			os.Exit(1)
+		}
+	}
 
 	cli.HandleError(app.New().Execute())
 }

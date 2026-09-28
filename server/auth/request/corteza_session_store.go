@@ -86,6 +86,9 @@ func (s cortezaSessionStore) New(r *http.Request, name string) (session *session
 		Domain:   domain,
 		Secure:   s.opt.SessionCookieSecure,
 		HttpOnly: true,
+		// Lax keeps the session on top-level returns from external pages
+		// (sign-in providers, payment checkout) while blocking cross-site subrequests
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	if cook, errCookie := r.Cookie(name); errCookie == nil {

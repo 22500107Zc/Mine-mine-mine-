@@ -39,6 +39,8 @@ pages:
         showTotalCount: true
         prefilter: Status != 'Done'
         hideImportButton: true
+        emptyTitle: No open tasks.
+        emptyDescription: Tasks assigned to your team appear here.
     - title: Open Cases
       kind: RecordList
       xywh:
@@ -60,6 +62,8 @@ pages:
         showTotalCount: true
         prefilter: Status != 'Resolved' AND Status != 'Closed'
         hideImportButton: true
+        emptyTitle: No open cases.
+        emptyDescription: Cases that need attention appear here.
     - title: Pending Approvals
       kind: RecordList
       xywh:
@@ -81,6 +85,8 @@ pages:
         showTotalCount: true
         prefilter: Status = 'Pending'
         hideImportButton: true
+        emptyTitle: No pending approvals.
+        emptyDescription: Approval requests waiting for a decision appear here.
     - title: Upcoming Work
       kind: RecordList
       xywh:
@@ -101,6 +107,8 @@ pages:
         showTotalCount: true
         prefilter: Status != 'Done' AND DueDate IS NOT NULL
         hideImportButton: true
+        emptyTitle: Nothing scheduled.
+        emptyDescription: Tasks with due dates appear here.
     - title: Recent Records
       kind: RecordList
       xywh:
@@ -120,6 +128,8 @@ pages:
         allowExport: true
         showTotalCount: true
         hideImportButton: true
+        emptyTitle: No records yet.
+        emptyDescription: Recently added records appear here.
     - title: Recent Documents
       kind: RecordList
       xywh:
@@ -139,6 +149,8 @@ pages:
         allowExport: true
         showTotalCount: true
         hideImportButton: true
+        emptyTitle: No documents yet.
+        emptyDescription: Recently added documents appear here.
     - title: Recent Changes — Customers
       kind: RecordList
       xywh:
@@ -158,6 +170,8 @@ pages:
         allowExport: true
         showTotalCount: true
         hideImportButton: true
+        emptyTitle: No customers yet.
+        emptyDescription: Add your first customer from Customers.
     - title: Cases by Status
       kind: Chart
       xywh:
@@ -193,6 +207,8 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No customers yet.
+        emptyDescription: Add your first customer to start building your company workspace.
     pages:
       CustomerRecord:
         handle: CustomerRecord
@@ -243,6 +259,8 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No contacts yet.
+        emptyDescription: Add the people you work with at your customers.
     pages:
       ContactRecord:
         handle: ContactRecord
@@ -291,6 +309,9 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No records yet.
+        emptyDescription: Track operational records such as compliance items, facilities
+          and finance entries.
     pages:
       OperationsRecordRecord:
         handle: OperationsRecordRecord
@@ -339,6 +360,9 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No cases yet.
+        emptyDescription: Open a case to track a customer request or issue until it
+          is resolved.
     pages:
       CaseRecord:
         handle: CaseRecord
@@ -389,6 +413,8 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No tasks yet.
+        emptyDescription: Create a task and assign it to keep work moving.
     pages:
       TaskRecord:
         handle: TaskRecord
@@ -449,6 +475,9 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No approval requests yet.
+        emptyDescription: Submit a request and choose an approver to start an approval
+          workflow.
     pages:
       ApprovalRecord:
         handle: ApprovalRecord
@@ -497,6 +526,9 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No documents yet.
+        emptyDescription: Upload contracts, proposals, policies and other files your
+          team needs.
     pages:
       DocumentRecord:
         handle: DocumentRecord
@@ -541,6 +573,8 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No departments yet.
+        emptyDescription: Add departments to organize your team.
     pages:
       DepartmentRecord:
         handle: DepartmentRecord
@@ -565,11 +599,21 @@ pages:
     weight: 10
     visible: true
     blocks:
+    - title: Reports
+      kind: Content
+      xywh:
+      - 0
+      - 0
+      - 12
+      - 3
+      options:
+        body: <p>Reports update automatically as your team adds customers, cases,
+          tasks and approvals. Charts stay empty until there is data to show.</p>
     - title: Cases by Status
       kind: Chart
       xywh:
       - 0
-      - 0
+      - 3
       - 6
       - 8
       options:
@@ -578,7 +622,7 @@ pages:
       kind: Chart
       xywh:
       - 6
-      - 0
+      - 3
       - 6
       - 8
       options:
@@ -587,7 +631,7 @@ pages:
       kind: Chart
       xywh:
       - 0
-      - 8
+      - 11
       - 6
       - 8
       options:
@@ -596,7 +640,7 @@ pages:
       kind: Chart
       xywh:
       - 6
-      - 8
+      - 11
       - 6
       - 8
       options:
@@ -605,7 +649,7 @@ pages:
       kind: Chart
       xywh:
       - 0
-      - 16
+      - 19
       - 6
       - 8
       options:
@@ -644,6 +688,8 @@ pages:
         perPage: 20
         allowExport: true
         showTotalCount: true
+        emptyTitle: No departments yet.
+        emptyDescription: Add departments to organize your team.
   Settings:
     handle: Settings
     title: Settings
